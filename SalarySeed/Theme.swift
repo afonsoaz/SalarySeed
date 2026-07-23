@@ -18,6 +18,11 @@ enum Theme {
 
     static let accentSoft = Color(hex: 0x3DDC97).opacity(0.08)
     static let accentBorder = Color(hex: 0x3DDC97).opacity(0.18)
+
+    // v0.5: warning red for the ajudas de custo highlight
+    static let danger = Color(hex: 0xE06A5E)
+    static let dangerSoft = Color(hex: 0xE06A5E).opacity(0.08)
+    static let dangerBorder = Color(hex: 0xE06A5E).opacity(0.22)
 }
 
 extension Color {

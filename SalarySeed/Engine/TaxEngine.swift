@@ -1,6 +1,12 @@
 import Foundation
 
 /// One computed salary picture. All monthly values are per paid month.
+///
+/// v0.5: ajudas de custo ride along, always kept separate from the salary.
+/// They go straight to net (no IRS, no SS), are paid 12 times a year
+/// regardless of the 12/14 schedule, and NEVER enter gross-based numbers
+/// (percentiles, employer cost, efficiency). The UI must always show them
+/// as their own thing.
 struct SalaryBreakdown {
     let grossMonthly: Double
     let netMonthly: Double
@@ -8,13 +14,27 @@ struct SalaryBreakdown {
     let employeeSSMonthly: Double
     let employerSSMonthly: Double
     let months: Double
+    /// Ajudas de custo (or similar) per month, straight to net. 12 payments a year.
+    var ajudasMonthly: Double = 0
 
     var employerCostMonthly: Double { grossMonthly + employerSSMonthly }
     var grossYearly: Double { grossMonthly * months }
     var netYearly: Double { netMonthly * months }
     var employerCostYearly: Double { employerCostMonthly * months }
 
-    /// Of every €1 the employer spends, how much reaches the pocket.
+    var ajudasYearly: Double { ajudasMonthly * 12 }
+    /// What actually lands in the pocket in a normal month: salary net plus ajudas.
+    var pocketMonthly: Double { netMonthly + ajudasMonthly }
+    var pocketYearly: Double { netYearly + ajudasYearly }
+
+    var deductionsMonthly: Double { irsMonthly + employeeSSMonthly }
+    /// Effective rates on the gross salary (0 when gross is 0).
+    var irsRate: Double { grossMonthly > 0 ? irsMonthly / grossMonthly : 0 }
+    var employeeSSEffRate: Double { grossMonthly > 0 ? employeeSSMonthly / grossMonthly : 0 }
+    var deductionsRate: Double { grossMonthly > 0 ? deductionsMonthly / grossMonthly : 0 }
+
+    /// Of every €1 the employer spends on the salary, how much reaches the pocket.
+    /// Salary only: ajudas de custo stay out on both sides.
     var efficiency: Double {
         employerCostMonthly > 0 ? netMonthly / employerCostMonthly : 0
     }
@@ -54,7 +74,7 @@ enum TaxEngine {
         return tax
     }
 
-    static func breakdown(grossMonthly: Double, months: Double) -> SalaryBreakdown {
+    static func breakdown(grossMonthly: Double, months: Double, ajudasMonthly: Double = 0) -> SalaryBreakdown {
         let gross = max(0, grossMonthly)
         let ss = gross * employeeSSRate
         let irs = irsWithholding(grossMonthly: gross)
@@ -65,7 +85,8 @@ enum TaxEngine {
             irsMonthly: irs,
             employeeSSMonthly: ss,
             employerSSMonthly: gross * employerSSRate,
-            months: months
+            months: months,
+            ajudasMonthly: max(0, ajudasMonthly)
         )
     }
 

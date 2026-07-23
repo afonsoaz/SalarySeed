@@ -69,6 +69,11 @@ struct CompareView: View {
                 .font(.system(size: 10))
                 .foregroundStyle(Theme.textFaint)
                 .padding(.top, 4)
+            if store.breakdown.ajudasMonthly > 0 {
+                Text(s.ajudasExcludedNote)
+                    .font(.system(size: 10))
+                    .foregroundStyle(Theme.danger.opacity(0.85))
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
@@ -123,8 +128,8 @@ struct CompareView: View {
                     lockedLayerRow(dim)
                 }
             }
-            // premium teaser stays locked (offerSeed)
-            LockedRow(icon: "arrow.left.arrow.right", title: s.offerTitle, unlock: s.offerUnlock)
+            // offerSeed (compare job offers) is hidden until it actually ships.
+            // Bring the LockedRow back here when the feature lands.
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
     }

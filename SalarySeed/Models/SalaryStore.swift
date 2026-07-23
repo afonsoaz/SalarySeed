@@ -31,6 +31,9 @@ final class SalaryStore: ObservableObject {
     @Published var amount: Double { didSet { save() } }
     @Published var kind: AmountKind { didSet { save() } }
     @Published var schedule: PaySchedule { didSet { save() } }
+    /// v0.5: ajudas de custo (or other amounts paid straight to net), per month.
+    /// Kept apart from the salary everywhere: no IRS, no SS, no percentiles.
+    @Published var ajudasMonthly: Double { didSet { save() } }
     @Published var employment: EmploymentType { didSet { save() } }
     @Published var hasOnboarded: Bool { didSet { save() } }
 
@@ -51,6 +54,7 @@ final class SalaryStore: ObservableObject {
         amount = defaults.double(forKey: "amount") == 0 ? 1500 : defaults.double(forKey: "amount")
         kind = AmountKind(rawValue: defaults.string(forKey: "kind") ?? "") ?? .gross
         schedule = PaySchedule(rawValue: defaults.string(forKey: "schedule") ?? "") ?? .fourteen
+        ajudasMonthly = defaults.double(forKey: "ajudasMonthly")
         employment = EmploymentType(rawValue: defaults.string(forKey: "employment") ?? "") ?? .employee
         hasOnboarded = defaults.bool(forKey: "hasOnboarded")
         name = defaults.string(forKey: "name") ?? ""
@@ -65,6 +69,7 @@ final class SalaryStore: ObservableObject {
         defaults.set(amount, forKey: "amount")
         defaults.set(kind.rawValue, forKey: "kind")
         defaults.set(schedule.rawValue, forKey: "schedule")
+        defaults.set(ajudasMonthly, forKey: "ajudasMonthly")
         defaults.set(employment.rawValue, forKey: "employment")
         defaults.set(hasOnboarded, forKey: "hasOnboarded")
         defaults.set(name, forKey: "name")
@@ -119,10 +124,12 @@ final class SalaryStore: ObservableObject {
         case .gross: grossMonthly = amount
         case .net: grossMonthly = TaxEngine.grossFromNet(amount)
         }
-        return TaxEngine.breakdown(grossMonthly: grossMonthly, months: schedule.months)
+        return TaxEngine.breakdown(grossMonthly: grossMonthly, months: schedule.months, ajudasMonthly: ajudasMonthly)
     }
 
-    /// National percentile for the current gross (placeholder data).
+    /// National percentile for the current gross salary.
+    /// Ajudas de custo are deliberately NOT included: published distributions
+    /// are gross-salary based, and the UI says so wherever this number shows.
     var percentile: Double {
         PercentileEngine.percentile(grossMonthly: breakdown.grossMonthly)
     }

@@ -27,9 +27,10 @@ struct HomeView: View {
                     topBar
                     greeting
                     heroNumbers
+                    updateSalaryButton
                     efficiencyCard
                     BreakdownBar(breakdown: b)
-                    detailsGrid
+                    detailsSection
                     percentileCard
                     nudges
                     disclaimer
@@ -85,29 +86,57 @@ struct HomeView: View {
     }
 
     private var heroNumbers: some View {
-        HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 3) {
-                Text(s.grossLabel(yearly: isYearly))
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textSecondary)
-                RollingEuro(value: b.grossMonthly * factor, color: Theme.textPrimary, fontSize: 30)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            Rectangle().fill(Color.white.opacity(0.08)).frame(width: 1, height: 44)
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(s.netLabel(yearly: isYearly))
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textSecondary)
-                HStack(alignment: .firstTextBaseline, spacing: 5) {
-                    RollingEuro(value: b.netMonthly * factor, color: Theme.accent, fontSize: 30)
-                    UnfurlingLeaf(trigger: b.netMonthly * factor)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(s.grossLabel(yearly: isYearly))
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.textSecondary)
+                    RollingEuro(value: b.grossMonthly * factor, color: Theme.textPrimary, fontSize: 30)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                Rectangle().fill(Color.white.opacity(0.08)).frame(width: 1, height: 44)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(s.netLabel(yearly: isYearly))
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.textSecondary)
+                    HStack(alignment: .firstTextBaseline, spacing: 5) {
+                        RollingEuro(value: b.netMonthly * factor, color: Theme.accent, fontSize: 30)
+                        UnfurlingLeaf(trigger: b.netMonthly * factor)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            // Net above is from the salary alone. Ajudas de custo show as their own line,
+            // so it is always clear which net comes from gross and which comes on top.
+            if b.ajudasMonthly > 0 {
+                Text(s.heroAjudas(
+                    eur(isYearly ? b.ajudasYearly : b.ajudasMonthly),
+                    total: eur(isYearly ? b.pocketYearly : b.pocketMonthly)
+                ))
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.textSecondary)
+            }
         }
         .padding(.top, 2)
+    }
+
+    private var updateSalaryButton: some View {
+        Button { showEditor = true } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "pencil")
+                    .font(.system(size: 13))
+                Text(s.updateSalaryButton)
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .foregroundStyle(Theme.accent)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 13))
+            .overlay(RoundedRectangle(cornerRadius: 13).stroke(Theme.accentBorder))
+        }
     }
 
     private var efficiencyCard: some View {
@@ -130,7 +159,10 @@ struct HomeView: View {
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accentBorder))
     }
 
-    private var detailsGrid: some View {
+    /// v0.5 "in detail": two branching trees plus the red ajudas de custo highlight.
+    /// Company side: total cost splits into gross salary and employer SS.
+    /// Your side: total discounts split into IRS and employee SS, with effective rates.
+    private var detailsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 SectionLabel(s.theDetails)
@@ -139,15 +171,59 @@ struct HomeView: View {
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.textFaint)
             }
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                DetailCard(label: s.cardEmployerCost, value: eur(b.employerCostMonthly * factor))
-                DetailCard(label: s.cardEmployerTop, value: eur(b.employerSSMonthly * factor))
-                DetailCard(label: s.cardYourSS, value: eur(b.employeeSSMonthly * factor))
-                DetailCard(label: s.cardIRS, value: eur(b.irsMonthly * factor))
-                DetailCard(label: s.cardDeductions, value: eur((b.irsMonthly + b.employeeSSMonthly) * factor))
-                DetailCard(label: s.cardRate, value: String(format: "%.0f%%", (1 - b.netMonthly / max(b.grossMonthly, 1)) * 100))
+
+            DetailTreeCard(
+                title: s.treeCompanyTitle,
+                total: eur(b.employerCostMonthly * factor),
+                children: [
+                    TreeChild(
+                        id: "gross",
+                        label: s.treeGross,
+                        value: eur(b.grossMonthly * factor),
+                        caption: s.ofCost(pct(b.employerCostMonthly > 0 ? b.grossMonthly / b.employerCostMonthly : 0))
+                    ),
+                    TreeChild(
+                        id: "employerSS",
+                        label: s.treeEmployerSS,
+                        value: eur(b.employerSSMonthly * factor),
+                        caption: s.ofCost(pct(b.employerCostMonthly > 0 ? b.employerSSMonthly / b.employerCostMonthly : 0))
+                    ),
+                ]
+            )
+
+            DetailTreeCard(
+                title: s.treeDeductionsTitle,
+                total: eur(b.deductionsMonthly * factor),
+                totalCaption: s.ofGross(pct(b.deductionsRate)),
+                children: [
+                    TreeChild(
+                        id: "irs",
+                        label: s.cardIRS,
+                        value: eur(b.irsMonthly * factor),
+                        caption: s.ofGross(pct(b.irsRate))
+                    ),
+                    TreeChild(
+                        id: "employeeSS",
+                        label: s.cardYourSS,
+                        value: eur(b.employeeSSMonthly * factor),
+                        caption: s.ofGross(pct(b.employeeSSEffRate))
+                    ),
+                ]
+            )
+
+            if b.ajudasMonthly > 0 {
+                AjudasCard(
+                    value: eur(isYearly ? b.ajudasYearly : b.ajudasMonthly),
+                    yearlyLine: isYearly ? nil : s.ajudasCardYearly(eur(b.ajudasYearly)),
+                    body_: s.ajudasCardBody,
+                    title: s.ajudasCardTitle
+                )
             }
         }
+    }
+
+    private func pct(_ fraction: Double) -> String {
+        String(format: "%.1f%%", fraction * 100)
     }
 
     private var percentileCard: some View {
@@ -169,6 +245,11 @@ struct HomeView: View {
             Text(s.ineNote)
                 .font(.system(size: 10))
                 .foregroundStyle(Theme.textFaint)
+            if b.ajudasMonthly > 0 {
+                Text(s.ajudasExcludedNote)
+                    .font(.system(size: 10))
+                    .foregroundStyle(Theme.danger.opacity(0.85))
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)

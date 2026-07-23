@@ -1,4 +1,4 @@
-# SalarySeed — v0.4.1
+# SalarySeed — v0.5
 
 Preliminary iOS build of the SalarySeed concept (`../app-concept.md`). Everything works end-to-end. As of v0.4 the percentile and cohort comparisons run on real published data (GEP-MTSSS and INE); tax rates are still placeholders.
 
@@ -8,6 +8,15 @@ Preliminary iOS build of the SalarySeed concept (`../app-concept.md`). Everythin
 2. Pick an iPhone simulator, press Run.
 
 No dependencies, no backend, no account. Everything on-device.
+
+## What's new in v0.5
+
+- **Ajudas de custo as a first-class input.** A monthly amount that goes straight to net (no IRS, no SS), paid 12 times a year regardless of the 12/14 salary schedule. Stored in `SalaryStore.ajudasMonthly` and carried through `SalaryBreakdown` (`pocketMonthly`, `pocketYearly`, `ajudasYearly`). It never enters gross-based numbers: percentiles, cohort comparisons, employer cost and the efficiency card stay salary-only, and the UI says so wherever those numbers appear (red note on the Home percentile card and the compareSeed hero).
+- **"In detail" redesigned as branching trees** (`Features/Home/DetailTree.swift`). Total cost for the company branches into gross salary and employer SS (each with its share of cost); total employee discounts branch into IRS and employee SS, each with its effective rate on gross. When ajudas exist, a red highlight card shows the amount and reminds the user that it is invisible to banks rating loans, to the future pension, and to social protection.
+- **Update-salary button right on the Home screen**, opening the editor. The editor also takes the ajudas amount, with the not-in-percentiles note.
+- **Onboarding asks for everything one by one**: name (skippable), salary (the only mandatory answer; continue stays disabled until a value is entered), gross/net + months, ajudas de custo (skippable), then age, region, education and profession as single-question screens with chip answers, each skippable. Answers commit at the end.
+- **"Compare job offers" (offerSeed) teaser hidden** until the feature is implemented. The strings and the LockedRow component stay for its return.
+- **futureSeed starts from the stored ajudas amount** when one exists.
 
 ## What's new in v0.4.1
 

@@ -56,6 +56,10 @@ struct FutureSeedView: View {
                 .padding(24)
             }
         }
+        // v0.5: if the user already told us their ajudas de custo, start there.
+        .onAppear {
+            if store.ajudasMonthly > 0 { offBookMonthly = min(1_500, store.ajudasMonthly) }
+        }
     }
 
     private var header: some View {

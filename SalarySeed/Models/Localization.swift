@@ -67,6 +67,13 @@ struct Strings {
     var monthsHint: String { t("In Portugal most people get 14, with holiday and Christmas pay.", "Em Portugal o normal são 14, com subsídio de férias e de Natal.") }
     var fiveSeconds: String { t("This takes 5 seconds. Your number stays on your phone.", "Demora 5 segundos. O número fica no teu telemóvel.") }
     var revealButton: String { t("Show my breakdown", "Mostrar as minhas contas") }
+    var salaryNeeded: String { t("The salary is the one thing we need.", "O salário é a única coisa de que precisamos.") }
+
+    // v0.5 onboarding: ajudas step + one-by-one profile questions
+    var onbAjudasTitle: String { t("Do you get ajudas\nde custo?", "Recebes ajudas\nde custo?") }
+    var onbAjudasSub: String { t("Amounts paid on top of the salary, straight to net. You can add or change this later.", "Valores pagos à parte do salário, direto no líquido. Podes adicionar ou mudar isto mais tarde.") }
+    var onbProfileWhy: String { t("This improves your comparison. You can skip it.", "Isto melhora a tua comparação. Podes saltar.") }
+    var skipStep: String { t("Skip", "Saltar") }
 
     // MARK: Home
 
@@ -91,12 +98,32 @@ struct Strings {
 
     var theDetails: String { t("The details", "Em detalhe") }
     func perPeriod(yearly: Bool) -> String { t(yearly ? "per year" : "per month", yearly ? "por ano" : "por mês") }
-    var cardEmployerCost: String { t("Costs your company", "Custo para a empresa") }
-    var cardEmployerTop: String { t("Employer pays on top", "Extra pago pela empresa") }
     var cardYourSS: String { t("Social Security (you)", "Segurança Social (tu)") }
     var cardIRS: String { t("IRS withheld", "IRS retido") }
-    var cardDeductions: String { t("Your deductions", "Os teus descontos") }
-    var cardRate: String { t("Tax + SS rate", "Taxa IRS + SS") }
+
+    // v0.5 detail trees
+    var treeCompanyTitle: String { t("Total cost for your company", "Custo total para a empresa") }
+    var treeGross: String { t("Gross salary", "Salário bruto") }
+    var treeEmployerSS: String { t("Social Security (employer)", "Segurança Social (empresa)") }
+    var treeDeductionsTitle: String { t("Your total discounts", "Os teus descontos totais") }
+    func ofGross(_ pct: String) -> String { t("\(pct) of gross", "\(pct) do bruto") }
+    func ofCost(_ pct: String) -> String { t("\(pct) of cost", "\(pct) do custo") }
+
+    // v0.5 ajudas de custo, always shown apart from the salary
+    func heroAjudas(_ amount: String, total: String) -> String {
+        t("+ \(amount) in ajudas de custo. Total in your pocket: \(total).",
+          "+ \(amount) de ajudas de custo. Total no teu bolso: \(total).")
+    }
+    var ajudasCardTitle: String { t("Ajudas de custo", "Ajudas de custo") }
+    func ajudasCardYearly(_ yearly: String) -> String { t("\(yearly) a year, paid over 12 months", "\(yearly) por ano, pago em 12 meses") }
+    var ajudasCardBody: String {
+        t("This goes straight to your net pay: no IRS, no Social Security. But it does not count as gross salary. Banks ignore it when rating you for loans, and it builds no pension or social protection.",
+          "Este valor vai direto para o teu líquido: sem IRS, sem Segurança Social. Mas não conta como salário bruto. Os bancos ignoram este valor quando avaliam um crédito, e não conta para a reforma nem para a proteção social.")
+    }
+    var ajudasExcludedNote: String {
+        t("Ajudas de custo not included: comparisons use the gross salary only.",
+          "Ajudas de custo não incluídas: as comparações usam só o salário bruto.")
+    }
 
     var standTitle: String { t("How you compare in Portugal", "Como te comparas em Portugal") }
     var earnMorePre: String { t("You earn more than", "Ganhas mais do que") }
@@ -219,13 +246,19 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.3. Estimates only, not official tax or financial advice.", "SalarySeed v0.3. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.5. Estimates only, not official tax or financial advice.", "SalarySeed v0.5. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // MARK: Salary editor
 
     var editorTitle: String { t("Your salary", "O teu salário") }
     var editorPlaceholder: String { t("Monthly amount", "Valor mensal") }
     var updateButton: String { t("Update", "Atualizar") }
+    var updateSalaryButton: String { t("Update my salary", "Atualizar o meu salário") }
+    var editorAjudasLabel: String { t("Ajudas de custo / month (optional)", "Ajudas de custo / mês (opcional)") }
+    var editorAjudasNote: String {
+        t("Amounts paid straight to net, like ajudas de custo. Not included in percentiles or comparisons, which use the gross salary.",
+          "Valores pagos diretamente no líquido, como ajudas de custo. Não entram nos percentis nem nas comparações, que usam o salário bruto.")
+    }
 
     // MARK: raiseSeed
 

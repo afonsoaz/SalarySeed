@@ -1,17 +1,29 @@
 import SwiftUI
 
-/// First-run flow: warm welcome + name, then one number, then two toggles, then value.
-/// No account, still inside the 10-second promise. The name is skippable.
+/// First-run flow, v0.5 edition.
+///
+/// Warm welcome + name, then the one mandatory number (the salary), then the
+/// gross/net and months toggles, then ajudas de custo, then the four profile
+/// questions asked one by one: age, region, education, profession.
+/// Everything is skippable EXCEPT the salary. Answers commit at the end.
 struct OnboardingView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var step = 0
+
     @State private var nameText = ""
-    @State private var amountText = "1500"
+    @State private var amountText = ""
     @State private var kind: AmountKind = .gross
     @State private var schedule: PaySchedule = .fourteen
+    @State private var ajudasText = ""
+    @State private var ageBand: AgeBand?
+    @State private var region: PTRegion?
+    @State private var education: EducationLevel?
+    @State private var occupation: OccupationGroup?
     @FocusState private var amountFocused: Bool
+    @FocusState private var ajudasFocused: Bool
 
     private var s: Strings { store.s }
+    private let totalSteps = 8
 
     var body: some View {
         ZStack {
@@ -28,7 +40,12 @@ struct OnboardingView: View {
                 switch step {
                 case 0: welcomeStep
                 case 1: salaryStep
-                default: detailsStep
+                case 2: detailsStep
+                case 3: ajudasStep
+                case 4: profileStep(dimensionID: "age")
+                case 5: profileStep(dimensionID: "region")
+                case 6: profileStep(dimensionID: "education")
+                default: profileStep(dimensionID: "occupation")
                 }
             }
             .padding(24)
@@ -37,6 +54,28 @@ struct OnboardingView: View {
 
     private var trimmedName: String {
         nameText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var salaryValue: Double? {
+        guard let v = Double(amountText), v > 0 else { return nil }
+        return v
+    }
+
+    private func advance() {
+        withAnimation { step += 1 }
+    }
+
+    private func finish() {
+        store.name = trimmedName
+        store.amount = salaryValue ?? 1500
+        store.kind = kind
+        store.schedule = schedule
+        store.ajudasMonthly = max(0, Double(ajudasText) ?? 0)
+        store.ageBand = ageBand
+        store.region = region
+        store.education = education
+        store.occupation = occupation
+        store.hasOnboarded = true
     }
 
     private var header: some View {
@@ -60,7 +99,7 @@ struct OnboardingView: View {
             .foregroundStyle(Theme.accent)
             Spacer()
             if step > 0 {
-                SeedDots(count: 4, current: step)
+                SeedDots(count: totalSteps, current: step)
             }
         }
     }
@@ -111,12 +150,10 @@ struct OnboardingView: View {
             .padding(.top, 20)
 
             Spacer()
-            PrimaryButton(title: s.welcomeButton) {
-                withAnimation { step = 1 }
-            }
+            PrimaryButton(title: s.welcomeButton) { advance() }
             Button {
                 nameText = ""
-                withAnimation { step = 1 }
+                advance()
             } label: {
                 Text(s.welcomeSkip)
                     .font(.system(size: 12))
@@ -125,13 +162,13 @@ struct OnboardingView: View {
             }
             .padding(.top, 12)
 
-            SeedDots(count: 4, current: 0)
+            SeedDots(count: totalSteps, current: 0)
                 .frame(maxWidth: .infinity)
                 .padding(.top, 14)
         }
     }
 
-    // MARK: Step 1, the one number
+    // MARK: Step 1, the one number (the only mandatory answer)
 
     private var salaryStep: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -163,15 +200,23 @@ struct OnboardingView: View {
             }
             .padding(.top, 44)
 
+            if salaryValue == nil {
+                Text(s.salaryNeeded)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textSecondary)
+                    .padding(.top, 12)
+            }
+
             Spacer()
             PrimaryButton(title: s.continueButton) {
-                withAnimation { step = 2 }
+                if salaryValue != nil { advance() }
             }
+            .opacity(salaryValue == nil ? 0.4 : 1)
         }
         .onAppear { amountFocused = true }
     }
 
-    // MARK: Step 2, a couple of details
+    // MARK: Step 2, gross/net + months
 
     private var detailsStep: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -203,14 +248,156 @@ struct OnboardingView: View {
             .padding(.top, 34)
 
             Spacer()
-            PrimaryButton(title: s.revealButton) {
-                store.name = trimmedName
-                store.amount = Double(amountText) ?? 1500
-                store.kind = kind
-                store.schedule = schedule
-                store.hasOnboarded = true
+            PrimaryButton(title: s.continueButton) { advance() }
+        }
+    }
+
+    // MARK: Step 3, ajudas de custo (skippable)
+
+    private var ajudasStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 64)
+            Text(s.onbAjudasTitle)
+                .font(.system(size: 30, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+            Text(s.onbAjudasSub)
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.textSecondary)
+                .lineSpacing(3)
+                .padding(.top, 8)
+
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("€")
+                    .font(.system(size: 30))
+                    .foregroundStyle(Theme.textSecondary)
+                TextField("0", text: $ajudasText)
+                    .keyboardType(.numberPad)
+                    .focused($ajudasFocused)
+                    .font(.system(size: 42, weight: .medium))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(s.perMonthSuffix)
+                    .font(.system(size: 15))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            .padding(.bottom, 10)
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(Theme.danger.opacity(0.7)).frame(height: 2)
+            }
+            .padding(.top, 44)
+
+            Text(s.editorAjudasNote)
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.textSecondary)
+                .lineSpacing(2)
+                .padding(.top, 12)
+
+            Spacer()
+            PrimaryButton(title: s.continueButton) { advance() }
+            skipButton {
+                ajudasText = ""
+                advance()
             }
         }
+    }
+
+    // MARK: Steps 4 to 7, the profile, one question at a time
+
+    private func profileStep(dimensionID id: String) -> some View {
+        let isLast = step == totalSteps - 1
+        return VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 40)
+            Text(s.dimSheetTitle(id))
+                .font(.system(size: 26, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+            if let note = s.dimSheetNote(id) {
+                Text(note)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textFaint)
+                    .padding(.top, 4)
+            }
+            Text(s.onbProfileWhy)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.top, 8)
+
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+                    ForEach(profileOptions(id)) { option in
+                        profileChip(dimensionID: id, option: option, isLast: isLast)
+                    }
+                }
+                .padding(.top, 20)
+            }
+
+            Spacer(minLength: 0)
+            skipButton {
+                setSelection(id, nil)
+                if isLast { finish() } else { advance() }
+            }
+        }
+    }
+
+    private func profileOptions(_ id: String) -> [DimensionOption] {
+        switch id {
+        case "age": AgeBand.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) }
+        // Only regions with published data, same rule as compareSeed.
+        case "region": PTRegion.allCases.filter { $0.cohort != nil }.map { DimensionOption(id: $0.rawValue, label: $0.label) }
+        case "education": EducationLevel.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: s.pt)) }
+        default: OccupationGroup.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: s.pt)) }
+        }
+    }
+
+    private func selectedID(_ id: String) -> String? {
+        switch id {
+        case "age": ageBand?.rawValue
+        case "region": region?.rawValue
+        case "education": education?.rawValue
+        default: occupation?.rawValue
+        }
+    }
+
+    private func setSelection(_ id: String, _ optionID: String?) {
+        switch id {
+        case "age": ageBand = optionID.flatMap(AgeBand.init(rawValue:))
+        case "region": region = optionID.flatMap(PTRegion.init(rawValue:))
+        case "education": education = optionID.flatMap(EducationLevel.init(rawValue:))
+        default: occupation = optionID.flatMap(OccupationGroup.init(rawValue:))
+        }
+    }
+
+    private func profileChip(dimensionID: String, option: DimensionOption, isLast: Bool) -> some View {
+        let isSelected = option.id == selectedID(dimensionID)
+        return Button {
+            setSelection(dimensionID, option.id)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                if isLast { finish() } else { advance() }
+            }
+        } label: {
+            Text(option.label)
+                .font(.system(size: 13, weight: isSelected ? .medium : .regular))
+                .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 8)
+                .background(
+                    isSelected ? Theme.accent : Color.white.opacity(0.06),
+                    in: RoundedRectangle(cornerRadius: 11)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11)
+                        .stroke(isSelected ? Theme.accent : Theme.cardBorder, lineWidth: 1)
+                )
+        }
+    }
+
+    private func skipButton(_ action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(s.skipStep)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
+                .frame(maxWidth: .infinity)
+        }
+        .padding(.top, 12)
     }
 }
 
