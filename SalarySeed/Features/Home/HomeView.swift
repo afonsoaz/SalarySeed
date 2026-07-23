@@ -290,17 +290,14 @@ struct HomeView: View {
             Text(s.standTitle)
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.textSecondary)
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(s.earnMorePre)
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(String(format: "%.0f%%", store.percentile))
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Theme.accent)
-                Text(s.earnMorePost)
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-            }
+            // One flowing sentence so it wraps naturally (no fixed inter-word gaps).
+            (
+                Text(s.earnMorePre + " ").foregroundColor(Theme.textPrimary)
+                + Text(String(format: "%.0f%%", store.percentile)).foregroundColor(Theme.accent)
+                + Text(" " + s.earnMorePost).foregroundColor(Theme.textPrimary)
+            )
+            .font(.system(size: 20, weight: .medium))
+            .fixedSize(horizontal: false, vertical: true)
             Text(s.ineNote)
                 .font(.system(size: 10))
                 .foregroundStyle(Theme.textFaint)

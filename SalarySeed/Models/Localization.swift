@@ -127,8 +127,8 @@ struct Strings {
     func annualToPay(_ amount: String) -> String { t("About \(amount) left to pay at settlement", "Cerca de \(amount) a pagar no acerto") }
     var annualEven: String { t("Withholding lands about right", "A retenção fica quase certa") }
     var annualNote: String {
-        t("Estimate on the 2026 brackets, before your health, education and other deductions, which usually mean a bit more back.",
-          "Estimativa nos escalões de 2026, antes das tuas deduções de saúde, educação e outras, que costumam dar um pouco mais a receber.")
+        t("Estimate on the 2026 brackets, assuming about €1,000 of the usual deductions (health, education, invoices). Your real total can shift it.",
+          "Estimativa nos escalões de 2026, assumindo cerca de €1.000 das deduções habituais (saúde, educação, faturas). O teu total real pode mudar isto.")
     }
 
     // v0.5 ajudas de custo, always shown apart from the salary
@@ -170,6 +170,15 @@ struct Strings {
     var earnLessThanYou: String { t("of workers earn less than you", "dos trabalhadores ganham menos do que tu") }
     var grossVsGross: String { t("Gross vs gross · GEP-MTSSS e INE · 2024 · estimate", "Bruto vs bruto · GEP-MTSSS e INE · 2024 · estimativa") }
     var natDistribution: String { t("National distribution", "Distribuição nacional") }
+    // v0.7 interactive distribution
+    var dragToExplore: String { t("Drag to explore", "Arrasta para explorar") }
+    var releaseToReset: String { t("Release to reset", "Larga para voltar") }
+    func atLevel(_ amount: String) -> String { t("\(amount) / mo", "\(amount) / mês") }
+    func bandShare(_ share: String, _ range: String) -> String {
+        t("\(share) of workers earn \(range)", "\(share) dos trabalhadores ganham \(range)")
+    }
+    func bandUnder(_ hi: String) -> String { t("under \(hi)", "menos de \(hi)") }
+    func bandOver(_ lo: String) -> String { t("over \(lo)", "mais de \(lo)") }
     var peopleLikeYou: String { t("People like you", "Pessoas como tu") }
     var earnLess: String { t("earn less", "ganham menos") }
     var medianWord: String { t("median", "mediana") }
@@ -266,7 +275,7 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.6. Estimates only, not official tax or financial advice.", "SalarySeed v0.6. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.7. Estimates only, not official tax or financial advice.", "SalarySeed v0.7. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }

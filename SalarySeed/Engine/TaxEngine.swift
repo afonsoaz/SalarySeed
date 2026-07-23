@@ -111,6 +111,10 @@ enum TaxEngine {
     static let specificDeductionA = 8.54 * ias
     /// Dedução à coleta per dependant (base value; the app does not track ages).
     static let dependentCredit = 600.0
+    /// Typical deduções à coleta most people collect over a year (health, education,
+    /// housing, general family expenses, VAT on invoices). A flat, deliberately
+    /// modest assumption so the annual settlement reflects the usual small refund.
+    static let generalExpenseCredit = 1_000.0
 
     // MARK: Monthly withholding tables (retenção na fonte)
 
@@ -252,7 +256,8 @@ enum TaxEngine {
         let avgRate = fullBase > 0 ? taxFull / fullBase : 0
 
         let coleta = avgRate * nonExemptBase
-        return max(0, coleta - Double(dependents) * dependentCredit)
+        let credits = Double(dependents) * dependentCredit + generalExpenseCredit
+        return max(0, coleta - credits)
     }
 
     // MARK: Breakdown
