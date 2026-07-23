@@ -1,14 +1,16 @@
 import SwiftUI
 
-/// "Where the money goes" — segmented share of total employer cost.
+/// "Where the money goes": segmented share of total employer cost.
 struct BreakdownBar: View {
     let breakdown: SalaryBreakdown
+    @EnvironmentObject private var store: SalaryStore
 
+    private var s: Strings { store.s }
     private var total: Double { max(breakdown.employerCostMonthly, 1) }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            SectionLabel("Where the money goes")
+            SectionLabel(s.whereMoneyGoes)
             GeometryReader { geo in
                 HStack(spacing: 0) {
                     segment(breakdown.netMonthly, Theme.segNet, geo.size.width)
@@ -21,12 +23,12 @@ struct BreakdownBar: View {
             .frame(height: 14)
 
             HStack(spacing: 12) {
-                legend("Net", Theme.segNet)
-                legend("IRS", Theme.segIRS)
-                legend("Your SS", Theme.segEmployeeSS)
-                legend("Employer SS", Theme.segEmployerSS)
+                legend(s.legendNet, Theme.segNet)
+                legend(s.legendIRS, Theme.segIRS)
+                legend(s.legendYourSS, Theme.segEmployeeSS)
+                legend(s.legendEmployerSS, Theme.segEmployerSS)
             }
-            Text("Share of total cost to your company")
+            Text(s.shareOfCost)
                 .font(.system(size: 10))
                 .foregroundStyle(Theme.textFaint)
         }

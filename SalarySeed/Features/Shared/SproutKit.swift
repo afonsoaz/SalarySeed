@@ -58,7 +58,7 @@ struct SproutView: View {
         context.fill(ground, with: .color(Theme.segEmployerSS.opacity(0.45)))
 
         guard clamped > 0 else {
-            // stage 0 — just the seed, resting in the soil
+            // stage 0: just the seed, resting in the soil
             let seed = Path(ellipseIn: CGRect(x: 53.5, y: 85.5, width: 13, height: 17))
             context.fill(seed, with: .color(Theme.accent.opacity(0.22)))
             context.stroke(seed, with: .color(Theme.accent), lineWidth: 2)
@@ -116,7 +116,7 @@ struct SproutView: View {
     }()
 }
 
-// MARK: - SeedDots (onboarding progress — completed steps sprout into tiny leaves)
+// MARK: - SeedDots (onboarding progress: completed steps sprout into tiny leaves)
 
 struct SeedDots: View {
     let count: Int

@@ -1,10 +1,12 @@
 import Foundation
 
-/// v0.2 — progressive profile signals (the "give to get" inputs behind compareSeed layers).
+/// v0.2: progressive profile signals (the "give to get" inputs behind compareSeed layers).
 ///
 /// Raw values are STABLE IDs: they are persisted in UserDefaults and are designed to be
 /// the exact keys that (a) the real GEP/MTSSS "Quadros de Pessoal" lookup tables and
-/// (b) the future growthSeed advice engine (v0.3) will consume. Rename with care.
+/// (b) the future growthSeed advice engine (v0.3+) will consume. Rename with care.
+/// v0.3: labels are bilingual where the languages differ (age bands and regions are
+/// proper names or numbers, so they read the same in both).
 
 /// Age bands as published by GEP/INE.
 enum AgeBand: String, CaseIterable, Identifiable {
@@ -63,17 +65,17 @@ enum EducationLevel: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var label: String {
+    func label(pt: Bool) -> String {
         switch self {
-        case .basic: "Básico (até 3º ciclo)"
-        case .secondary: "Secundário"
-        case .postSecondary: "Pós-secundário"
-        case .higher: "Superior (licenciatura+)"
+        case .basic: pt ? "Básico (até ao 3º ciclo)" : "Basic (up to 9th grade)"
+        case .secondary: pt ? "Secundário" : "Secondary"
+        case .postSecondary: pt ? "Pós-secundário" : "Post-secondary"
+        case .higher: pt ? "Superior (licenciatura ou mais)" : "Higher (degree or more)"
         }
     }
 }
 
-/// Broad occupation groups (CPP major-group flavor — deliberately coarse).
+/// Broad occupation groups (CPP major-group flavor, deliberately coarse).
 enum OccupationGroup: String, CaseIterable, Identifiable {
     case managers
     case specialists
@@ -86,16 +88,16 @@ enum OccupationGroup: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var label: String {
+    func label(pt: Bool) -> String {
         switch self {
-        case .managers: "Directors & Managers"
-        case .specialists: "Specialists & Professionals"
-        case .technicians: "Technicians"
-        case .administrative: "Administrative"
-        case .services: "Services & Sales"
-        case .trades: "Skilled Trades"
-        case .operators: "Machine Operators"
-        case .elementary: "Elementary Occupations"
+        case .managers: pt ? "Direção e gestão" : "Directors & Managers"
+        case .specialists: pt ? "Especialistas" : "Specialists & Professionals"
+        case .technicians: pt ? "Técnicos" : "Technicians"
+        case .administrative: pt ? "Administrativos" : "Administrative"
+        case .services: pt ? "Serviços e vendas" : "Services & Sales"
+        case .trades: pt ? "Operários qualificados" : "Skilled Trades"
+        case .operators: pt ? "Operadores de máquinas" : "Machine Operators"
+        case .elementary: pt ? "Trabalho não qualificado" : "Elementary Occupations"
         }
     }
 }

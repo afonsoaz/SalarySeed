@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// First-run flow (v0.2): warm welcome + name → one number → two toggles → value.
-/// Still no account, still inside the 10-second promise — the name is skippable.
+/// First-run flow: warm welcome + name, then one number, then two toggles, then value.
+/// No account, still inside the 10-second promise. The name is skippable.
 struct OnboardingView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var step = 0
@@ -11,10 +11,12 @@ struct OnboardingView: View {
     @State private var schedule: PaySchedule = .fourteen
     @FocusState private var amountFocused: Bool
 
+    private var s: Strings { store.s }
+
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
-            // faint "sunlight" glow — part of the v0.2 personality pass
+            // faint light at the top, part of the sprout personality pass
             RadialGradient(
                 colors: [Theme.accent.opacity(0.07), .clear],
                 center: .top, startRadius: 0, endRadius: 420
@@ -63,7 +65,7 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 0 — welcome + name (the crafted first moment)
+    // MARK: Step 0, welcome + name
 
     private var welcomeStep: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -74,21 +76,21 @@ struct OnboardingView: View {
             }
             .padding(.top, 26)
 
-            Text("Let's plant\nyour seed.")
+            Text(s.welcomeTitle)
                 .font(.system(size: 27, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .padding(.top, 22)
-            Text("One number becomes real understanding — what you keep, what you cost, where you stand.")
+            Text(s.welcomeSub)
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3)
                 .padding(.top, 9)
 
-            Text("First — what should we call you?")
+            Text(s.welcomeAskName)
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.top, 28)
-            TextField("Your first name", text: $nameText)
+            TextField(s.welcomeNamePlaceholder, text: $nameText)
                 .textInputAutocapitalization(.words)
                 .autocorrectionDisabled()
                 .font(.system(size: 24, weight: .medium))
@@ -102,21 +104,21 @@ struct OnboardingView: View {
             HStack(spacing: 8) {
                 Image(systemName: "lock")
                     .font(.system(size: 12))
-                Text("No account. No sign-up. Everything stays on your phone.")
+                Text(s.welcomePrivacy)
                     .font(.system(size: 11.5))
             }
             .foregroundStyle(Theme.textSecondary)
             .padding(.top, 20)
 
             Spacer()
-            PrimaryButton(title: "Let's grow") {
+            PrimaryButton(title: s.welcomeButton) {
                 withAnimation { step = 1 }
             }
             Button {
                 nameText = ""
                 withAnimation { step = 1 }
             } label: {
-                Text("Skip the name for now")
+                Text(s.welcomeSkip)
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.textSecondary)
                     .frame(maxWidth: .infinity)
@@ -129,17 +131,15 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 1 — the one number
+    // MARK: Step 1, the one number
 
     private var salaryStep: some View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 64)
-            Text("How much do\nyou make?")
+            Text(s.salaryTitle)
                 .font(.system(size: 30, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
-            Text(trimmedName.isEmpty
-                 ? "Just the monthly number. That's it."
-                 : "Nice to meet you, \(trimmedName). Just the monthly number — that's it.")
+            Text(trimmedName.isEmpty ? s.salarySub : s.salarySubNamed(trimmedName))
                 .font(.system(size: 14))
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.top, 8)
@@ -153,7 +153,7 @@ struct OnboardingView: View {
                     .focused($amountFocused)
                     .font(.system(size: 42, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
-                Text("/mo")
+                Text(s.perMonthSuffix)
                     .font(.system(size: 15))
                     .foregroundStyle(Theme.textSecondary)
             }
@@ -164,46 +164,46 @@ struct OnboardingView: View {
             .padding(.top, 44)
 
             Spacer()
-            PrimaryButton(title: "Continue") {
+            PrimaryButton(title: s.continueButton) {
                 withAnimation { step = 2 }
             }
         }
         .onAppear { amountFocused = true }
     }
 
-    // MARK: Step 2 — a couple of details
+    // MARK: Step 2, a couple of details
 
     private var detailsStep: some View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 34)
-            Text("Is that gross or net?")
+            Text(s.grossOrNet)
                 .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
-            SegmentedPicker(options: AmountKind.allCases, selection: $kind) { $0.label }
+            SegmentedPicker(options: AmountKind.allCases, selection: $kind) { $0.label(pt: s.pt) }
                 .padding(.top, 12)
 
-            Text("Paid over how many months?")
+            Text(s.howManyMonths)
                 .font(.system(size: 18, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .padding(.top, 34)
-            Text("Portugal usually pays 14 — with holiday & Christmas subsidies.")
+            Text(s.monthsHint)
                 .font(.system(size: 12))
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.top, 4)
-            SegmentedPicker(options: PaySchedule.allCases, selection: $schedule) { $0.label }
+            SegmentedPicker(options: PaySchedule.allCases, selection: $schedule) { $0.label(pt: s.pt) }
                 .padding(.top, 12)
 
             HStack(spacing: 8) {
                 Image(systemName: "lock")
                     .font(.system(size: 13))
-                Text("Takes 5 seconds. Your number stays on your device.")
+                Text(s.fiveSeconds)
                     .font(.system(size: 12))
             }
             .foregroundStyle(Theme.textSecondary)
             .padding(.top, 34)
 
             Spacer()
-            PrimaryButton(title: "Reveal my breakdown") {
+            PrimaryButton(title: s.revealButton) {
                 store.name = trimmedName
                 store.amount = Double(amountText) ?? 1500
                 store.kind = kind

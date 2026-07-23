@@ -1,19 +1,19 @@
 import Foundation
 
-/// ⚠️ MOCK COHORT DATA — illustrative medians only (v0.2).
+/// ⚠️ MOCK COHORT DATA. Illustrative medians only (v0.2).
 ///
 /// The data SHAPE matches how GEP/MTSSS "Quadros de Pessoal" publishes cells
-/// (dados.gov.pt, CC BY 4.0 — commercial use OK with attribution): one cell per
+/// (dados.gov.pt, CC BY 4.0, commercial use OK with attribution): one cell per
 /// one-dimensional cut = (median gross €/month, dispersion, small-sample flag).
 /// Swapping these mock values for the real published ones is a data change,
 /// not a UI change. Covers private-sector employees only (no civil servants,
-/// no self-employed) — say so in the UI where it matters.
+/// no self-employed). The UI says so where it matters.
 struct CohortCell {
     /// Median gross monthly salary for the cohort (mock value).
     let median: Double
     /// Log-normal dispersion around the median (mock value).
     let sigma: Double
-    /// True when the underlying sample is small → show "rough estimate" in UI.
+    /// True when the underlying sample is small. The UI shows a caveat chip.
     let thin: Bool
 
     init(median: Double, sigma: Double, thin: Bool = false) {
@@ -27,8 +27,8 @@ struct CohortCell {
 struct CohortResult {
     let percentile: Int        // 1…99
     let median: Double
-    let thin: Bool             // small sample → "rough estimate"
-    /// Beyond p3/p97 the model is extrapolating → soften the claim.
+    let thin: Bool             // small sample, show the caveat chip
+    /// Beyond p3/p97 the model is extrapolating, so soften the claim.
     var edge: Bool { percentile < 3 || percentile > 97 }
 }
 
@@ -116,86 +116,52 @@ struct DimensionOption: Identifiable {
     let label: String
 }
 
-/// One comparison dimension: metadata + how to read/write it on the store.
+/// One comparison dimension: id, icon, and how to read/write it on the store.
+/// All display text lives in `Strings` (v0.3), keyed by `id`.
 struct CompareDimension: Identifiable {
     let id: String
-    let icon: String            // SF Symbol
-    let shortName: String       // "Age"
-    let rowTitle: String        // "Vs. people your age"
-    let sheetTitle: String
-    let sheetNote: String?
-    let unlockHint: String      // compareSeed locked row
-    let profileHint: String     // profileSeed locked row
-    let options: [DimensionOption]
+    let icon: String                              // SF Symbol
+    let options: (_ pt: Bool) -> [DimensionOption]
     let selectedID: (SalaryStore) -> String?
     let select: (SalaryStore, String?) -> Void
-    let cohortWord: (String) -> String   // option label → "25–34 year olds"
     let cell: (String) -> CohortCell?
 
-    func selectedOption(in store: SalaryStore) -> DimensionOption? {
+    func selectedOption(in store: SalaryStore, pt: Bool) -> DimensionOption? {
         guard let id = selectedID(store) else { return nil }
-        return options.first { $0.id == id }
+        return options(pt).first { $0.id == id }
     }
 
     static let all: [CompareDimension] = [
         CompareDimension(
             id: "age",
             icon: "person.crop.circle.badge.clock",
-            shortName: "Age",
-            rowTitle: "Vs. people your age",
-            sheetTitle: "How old are you?",
-            sheetNote: nil,
-            unlockHint: "Add your age",
-            profileHint: "Unlocks: percentile vs. your age group",
-            options: AgeBand.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) },
+            options: { _ in AgeBand.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) } },
             selectedID: { $0.ageBand?.rawValue },
             select: { store, id in store.ageBand = id.flatMap(AgeBand.init(rawValue:)) },
-            cohortWord: { "\($0) year olds" },
             cell: { AgeBand(rawValue: $0)?.cohort }
         ),
         CompareDimension(
             id: "region",
             icon: "map",
-            shortName: "Region",
-            rowTitle: "Vs. your region",
-            sheetTitle: "Where do you work?",
-            sheetNote: "NUTS II regions",
-            unlockHint: "Add your region",
-            profileHint: "Unlocks: regional comparison",
-            options: PTRegion.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) },
+            options: { _ in PTRegion.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) } },
             selectedID: { $0.region?.rawValue },
             select: { store, id in store.region = id.flatMap(PTRegion.init(rawValue:)) },
-            cohortWord: { $0 },
             cell: { PTRegion(rawValue: $0)?.cohort }
         ),
         CompareDimension(
             id: "education",
             icon: "graduationcap",
-            shortName: "Education",
-            rowTitle: "Vs. your education level",
-            sheetTitle: "Your highest education?",
-            sheetNote: nil,
-            unlockHint: "Add your education",
-            profileHint: "Unlocks: qualification comparison",
-            options: EducationLevel.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) },
+            options: { pt in EducationLevel.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: pt)) } },
             selectedID: { $0.education?.rawValue },
             select: { store, id in store.education = id.flatMap(EducationLevel.init(rawValue:)) },
-            cohortWord: { $0 },
             cell: { EducationLevel(rawValue: $0)?.cohort }
         ),
         CompareDimension(
             id: "occupation",
             icon: "briefcase",
-            shortName: "Profession",
-            rowTitle: "Vs. your profession",
-            sheetTitle: "What kind of work do you do?",
-            sheetNote: "Broad occupation groups",
-            unlockHint: "Add your profession",
-            profileHint: "Unlocks: 'people like you' benchmark",
-            options: OccupationGroup.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) },
+            options: { pt in OccupationGroup.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: pt)) } },
             selectedID: { $0.occupation?.rawValue },
             select: { store, id in store.occupation = id.flatMap(OccupationGroup.init(rawValue:)) },
-            cohortWord: { $0 },
             cell: { OccupationGroup(rawValue: $0)?.cohort }
         ),
     ]

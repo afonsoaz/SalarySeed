@@ -1,11 +1,12 @@
 import SwiftUI
 
-/// raiseSeed — "a €X net raise costs your employer €Y".
+/// raiseSeed: "a €X net raise costs your employer €Y".
 struct RaiseSimulatorView: View {
     @EnvironmentObject private var store: SalaryStore
     @Environment(\.dismiss) private var dismiss
     @State private var netRaise: Double = 100
 
+    private var s: Strings { store.s }
     private var current: SalaryBreakdown { store.breakdown }
 
     private var raised: SalaryBreakdown {
@@ -25,14 +26,14 @@ struct RaiseSimulatorView: View {
                 header
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("If you want")
+                    Text(s.ifYouWant)
                         .font(.system(size: 13))
                         .foregroundStyle(Theme.textSecondary)
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text("+\(eur(netRaise))")
                             .font(.system(size: 38, weight: .medium))
                             .foregroundStyle(Theme.accent)
-                        Text("net / month")
+                        Text(s.netPerMonth)
                             .font(.system(size: 14))
                             .foregroundStyle(Theme.textSecondary)
                     }
@@ -41,10 +42,10 @@ struct RaiseSimulatorView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 10) {
-                    SectionLabel("It really costs your employer")
-                    DetailCard(label: "Extra per month", value: eur(employerDeltaMonthly))
-                    DetailCard(label: "Extra per year (\(Int(current.months)) months)", value: eur(employerDeltaMonthly * current.months))
-                    DetailCard(label: "Your new gross / month", value: eur(raised.grossMonthly))
+                    SectionLabel(s.costsEmployer)
+                    DetailCard(label: s.extraPerMonth, value: eur(employerDeltaMonthly))
+                    DetailCard(label: s.extraPerYear(Int(current.months)), value: eur(employerDeltaMonthly * current.months))
+                    DetailCard(label: s.newGross, value: eur(raised.grossMonthly))
                 }
 
                 infoCard
@@ -61,7 +62,7 @@ struct RaiseSimulatorView: View {
                 Text("raiseSeed")
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.accent)
-                Text("Simulate a raise")
+                Text(s.raiseTitle)
                     .font(.system(size: 22, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
             }
@@ -76,7 +77,7 @@ struct RaiseSimulatorView: View {
     }
 
     private var infoCard: some View {
-        Text("Every €1 extra in your pocket costs your employer roughly €\(String(format: "%.2f", netRaise > 0 ? employerDeltaMonthly / netRaise : 0)) — taxes and Social Security scale up on the way.")
+        Text(s.raiseInfo(String(format: "%.2f", netRaise > 0 ? employerDeltaMonthly / netRaise : 0)))
             .font(.system(size: 13))
             .foregroundStyle(Theme.textSecondary)
             .padding(14)
@@ -86,7 +87,7 @@ struct RaiseSimulatorView: View {
     }
 
     private var disclaimer: some View {
-        Text("Estimate with placeholder rates — verify before relying on it.")
+        Text(s.raiseDisclaimer)
             .font(.system(size: 10))
             .foregroundStyle(Theme.textFaint)
             .frame(maxWidth: .infinity, alignment: .center)

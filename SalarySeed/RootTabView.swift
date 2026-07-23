@@ -1,14 +1,18 @@
 import SwiftUI
 
 struct RootTabView: View {
+    @EnvironmentObject private var store: SalaryStore
+
+    private var s: Strings { store.s }
+
     var body: some View {
         TabView {
             HomeView()
-                .tabItem { Label("Home", systemImage: "house.fill") }
+                .tabItem { Label(s.tabHome, systemImage: "house.fill") }
             CompareView()
-                .tabItem { Label("Compare", systemImage: "chart.bar.fill") }
+                .tabItem { Label(s.tabCompare, systemImage: "chart.bar.fill") }
             ProfileView()
-                .tabItem { Label("Profile", systemImage: "person.fill") }
+                .tabItem { Label(s.tabProfile, systemImage: "person.fill") }
         }
     }
 }

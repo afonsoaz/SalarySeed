@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// futureSeed — the signature feature: the long-term cost of ajudas de custo /
+/// futureSeed, the signature feature: the long-term cost of ajudas de custo /
 /// off-the-books pay. SKELETON: rough illustrative model, to be replaced with a
 /// proper pension-formula estimate.
 struct FutureSeedView: View {
@@ -8,10 +8,11 @@ struct FutureSeedView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var offBookMonthly: Double = 200
 
+    private var s: Strings { store.s }
     private var b: SalaryBreakdown { store.breakdown }
 
-    /// PLACEHOLDER pension model: pension ≈ 2% of declared gross per year of career.
-    /// Real model must follow the Segurança Social pension formula.
+    /// PLACEHOLDER pension model: pension loss of about 2% of the undeclared part
+    /// per year of career. The real model must follow the Segurança Social formula.
     private var monthlyPensionLoss: Double { offBookMonthly * 0.02 * 40 }
     private var lostSSContributions: Double { offBookMonthly * (TaxEngine.employeeSSRate + TaxEngine.employerSSRate) }
 
@@ -23,14 +24,14 @@ struct FutureSeedView: View {
                     header
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("How much of your pay arrives as ajudas de custo or off the books?")
+                        Text(s.futureQuestion)
                             .font(.system(size: 15, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             Text(eur(offBookMonthly))
                                 .font(.system(size: 38, weight: .medium))
                                 .foregroundStyle(Theme.segIRS)
-                            Text("/ month")
+                            Text(s.perMonthShort)
                                 .font(.system(size: 14))
                                 .foregroundStyle(Theme.textSecondary)
                         }
@@ -38,15 +39,15 @@ struct FutureSeedView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
-                        SectionLabel("Today's gain")
-                        DetailCard(label: "Extra in pocket now (untaxed)", value: eur(offBookMonthly))
+                        SectionLabel(s.todaysGain)
+                        DetailCard(label: s.extraPocketNow, value: eur(offBookMonthly))
                     }
 
                     VStack(alignment: .leading, spacing: 10) {
-                        SectionLabel("Tomorrow's loss (rough estimate)")
-                        DetailCard(label: "Monthly SS contributions not made", value: eur(lostSSContributions))
-                        DetailCard(label: "Est. monthly pension lost (40-yr career)", value: eur(monthlyPensionLoss))
-                        DetailCard(label: "Also reduced", value: "Sick leave · unemployment · parental pay")
+                        SectionLabel(s.tomorrowsLoss)
+                        DetailCard(label: s.ssNotPaid, value: eur(lostSSContributions))
+                        DetailCard(label: s.pensionLost, value: eur(monthlyPensionLoss))
+                        DetailCard(label: s.alsoReduced, value: s.alsoReducedValue)
                     }
 
                     tradeOffCard
@@ -63,7 +64,7 @@ struct FutureSeedView: View {
                 Text("futureSeed")
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.accent)
-                Text("The invisible trade-off")
+                Text(s.futureTitle)
                     .font(.system(size: 22, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
             }
@@ -79,10 +80,10 @@ struct FutureSeedView: View {
 
     private var tradeOffCard: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text("The trade-off, visible")
+            Text(s.tradeOffTitle)
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
-            Text("You gain \(eur(offBookMonthly))/month today — but your declared base shrinks, so your future pension and safety net shrink with it. This is the number nobody shows you.")
+            Text(s.tradeOffBody(eur(offBookMonthly)))
                 .font(.system(size: 13))
                 .foregroundStyle(Theme.textSecondary)
         }
@@ -93,7 +94,7 @@ struct FutureSeedView: View {
     }
 
     private var disclaimer: some View {
-        Text("Very rough educational estimate — placeholder pension model, not advice. Real Segurança Social formula to be implemented.")
+        Text(s.futureDisclaimer)
             .font(.system(size: 10))
             .foregroundStyle(Theme.textFaint)
     }

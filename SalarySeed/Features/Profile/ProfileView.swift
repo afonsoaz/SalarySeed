@@ -1,11 +1,14 @@
 import SwiftUI
 
-/// profileSeed (v0.2) — the "give to get" hub, now the sprout's home.
-/// Profile completeness IS the sprout's growth stage: each planted signal grows it.
+/// profileSeed: the "give to get" hub and the sprout's home.
+/// Profile completeness IS the sprout's growth stage.
+/// v0.3: language switch lives here (Auto / English / Português).
 struct ProfileView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var showEditor = false
     @State private var activeDimension: CompareDimension?
+
+    private var s: Strings { store.s }
 
     var body: some View {
         NavigationStack {
@@ -15,7 +18,7 @@ struct ProfileView: View {
                         Text("profileSeed")
                             .font(.system(size: 12))
                             .foregroundStyle(Theme.accent)
-                        Text(store.displayName.map { "\($0)'s profile" } ?? "Your profile")
+                        Text(s.profileTitle(store.displayName))
                             .font(.system(size: 22, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
                     }
@@ -26,24 +29,24 @@ struct ProfileView: View {
                     nameCard
 
                     VStack(alignment: .leading, spacing: 10) {
-                        SectionLabel("Add more, unlock more")
+                        SectionLabel(s.addMore)
                         ForEach(CompareDimension.all) { dim in
                             dimensionRow(dim)
                         }
-                        LockedRow(icon: "person.2", title: "Marital status / dependents", unlock: "Later: sharper IRS estimate")
-                        LockedRow(icon: "doc.text", title: "CV upload", unlock: "Later: richest comparison + tips")
+                        LockedRow(icon: "person.2", title: s.maritalTitle, unlock: s.maritalHint)
+                        LockedRow(icon: "doc.text", title: s.cvTitle, unlock: s.cvHint)
                     }
                     .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
 
                     VStack(alignment: .leading, spacing: 10) {
-                        SectionLabel("App")
-                        InfoRow(label: "Language", value: "Auto (PT/EN) — coming soon")
-                        InfoRow(label: "Premium", value: "Free tier (skeleton)")
-                        InfoRow(label: "Privacy", value: "All data stays on this device")
-                        InfoRow(label: "Data sources", value: "INE / GEP-MTSSS · CC BY 4.0")
+                        SectionLabel(s.appSection)
+                        languageCard
+                        InfoRow(label: s.premiumLabel, value: s.premiumValue)
+                        InfoRow(label: s.privacyLabel, value: s.privacyValue)
+                        InfoRow(label: s.sourcesLabel, value: s.sourcesValue)
                     }
 
-                    Text("SalarySeed v0.2 · Estimates for guidance, not official tax or financial advice.")
+                    Text(s.profileFooter)
                         .font(.system(size: 10))
                         .foregroundStyle(Theme.textFaint)
                 }
@@ -63,13 +66,13 @@ struct ProfileView: View {
         HStack(spacing: 16) {
             SproutView(stage: store.sproutStage, size: 64, sways: true)
             VStack(alignment: .leading, spacing: 2) {
-                Text("Your seed")
+                Text(s.yourSeed)
                     .font(.system(size: 13))
                     .foregroundStyle(Theme.textSecondary)
-                Text("\(1 + store.profileFilledCount) of 5 planted")
+                Text(s.planted(1 + store.profileFilledCount, of: 5))
                     .font(.system(size: 19, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
-                Text("Each detail grows a sharper comparison — and feeds growthSeed later.")
+                Text(s.seedSub)
                     .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textSecondary)
                     .lineSpacing(2)
@@ -84,10 +87,10 @@ struct ProfileView: View {
         Button { showEditor = true } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("Your salary")
+                    Text(s.yourSalary)
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.textSecondary)
-                    Text("\(eur(store.amount)) \(store.kind.label.lowercased()) · \(store.schedule.label)")
+                    Text("\(eur(store.amount)) \(store.kind.label(pt: s.pt).lowercased()) · \(store.schedule.label(pt: s.pt))")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundStyle(Theme.textPrimary)
                 }
@@ -103,11 +106,11 @@ struct ProfileView: View {
 
     private var nameCard: some View {
         HStack {
-            Text("Name")
+            Text(s.nameLabel)
                 .font(.system(size: 14))
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
-            TextField("Add your name", text: $store.name)
+            TextField(s.namePlaceholder, text: $store.name)
                 .textInputAutocapitalization(.words)
                 .autocorrectionDisabled()
                 .multilineTextAlignment(.trailing)
@@ -118,16 +121,30 @@ struct ProfileView: View {
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
     }
 
+    /// v0.3: language choice. Auto follows the device; English and Português force it.
+    private var languageCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(s.languageLabel)
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.textPrimary)
+            SegmentedPicker(options: AppLanguage.allCases, selection: $store.language) {
+                $0.label(pt: s.pt)
+            }
+        }
+        .padding(14)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+    }
+
     private func dimensionRow(_ dim: CompareDimension) -> some View {
         Button { activeDimension = dim } label: {
-            if let option = dim.selectedOption(in: store) {
+            if let option = dim.selectedOption(in: store, pt: s.pt) {
                 HStack(spacing: 12) {
                     Image(systemName: dim.icon)
                         .font(.system(size: 18))
                         .foregroundStyle(Theme.accent)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(dim.shortName)
+                        Text(s.dimShort(dim.id))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
                         Text(option.label)
@@ -148,15 +165,15 @@ struct ProfileView: View {
                         .foregroundStyle(Theme.textSecondary)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(dim.shortName)
+                        Text(s.dimShort(dim.id))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
-                        Text(dim.profileHint)
+                        Text(s.dimProfileHint(dim.id))
                             .font(.system(size: 11))
                             .foregroundStyle(Theme.accent)
                     }
                     Spacer()
-                    Text("+ Add")
+                    Text(s.addPill)
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(Color(hex: 0x06281C))
                         .padding(.horizontal, 9)
