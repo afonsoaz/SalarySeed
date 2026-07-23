@@ -1,0 +1,263 @@
+import SwiftUI
+
+/// First-run flow (v0.2): warm welcome + name → one number → two toggles → value.
+/// Still no account, still inside the 10-second promise — the name is skippable.
+struct OnboardingView: View {
+    @EnvironmentObject private var store: SalaryStore
+    @State private var step = 0
+    @State private var nameText = ""
+    @State private var amountText = "1500"
+    @State private var kind: AmountKind = .gross
+    @State private var schedule: PaySchedule = .fourteen
+    @FocusState private var amountFocused: Bool
+
+    var body: some View {
+        ZStack {
+            Theme.background.ignoresSafeArea()
+            // faint "sunlight" glow — part of the v0.2 personality pass
+            RadialGradient(
+                colors: [Theme.accent.opacity(0.07), .clear],
+                center: .top, startRadius: 0, endRadius: 420
+            )
+            .ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 0) {
+                header
+                switch step {
+                case 0: welcomeStep
+                case 1: salaryStep
+                default: detailsStep
+                }
+            }
+            .padding(24)
+        }
+    }
+
+    private var trimmedName: String {
+        nameText.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private var header: some View {
+        HStack {
+            if step > 0 {
+                Button {
+                    withAnimation { step -= 1 }
+                } label: {
+                    Image(systemName: "arrow.left")
+                        .font(.system(size: 15))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .padding(.trailing, 8)
+            }
+            HStack(spacing: 6) {
+                Image(systemName: "leaf.fill")
+                    .font(.system(size: 14))
+                Text("SalarySeed")
+                    .font(.system(size: 13, weight: .medium))
+            }
+            .foregroundStyle(Theme.accent)
+            Spacer()
+            if step > 0 {
+                SeedDots(count: 4, current: step)
+            }
+        }
+    }
+
+    // MARK: Step 0 — welcome + name (the crafted first moment)
+
+    private var welcomeStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Spacer()
+                SproutView(stage: 2, size: 92, animatesIn: true, sways: true)
+                Spacer()
+            }
+            .padding(.top, 26)
+
+            Text("Let's plant\nyour seed.")
+                .font(.system(size: 27, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+                .padding(.top, 22)
+            Text("One number becomes real understanding — what you keep, what you cost, where you stand.")
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
+                .lineSpacing(3)
+                .padding(.top, 9)
+
+            Text("First — what should we call you?")
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.top, 28)
+            TextField("Your first name", text: $nameText)
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+                .font(.system(size: 24, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+                .padding(.top, 6)
+                .padding(.bottom, 8)
+                .overlay(alignment: .bottom) {
+                    Rectangle().fill(Theme.accent).frame(height: 2)
+                }
+
+            HStack(spacing: 8) {
+                Image(systemName: "lock")
+                    .font(.system(size: 12))
+                Text("No account. No sign-up. Everything stays on your phone.")
+                    .font(.system(size: 11.5))
+            }
+            .foregroundStyle(Theme.textSecondary)
+            .padding(.top, 20)
+
+            Spacer()
+            PrimaryButton(title: "Let's grow") {
+                withAnimation { step = 1 }
+            }
+            Button {
+                nameText = ""
+                withAnimation { step = 1 }
+            } label: {
+                Text("Skip the name for now")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(.top, 12)
+
+            SeedDots(count: 4, current: 0)
+                .frame(maxWidth: .infinity)
+                .padding(.top, 14)
+        }
+    }
+
+    // MARK: Step 1 — the one number
+
+    private var salaryStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 64)
+            Text("How much do\nyou make?")
+                .font(.system(size: 30, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+            Text(trimmedName.isEmpty
+                 ? "Just the monthly number. That's it."
+                 : "Nice to meet you, \(trimmedName). Just the monthly number — that's it.")
+                .font(.system(size: 14))
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.top, 8)
+
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text("€")
+                    .font(.system(size: 30))
+                    .foregroundStyle(Theme.textSecondary)
+                TextField("1500", text: $amountText)
+                    .keyboardType(.numberPad)
+                    .focused($amountFocused)
+                    .font(.system(size: 42, weight: .medium))
+                    .foregroundStyle(Theme.textPrimary)
+                Text("/mo")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            .padding(.bottom, 10)
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(Theme.accent).frame(height: 2)
+            }
+            .padding(.top, 44)
+
+            Spacer()
+            PrimaryButton(title: "Continue") {
+                withAnimation { step = 2 }
+            }
+        }
+        .onAppear { amountFocused = true }
+    }
+
+    // MARK: Step 2 — a couple of details
+
+    private var detailsStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 34)
+            Text("Is that gross or net?")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+            SegmentedPicker(options: AmountKind.allCases, selection: $kind) { $0.label }
+                .padding(.top, 12)
+
+            Text("Paid over how many months?")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+                .padding(.top, 34)
+            Text("Portugal usually pays 14 — with holiday & Christmas subsidies.")
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.top, 4)
+            SegmentedPicker(options: PaySchedule.allCases, selection: $schedule) { $0.label }
+                .padding(.top, 12)
+
+            HStack(spacing: 8) {
+                Image(systemName: "lock")
+                    .font(.system(size: 13))
+                Text("Takes 5 seconds. Your number stays on your device.")
+                    .font(.system(size: 12))
+            }
+            .foregroundStyle(Theme.textSecondary)
+            .padding(.top, 34)
+
+            Spacer()
+            PrimaryButton(title: "Reveal my breakdown") {
+                store.name = trimmedName
+                store.amount = Double(amountText) ?? 1500
+                store.kind = kind
+                store.schedule = schedule
+                store.hasOnboarded = true
+            }
+        }
+    }
+}
+
+// MARK: Shared controls
+
+struct PrimaryButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(Color(hex: 0x06281C))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
+        }
+    }
+}
+
+struct SegmentedPicker<Option: Identifiable & Equatable>: View {
+    let options: [Option]
+    @Binding var selection: Option
+    let label: (Option) -> String
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(options) { option in
+                Button {
+                    withAnimation(.easeOut(duration: 0.15)) { selection = option }
+                } label: {
+                    Text(label(option))
+                        .font(.system(size: 13, weight: .medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            selection == option ? Theme.accent : .clear,
+                            in: RoundedRectangle(cornerRadius: 11)
+                        )
+                        .foregroundStyle(
+                            selection == option ? Color(hex: 0x06281C) : Theme.textSecondary
+                        )
+                }
+            }
+        }
+        .padding(4)
+        .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 14))
+    }
+}
