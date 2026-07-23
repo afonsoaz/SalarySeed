@@ -1,6 +1,6 @@
-# SalarySeed — v0.3
+# SalarySeed — v0.4.1
 
-Preliminary iOS build of the SalarySeed concept (`../app-concept.md`). Everything works end-to-end, but rates and data are placeholders. A frozen copy of the previous version lives in `../SalarySeed_v0.2/`.
+Preliminary iOS build of the SalarySeed concept (`../app-concept.md`). Everything works end-to-end. As of v0.4 the percentile and cohort comparisons run on real published data (GEP-MTSSS and INE); tax rates are still placeholders.
 
 ## Run it
 
@@ -9,18 +9,40 @@ Preliminary iOS build of the SalarySeed concept (`../app-concept.md`). Everythin
 
 No dependencies, no backend, no account. Everything on-device.
 
-## What's new in v0.3
+## What's new in v0.4.1
 
-- **Two languages: English + European Portuguese (informal "tu").** The app follows the device language by default and the user can switch (Auto / English / Português) in the profile tab. Implemented as a small custom layer (`Models/Localization.swift`) instead of system localization, so the language switches at runtime without a restart. All user-facing copy lives in one string table (`Strings`), read through `store.s`.
-- **Copy pass.** All text rewritten in plain, direct language, in both languages. No em dashes, no filler.
+- **All four cohort dimensions now run on real Quadros de Pessoal Oct 2024 data**, parsed straight from the publication workbook (`../qp2024pub.xlsx`) by `parse_qp2024.py`. Age cells from Quadro 138 (under-25 is a worker-count-weighted aggregate), region cells from Quadro 114, education upgraded from the SES 2022 estimate to direct QP figures from Quadro 105 (four real levels, including pós-secundário), occupation from Quadro 113. The national mean (€1,582.74) is consistent across every table used.
+- **Regions moved to NUTS 2024**: Norte, Centro, Oeste e Vale do Tejo, Grande Lisboa, Península de Setúbal, Alentejo, Algarve, plus Açores and Madeira. The old "AM Lisboa" no longer exists in official statistics; a previously stored selection simply asks the user to re-pick. Açores and Madeira have no published cells yet (the QP publication covers Continente) and stay hidden in the pickers until their data lands.
 
-## What's in the app (v0.1 + v0.2)
+## What's new in v0.4
+
+- **Real salary data.** All percentile math now runs on official published figures, gathered from GEP-MTSSS (Quadros de Pessoal, October 2024), INE (Estrutura dos Ganhos 2022, via Eurostat; and the monthly remuneration series from Social Security data). Everything lives in one new file, `Engine/SalaryDataset.swift`, with full provenance comments.
+- **National percentile is a two-piece log-normal.** Shape (dispersion below and above the median) from the Estrutura dos Ganhos 2022 deciles (D1 €814, median €1,099, D9 €2,612, full-time); level anchored to the Quadros de Pessoal Oct 2024 national mean ganho (€1,582.74), giving a derived national median of €1,173. Below-median and above-median tails have different spreads, which matches the Portuguese distribution (compressed at the bottom by the minimum wage, long tail at the top).
+- **Cohort cells store the published mean** and derive their model median with the log-normal identity `median = mean × exp(-sigma²/2)`, using the same sigma as the percentile model. One assumption instead of two.
+- **Git-managed from v0.2 onward.** This version was committed and tagged in the repo (`v0.4`), not copied into a sibling folder.
+
+## Data sources (v0.4)
+
+| Cut | Source | Reference |
+| --- | --- | --- |
+| National distribution shape | INE, Estrutura dos Ganhos 2022 (Eurostat `earn_ses_monthly`, PT, full-time) | Oct 2022 |
+| National level | GEP-MTSSS, Quadros de Pessoal, national mean ganho | Oct 2024 |
+| Occupation (8 CPP groups) | GEP-MTSSS, Quadros de Pessoal, Quadro 113 | Oct 2024 |
+| Education (4 levels) | GEP-MTSSS, Quadros de Pessoal, Quadro 105 (weighted via Quadro 39) | Oct 2024 |
+| Age bands (6) | GEP-MTSSS, Quadros de Pessoal, Quadro 138 | Oct 2024 |
+| Region (NUTS II 2024, Continente) | GEP-MTSSS, Quadros de Pessoal, Quadro 114 | Oct 2024 |
+| Level checks / growth | INE, remuneração bruta mensal média (DMR/Segurança Social + CGA) | 2015–2025 |
+
+All sources are open data; commercial use is OK with attribution ("Fonte: GEP-MTSSS / INE" plus year), which the UI shows wherever data appears. Coverage: employees only (Quadros de Pessoal covers the private sector; the Estrutura dos Ganhos covers firms with 10 or more employees). Values are anchored to October 2024, the latest Quadros de Pessoal wave; national salaries grew about 5.6% during 2025 (DMR), so percentiles read slightly generous. `derive_dataset.py` in the repo root reproduces every derived constant from the published anchors.
+
+## What's in the app (v0.1–v0.3)
 
 - **Onboarding** with a welcome screen that asks for a name (skippable), then salary, then gross/net and 12/14 months. Seed-dot progress.
 - **Home (netSeed)**: greeting, gross/net heroes with count-up and a leaf unfurl, cost-to-employer, where-the-money-goes bar, detail cards, national percentile, what-if nudges, locked growthSeed teaser ("Steps to improve your salary", coming in a later version).
 - **compareSeed**: national percentile plus one comparison layer per filled profile signal (age band, NUTS II region, education, occupation group), each with a percentile bar, median caption, thin-sample and edge caveats, and source lines. Signals are added via chip picker sheets.
 - **profileSeed**: "Your seed" sprout hero (profile completeness = growth stage), salary and name editing, add/edit rows for the four signals, language switch, privacy and source notes.
 - **raiseSeed** and **futureSeed** sheets from Home.
+- **Two languages** (English + European Portuguese, informal "tu"), runtime-switchable in profileSeed.
 
 ## Structure
 
@@ -35,22 +57,20 @@ SalarySeed/
 │   └── Localization.swift   AppLanguage + the full EN/PT string table
 ├── Engine/
 │   ├── TaxEngine.swift      gross↔net, IRS approximation, SS rates  ⚠️ placeholders
-│   ├── PercentileEngine.swift  national percentile interpolation  ⚠️ placeholder data
-│   └── CohortEngine.swift   cohort cells + log-normal percentile  ⚠️ mock medians
+│   ├── SalaryDataset.swift  all real data + provenance (v0.4)
+│   ├── PercentileEngine.swift  national two-piece log-normal percentile
+│   └── CohortEngine.swift   cohort model + dimension descriptors
 └── Features/
     ├── Shared/              SproutKit (sprout, seed dots, leaf, count-up), picker sheet
     ├── Onboarding/ Home/ Compare/ Raise/ Future/ Profile/
 ```
 
-## Data notes (compareSeed layers)
-
-Cohort cells are shaped like real GEP/MTSSS "Quadros de Pessoal" cuts (dados.gov.pt, CC BY 4.0, commercial use OK with attribution): one-dimensional cells of `(median, sigma, thin)`. Swapping the mock medians in `CohortEngine.swift` for real published values is a data change, not a UI change. Cohort percentiles are modelled log-normal around the cell median. Coverage: private-sector employees only (no civil servants, no self-employed). The UI says so where it matters.
-
-## Known placeholders (before anything real)
+## Known limitations (v0.4)
 
 - **IRS withholding** is a simplified progressive approximation. Replace with the official *tabelas de retenção na fonte*, versioned by year, with marital status/dependents/region.
 - **SS rates** (11% / 23.75%) unverified.
-- **National percentile data** is illustrative. Replace with a bundled JSON of real INE distribution buckets plus "Fonte: INE, <year>" attribution.
-- **Cohort medians/sigmas** in `CohortEngine.swift` are mock values. Replace with real GEP/Quadros de Pessoal tables (same shape).
+- **Açores and Madeira** have no cohort cells yet (the QP publication covers Continente only) and are hidden in the region picker. They need the INE regional series or SREA/DREM tables.
+- **Cohort sigmas** (0.50–0.60) are modeling assumptions, not published values. The national curve's sigmas are derived from published deciles.
+- **The ganho tables cover full-time workers**; count weights used for aggregation cover all employees, which is fine for shares but explains a ~2% gap in the full cross-check (documented in `parse_qp2024.py`).
 - **futureSeed pension math** is a stub (2%/year heuristic). Needs the real Segurança Social formula.
 - No premium/IAP yet, no full accessibility pass. PT translations are informal ("tu") by design.

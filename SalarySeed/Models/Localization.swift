@@ -101,7 +101,7 @@ struct Strings {
     var standTitle: String { t("How you compare in Portugal", "Como te comparas em Portugal") }
     var earnMorePre: String { t("You earn more than", "Ganhas mais do que") }
     var earnMorePost: String { t("of workers", "dos trabalhadores") }
-    var ineNote: String { t("Fonte: INE · 2025 · test data. See more in compareSeed.", "Fonte: INE · 2025 · dados de teste. Vê mais no compareSeed.") }
+    var ineNote: String { t("Fontes: GEP-MTSSS e INE · 2024. See more in compareSeed.", "Fontes: GEP-MTSSS e INE · 2024. Vê mais no compareSeed.") }
 
     var whatIf: String { t("What if…", "E se…") }
     var raiseNudgeTitle: String { t("Simulate a raise", "Simula um aumento") }
@@ -119,7 +119,7 @@ struct Strings {
     func planted(_ n: Int, of total: Int) -> String { t("\(n) of \(total) planted", "\(n) de \(total) plantados") }
     var allPortugal: String { t("All of Portugal", "Portugal inteiro") }
     var earnLessThanYou: String { t("of workers earn less than you", "dos trabalhadores ganham menos do que tu") }
-    var grossVsGross: String { t("Gross vs gross · Fonte: INE · 2025 · estimate", "Bruto vs bruto · Fonte: INE · 2025 · estimativa") }
+    var grossVsGross: String { t("Gross vs gross · GEP-MTSSS e INE · 2024 · estimate", "Bruto vs bruto · GEP-MTSSS e INE · 2024 · estimativa") }
     var natDistribution: String { t("National distribution", "Distribuição nacional") }
     var peopleLikeYou: String { t("People like you", "Pessoas como tu") }
     var earnLess: String { t("earn less", "ganham menos") }
@@ -135,7 +135,7 @@ struct Strings {
     var offerTitle: String { t("Compare job offers", "Compara propostas de emprego") }
     var offerUnlock: String { "Premium · offerSeed" }
     var addPill: String { t("+ Add", "+ Adicionar") }
-    var compareSourceNote: String { t("Group medians: Fonte: GEP-MTSSS, Quadros de Pessoal · 2025 · private sector only. Test values in this build. Estimates, not official advice.", "Medianas dos grupos: Fonte: GEP-MTSSS, Quadros de Pessoal · 2025 · só setor privado. Valores de teste nesta versão. Estimativas, não aconselhamento oficial.") }
+    var compareSourceNote: String { t("Group medians from official data: GEP-MTSSS, Quadros de Pessoal, Oct 2024, and INE, Estrutura dos Ganhos 2022. Employees only. Estimates, not official advice.", "Medianas dos grupos com base em dados oficiais: GEP-MTSSS, Quadros de Pessoal, out. 2024, e INE, Estrutura dos Ganhos 2022. Só trabalhadores por conta de outrem. Estimativas, não aconselhamento oficial.") }
 
     // MARK: Dimensions (keyed by CompareDimension.id)
 

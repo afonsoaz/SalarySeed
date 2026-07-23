@@ -1,112 +1,56 @@
 import Foundation
 
-/// ⚠️ MOCK COHORT DATA. Illustrative medians only (v0.2).
+/// Cohort comparisons from real data (v0.4). Values live in SalaryDataset;
+/// this file is the model plus the UI-facing dimension descriptors.
 ///
-/// The data SHAPE matches how GEP/MTSSS "Quadros de Pessoal" publishes cells
-/// (dados.gov.pt, CC BY 4.0, commercial use OK with attribution): one cell per
-/// one-dimensional cut = (median gross €/month, dispersion, small-sample flag).
-/// Swapping these mock values for the real published ones is a data change,
-/// not a UI change. Covers private-sector employees only (no civil servants,
-/// no self-employed). The UI says so where it matters.
-struct CohortCell {
-    /// Median gross monthly salary for the cohort (mock value).
-    let median: Double
-    /// Log-normal dispersion around the median (mock value).
-    let sigma: Double
-    /// True when the underlying sample is small. The UI shows a caveat chip.
-    let thin: Bool
-
-    init(median: Double, sigma: Double, thin: Bool = false) {
-        self.median = median
-        self.sigma = sigma
-        self.thin = thin
-    }
-}
+/// Each one-dimensional cut is a SalaryDataset.Cell: the published mean ganho,
+/// a dispersion, and a caveat flag. Percentile within a cohort is modelled
+/// log-normal around the cell's model median. Covers employees only (no
+/// self-employed); the UI says so where it matters.
+typealias CohortCell = SalaryDataset.Cell
 
 /// A computed comparison against one cohort.
 struct CohortResult {
     let percentile: Int        // 1…99
     let median: Double
-    let thin: Bool             // small sample, show the caveat chip
+    let thin: Bool             // small sample or grouped category, show the chip
     /// Beyond p3/p97 the model is extrapolating, so soften the claim.
     var edge: Bool { percentile < 3 || percentile > 97 }
 }
 
 enum CohortEngine {
-    static let referenceYear = 2025
-    static let sourceLine = "Fonte: GEP-MTSSS · Quadros de Pessoal · 2025"
+    static let referenceYear = SalaryDataset.referenceYear
+    static let sourceLine = "Fontes: GEP-MTSSS, Quadros de Pessoal, out. 2024 · INE, Estrutura dos Ganhos 2022"
 
     /// Percentile within a cohort, modelled log-normal around the cell median.
     static func result(grossMonthly: Double, cell: CohortCell) -> CohortResult {
         let pct: Int
         if grossMonthly > 0 && cell.median > 0 {
             let z = log(grossMonthly / cell.median) / cell.sigma
-            pct = min(99, max(1, Int((normCdf(z) * 100).rounded())))
+            pct = min(99, max(1, Int((PercentileEngine.normCdf(z) * 100).rounded())))
         } else {
             pct = 1
         }
         return CohortResult(percentile: pct, median: cell.median, thin: cell.thin)
     }
-
-    /// Standard normal CDF.
-    private static func normCdf(_ z: Double) -> Double {
-        0.5 * erfc(-z / 2.0.squareRoot())
-    }
 }
 
-// MARK: - Mock cells per dimension (thin = islands, smallest bands)
+// MARK: - Cell lookups per dimension
 
 extension AgeBand {
-    var cohort: CohortCell {
-        switch self {
-        case .under25: CohortCell(median: 950, sigma: 0.50, thin: true)
-        case .band25to34: CohortCell(median: 1_180, sigma: 0.50)
-        case .band35to44: CohortCell(median: 1_350, sigma: 0.50)
-        case .band45to54: CohortCell(median: 1_380, sigma: 0.50)
-        case .band55to64: CohortCell(median: 1_320, sigma: 0.50)
-        case .over65: CohortCell(median: 1_250, sigma: 0.50, thin: true)
-        }
-    }
+    var cohort: CohortCell? { SalaryDataset.age[self] }
 }
 
 extension PTRegion {
-    var cohort: CohortCell {
-        switch self {
-        case .norte: CohortCell(median: 1_150, sigma: 0.50)
-        case .centro: CohortCell(median: 1_100, sigma: 0.50)
-        case .amLisboa: CohortCell(median: 1_550, sigma: 0.50)
-        case .alentejo: CohortCell(median: 1_100, sigma: 0.50, thin: true)
-        case .algarve: CohortCell(median: 1_050, sigma: 0.50, thin: true)
-        case .acores: CohortCell(median: 1_050, sigma: 0.50, thin: true)
-        case .madeira: CohortCell(median: 1_100, sigma: 0.50, thin: true)
-        }
-    }
+    var cohort: CohortCell? { SalaryDataset.region[self] }
 }
 
 extension EducationLevel {
-    var cohort: CohortCell {
-        switch self {
-        case .basic: CohortCell(median: 900, sigma: 0.55)
-        case .secondary: CohortCell(median: 1_050, sigma: 0.55)
-        case .postSecondary: CohortCell(median: 1_250, sigma: 0.55, thin: true)
-        case .higher: CohortCell(median: 1_750, sigma: 0.55)
-        }
-    }
+    var cohort: CohortCell? { SalaryDataset.education[self] }
 }
 
 extension OccupationGroup {
-    var cohort: CohortCell {
-        switch self {
-        case .managers: CohortCell(median: 2_600, sigma: 0.60)
-        case .specialists: CohortCell(median: 1_900, sigma: 0.60)
-        case .technicians: CohortCell(median: 1_450, sigma: 0.60)
-        case .administrative: CohortCell(median: 1_100, sigma: 0.60)
-        case .services: CohortCell(median: 950, sigma: 0.60)
-        case .trades: CohortCell(median: 1_050, sigma: 0.60)
-        case .operators: CohortCell(median: 1_000, sigma: 0.60)
-        case .elementary: CohortCell(median: 870, sigma: 0.60)
-        }
-    }
+    var cohort: CohortCell? { SalaryDataset.occupation[self] }
 }
 
 // MARK: - UI-facing dimension descriptors (shared by compareSeed + profileSeed)
@@ -131,7 +75,14 @@ struct CompareDimension: Identifiable {
         return options(pt).first { $0.id == id }
     }
 
-    static let all: [CompareDimension] = [
+    /// Only dimensions that have real data ship. A dimension whose dataset
+    /// table is empty (no published cells yet) stays out of the pickers and
+    /// compare layers, and comes back the moment its data lands.
+    static let all: [CompareDimension] = allDefined.filter { dim in
+        dim.options(false).contains { dim.cell($0.id) != nil }
+    }
+
+    private static let allDefined: [CompareDimension] = [
         CompareDimension(
             id: "age",
             icon: "person.crop.circle.badge.clock",
@@ -143,7 +94,9 @@ struct CompareDimension: Identifiable {
         CompareDimension(
             id: "region",
             icon: "map",
-            options: { _ in PTRegion.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) } },
+            // Only regions with published cells appear (Açores and Madeira
+            // stay hidden until their data lands; QP covers Continente).
+            options: { _ in PTRegion.allCases.filter { $0.cohort != nil }.map { DimensionOption(id: $0.rawValue, label: $0.label) } },
             selectedID: { $0.region?.rawValue },
             select: { store, id in store.region = id.flatMap(PTRegion.init(rawValue:)) },
             cell: { PTRegion(rawValue: $0)?.cohort }

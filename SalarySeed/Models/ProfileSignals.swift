@@ -31,11 +31,16 @@ enum AgeBand: String, CaseIterable, Identifiable {
     }
 }
 
-/// NUTS II regions of Portugal.
+/// NUTS II regions of Portugal, 2024 edition (the one GEP/INE publish on).
+/// v0.4.1: replaces the old 7-region list. "AM Lisboa" split into Grande
+/// Lisboa and Península de Setúbal; Oeste e Vale do Tejo is new. A stored
+/// "aml" from older builds simply no longer resolves and the user re-picks.
 enum PTRegion: String, CaseIterable, Identifiable {
     case norte
     case centro
-    case amLisboa = "aml"
+    case oesteValeTejo = "ovt"
+    case grandeLisboa = "glx"
+    case penSetubal = "psetubal"
     case alentejo
     case algarve
     case acores
@@ -47,7 +52,9 @@ enum PTRegion: String, CaseIterable, Identifiable {
         switch self {
         case .norte: "Norte"
         case .centro: "Centro"
-        case .amLisboa: "AM Lisboa"
+        case .oesteValeTejo: "Oeste e Vale do Tejo"
+        case .grandeLisboa: "Grande Lisboa"
+        case .penSetubal: "Península de Setúbal"
         case .alentejo: "Alentejo"
         case .algarve: "Algarve"
         case .acores: "Açores"
