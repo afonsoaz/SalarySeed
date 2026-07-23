@@ -31,6 +31,7 @@ struct HomeView: View {
                     efficiencyCard
                     BreakdownBar(breakdown: b)
                     detailsSection
+                    annualSettlementCard
                     percentileCard
                     nudges
                     disclaimer
@@ -224,6 +225,64 @@ struct HomeView: View {
 
     private func pct(_ fraction: Double) -> String {
         String(format: "%.1f%%", fraction * 100)
+    }
+
+    /// v0.6: withholding vs the estimated real annual IRS. Month to month the
+    /// employer withholds from the tables; the real tax settles the next year,
+    /// so there is usually a small refund or amount left to pay. Always yearly.
+    private var annualSettlementCard: some View {
+        let balance = b.annualBalance
+        let evenish = abs(balance) < 20
+        let refund = balance >= 0
+        let accent = evenish ? Theme.textSecondary : (refund ? Theme.accent : Theme.danger)
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                SectionLabel(s.annualTitle)
+                Spacer()
+                Text(s.perPeriod(yearly: true))
+                    .font(.system(size: 10))
+                    .foregroundStyle(Theme.textFaint)
+            }
+
+            HStack(spacing: 10) {
+                settlementFigure(label: s.annualWithheld, value: eur(b.annualIRSWithheld))
+                Rectangle().fill(Color.white.opacity(0.08)).frame(width: 1, height: 34)
+                settlementFigure(label: s.annualSettled, value: eur(b.annualIRSSettled))
+            }
+
+            HStack(spacing: 6) {
+                Image(systemName: evenish ? "equal.circle.fill" : (refund ? "arrow.down.left.circle.fill" : "arrow.up.right.circle.fill"))
+                    .font(.system(size: 14))
+                    .foregroundStyle(accent)
+                Text(evenish
+                     ? s.annualEven
+                     : (refund ? s.annualRefund(eur(abs(balance))) : s.annualToPay(eur(abs(balance)))))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(accent)
+            }
+
+            Text(s.annualNote)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textFaint)
+                .lineSpacing(2)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func settlementFigure(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textSecondary)
+            Text(value)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private var percentileCard: some View {

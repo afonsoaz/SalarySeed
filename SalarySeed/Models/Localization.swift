@@ -75,6 +75,16 @@ struct Strings {
     var onbProfileWhy: String { t("This improves your comparison. You can skip it.", "Isto melhora a tua comparação. Podes saltar.") }
     var skipStep: String { t("Skip", "Saltar") }
 
+    // v0.6 onboarding: marital situation + dependants (real IRS estimate)
+    var onbMaritalTitle: String { t("What's your\nsituation?", "Qual é a tua\nsituação?") }
+    var onbMaritalSub: String { t("This sets your real IRS. Married with one earner, or with children, changes how much is withheld.", "Isto define o teu IRS real. Ser casado com um só titular, ou ter filhos, muda quanto é retido.") }
+    var onbDependentsTitle: String { t("Any dependants?", "Tens dependentes?") }
+    var onbDependentsSub: String { t("Children or others in your care count for IRS. If none, leave it at zero.", "Filhos ou outros a teu cargo contam para o IRS. Se não tens, deixa a zero.") }
+    func dependentsUnit(_ n: Int) -> String {
+        if n == 1 { return t("dependant", "dependente") }
+        return t("dependants", "dependentes")
+    }
+
     // MARK: Home
 
     func hey(_ name: String?) -> String {
@@ -109,6 +119,18 @@ struct Strings {
     func ofGross(_ pct: String) -> String { t("\(pct) of gross", "\(pct) do bruto") }
     func ofCost(_ pct: String) -> String { t("\(pct) of cost", "\(pct) do custo") }
 
+    // v0.6 annual settlement (withholding vs real IRS)
+    var annualTitle: String { t("Withheld vs real IRS", "Retido vs IRS real") }
+    var annualWithheld: String { t("Withheld this year", "Retido este ano") }
+    var annualSettled: String { t("Estimated real IRS", "IRS real estimado") }
+    func annualRefund(_ amount: String) -> String { t("About \(amount) back at settlement", "Cerca de \(amount) a receber no acerto") }
+    func annualToPay(_ amount: String) -> String { t("About \(amount) left to pay at settlement", "Cerca de \(amount) a pagar no acerto") }
+    var annualEven: String { t("Withholding lands about right", "A retenção fica quase certa") }
+    var annualNote: String {
+        t("Estimate on the 2026 brackets, before your health, education and other deductions, which usually mean a bit more back.",
+          "Estimativa nos escalões de 2026, antes das tuas deduções de saúde, educação e outras, que costumam dar um pouco mais a receber.")
+    }
+
     // v0.5 ajudas de custo, always shown apart from the salary
     func heroAjudas(_ amount: String, total: String) -> String {
         t("+ \(amount) in ajudas de custo. Total in your pocket: \(total).",
@@ -138,7 +160,7 @@ struct Strings {
     var growthTitle: String { t("Steps to improve your salary", "Passos para melhorar o teu salário") }
     var growthSub: String { t("Simple ideas to earn more, based on your profile.", "Ideias simples para ganhares mais, com base no teu perfil.") }
     var growthSoon: String { t("growthSeed · coming soon", "growthSeed · em breve") }
-    var homeDisclaimer: String { t("These are estimates, not official tax advice. Rates not verified yet.", "Isto são estimativas, não aconselhamento fiscal oficial. Taxas ainda por verificar.") }
+    var homeDisclaimer: String { t("Estimates based on 2026 tax tables for mainland Portugal (Continente). Not official tax advice.", "Estimativas com base nas tabelas fiscais de 2026 para o Continente. Não é aconselhamento fiscal oficial.") }
 
     // MARK: Compare
 
@@ -234,8 +256,6 @@ struct Strings {
     var nameLabel: String { t("Name", "Nome") }
     var namePlaceholder: String { t("Add your name", "O teu nome") }
     var addMore: String { t("Add more, unlock more", "Adiciona mais, vê mais") }
-    var maritalTitle: String { t("Marital status / dependents", "Estado civil / dependentes") }
-    var maritalHint: String { t("Later: better IRS estimate", "Mais tarde: IRS mais preciso") }
     var cvTitle: String { t("CV upload", "Carregar o CV") }
     var cvHint: String { t("Later: better comparisons and tips", "Mais tarde: melhores comparações e dicas") }
     var appSection: String { "App" }
@@ -246,7 +266,22 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.5. Estimates only, not official tax or financial advice.", "SalarySeed v0.5. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.6. Estimates only, not official tax or financial advice.", "SalarySeed v0.6. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+
+    // v0.6 tax details section (profileSeed)
+    var taxSection: String { t("Tax details", "Dados fiscais") }
+    var maritalLabel: String { t("Situation", "Situação") }
+    var dependentsLabel: String { t("Dependants", "Dependentes") }
+    var irsJovemTitle: String { t("IRS Jovem", "IRS Jovem") }
+    var irsJovemSub: String {
+        t("On IRS Jovem? Pick how much of your income is exempt this year. It lowers your IRS, not your Social Security.",
+          "Estás no IRS Jovem? Escolhe quanto do teu rendimento está isento este ano. Baixa o IRS, não a Segurança Social.")
+    }
+    var irsJovemOff: String { t("Off", "Não") }
+    var irsJovemNote: String {
+        t("Steps: 100% (year 1), 75% (years 2 to 4), 50% (years 5 to 7), 25% (years 8 to 10). Up to 55 × IAS a year.",
+          "Escalões: 100% (ano 1), 75% (anos 2 a 4), 50% (anos 5 a 7), 25% (anos 8 a 10). Até 55 × IAS por ano.")
+    }
 
     // MARK: Salary editor
 
@@ -270,7 +305,7 @@ struct Strings {
     func extraPerYear(_ months: Int) -> String { t("Extra per year (\(months) months)", "Extra por ano (\(months) meses)") }
     var newGross: String { t("Your new gross / month", "O teu novo bruto / mês") }
     func raiseInfo(_ ratio: String) -> String { t("Every €1 extra in your pocket costs your employer about €\(ratio). Taxes and Social Security grow with it.", "Cada €1 extra no teu bolso custa à empresa cerca de €\(ratio). Impostos e Segurança Social crescem juntos.") }
-    var raiseDisclaimer: String { t("Estimate with test rates. Confirm before using it for real.", "Estimativa com taxas de teste. Confirma antes de usares a sério.") }
+    var raiseDisclaimer: String { t("Estimate using 2026 tax tables. Confirm before using it for real.", "Estimativa com as tabelas fiscais de 2026. Confirma antes de usares a sério.") }
 
     // MARK: futureSeed
 

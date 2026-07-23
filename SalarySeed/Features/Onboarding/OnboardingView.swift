@@ -1,11 +1,13 @@
 import SwiftUI
 
-/// First-run flow, v0.5 edition.
+/// First-run flow, v0.6 edition.
 ///
 /// Warm welcome + name, then the one mandatory number (the salary), then the
-/// gross/net and months toggles, then ajudas de custo, then the four profile
-/// questions asked one by one: age, region, education, profession.
-/// Everything is skippable EXCEPT the salary. Answers commit at the end.
+/// gross/net and months toggles, then marital situation and dependants (for a
+/// real IRS estimate), then ajudas de custo, then the four profile questions
+/// asked one by one: age, region, education, profession. Marital and dependants
+/// have sensible defaults (single, 0); everything is skippable EXCEPT the salary.
+/// The IRS Jovem exemption is set later in profileSeed. Answers commit at the end.
 struct OnboardingView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var step = 0
@@ -15,6 +17,8 @@ struct OnboardingView: View {
     @State private var kind: AmountKind = .gross
     @State private var schedule: PaySchedule = .fourteen
     @State private var ajudasText = ""
+    @State private var maritalSel: MaritalSituation = .single
+    @State private var dependentsSel: Int = 0
     @State private var ageBand: AgeBand?
     @State private var region: PTRegion?
     @State private var education: EducationLevel?
@@ -23,7 +27,7 @@ struct OnboardingView: View {
     @FocusState private var ajudasFocused: Bool
 
     private var s: Strings { store.s }
-    private let totalSteps = 8
+    private let totalSteps = 10
 
     var body: some View {
         ZStack {
@@ -41,10 +45,12 @@ struct OnboardingView: View {
                 case 0: welcomeStep
                 case 1: salaryStep
                 case 2: detailsStep
-                case 3: ajudasStep
-                case 4: profileStep(dimensionID: "age")
-                case 5: profileStep(dimensionID: "region")
-                case 6: profileStep(dimensionID: "education")
+                case 3: maritalStep
+                case 4: dependentsStep
+                case 5: ajudasStep
+                case 6: profileStep(dimensionID: "age")
+                case 7: profileStep(dimensionID: "region")
+                case 8: profileStep(dimensionID: "education")
                 default: profileStep(dimensionID: "occupation")
                 }
             }
@@ -71,6 +77,8 @@ struct OnboardingView: View {
         store.kind = kind
         store.schedule = schedule
         store.ajudasMonthly = max(0, Double(ajudasText) ?? 0)
+        store.maritalSituation = maritalSel
+        store.dependents = dependentsSel
         store.ageBand = ageBand
         store.region = region
         store.education = education
@@ -252,7 +260,123 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 3, ajudas de custo (skippable)
+    // MARK: Step 3, marital situation (for a real IRS estimate)
+
+    private var maritalStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 40)
+            Text(s.onbMaritalTitle)
+                .font(.system(size: 26, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+            Text(s.onbMaritalSub)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
+                .lineSpacing(3)
+                .padding(.top, 8)
+
+            VStack(spacing: 10) {
+                ForEach(MaritalSituation.allCases) { option in
+                    maritalRow(option)
+                }
+            }
+            .padding(.top, 24)
+
+            Spacer()
+            PrimaryButton(title: s.continueButton) { advance() }
+        }
+    }
+
+    private func maritalRow(_ option: MaritalSituation) -> some View {
+        let isSelected = option == maritalSel
+        return Button {
+            withAnimation(.easeOut(duration: 0.15)) { maritalSel = option }
+        } label: {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(option.label(pt: s.pt))
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
+                    Text(option.hint(pt: s.pt))
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(isSelected ? Color(hex: 0x06281C).opacity(0.75) : Theme.textSecondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 8)
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Color(hex: 0x06281C))
+                }
+            }
+            .padding(14)
+            .background(
+                isSelected ? Theme.accent : Color.white.opacity(0.06),
+                in: RoundedRectangle(cornerRadius: 12)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? Theme.accent : Theme.cardBorder, lineWidth: 1)
+            )
+        }
+    }
+
+    // MARK: Step 4, dependants
+
+    private var dependentsStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 40)
+            Text(s.onbDependentsTitle)
+                .font(.system(size: 26, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+            Text(s.onbDependentsSub)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
+                .lineSpacing(3)
+                .padding(.top, 8)
+
+            HStack(spacing: 22) {
+                stepperButton(system: "minus") {
+                    if dependentsSel > 0 { dependentsSel -= 1 }
+                }
+                .opacity(dependentsSel > 0 ? 1 : 0.35)
+
+                VStack(spacing: 2) {
+                    Text("\(dependentsSel)")
+                        .font(.system(size: 46, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary)
+                        .contentTransition(.numericText())
+                    Text(s.dependentsUnit(dependentsSel))
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .frame(minWidth: 120)
+
+                stepperButton(system: "plus") {
+                    if dependentsSel < 12 { dependentsSel += 1 }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 40)
+
+            Spacer()
+            PrimaryButton(title: s.continueButton) { advance() }
+        }
+    }
+
+    private func stepperButton(system: String, action: @escaping () -> Void) -> some View {
+        Button {
+            withAnimation(.easeOut(duration: 0.15)) { action() }
+        } label: {
+            Image(systemName: system)
+                .font(.system(size: 18, weight: .medium))
+                .foregroundStyle(Theme.accent)
+                .frame(width: 52, height: 52)
+                .background(Theme.accentSoft, in: Circle())
+                .overlay(Circle().stroke(Theme.accentBorder))
+        }
+    }
+
+    // MARK: Step 5, ajudas de custo (skippable)
 
     private var ajudasStep: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -300,7 +424,7 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Steps 4 to 7, the profile, one question at a time
+    // MARK: Steps 6 to 9, the profile, one question at a time
 
     private func profileStep(dimensionID id: String) -> some View {
         let isLast = step == totalSteps - 1

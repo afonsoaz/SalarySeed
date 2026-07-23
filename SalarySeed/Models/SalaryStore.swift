@@ -37,6 +37,12 @@ final class SalaryStore: ObservableObject {
     @Published var employment: EmploymentType { didSet { save() } }
     @Published var hasOnboarded: Bool { didSet { save() } }
 
+    // v0.6: real tax inputs. Marital situation and dependants are asked in
+    // onboarding; the IRS Jovem exemption (1.0 = 100% ... 0 = off) lives in profileSeed.
+    @Published var maritalSituation: MaritalSituation { didSet { save() } }
+    @Published var dependents: Int { didSet { save() } }
+    @Published var irsJovemExemption: Double { didSet { save() } }
+
     // v0.2: name (welcome screen) + progressive profile signals.
     // Stored as stable raw-value IDs; these are the future growthSeed inputs too.
     @Published var name: String { didSet { save() } }
@@ -57,6 +63,9 @@ final class SalaryStore: ObservableObject {
         ajudasMonthly = defaults.double(forKey: "ajudasMonthly")
         employment = EmploymentType(rawValue: defaults.string(forKey: "employment") ?? "") ?? .employee
         hasOnboarded = defaults.bool(forKey: "hasOnboarded")
+        maritalSituation = MaritalSituation(rawValue: defaults.string(forKey: "maritalSituation") ?? "") ?? .single
+        dependents = defaults.integer(forKey: "dependents")
+        irsJovemExemption = defaults.double(forKey: "irsJovemExemption")
         name = defaults.string(forKey: "name") ?? ""
         ageBand = AgeBand(rawValue: defaults.string(forKey: "profile.ageBand") ?? "")
         region = PTRegion(rawValue: defaults.string(forKey: "profile.region") ?? "")
@@ -72,6 +81,9 @@ final class SalaryStore: ObservableObject {
         defaults.set(ajudasMonthly, forKey: "ajudasMonthly")
         defaults.set(employment.rawValue, forKey: "employment")
         defaults.set(hasOnboarded, forKey: "hasOnboarded")
+        defaults.set(maritalSituation.rawValue, forKey: "maritalSituation")
+        defaults.set(dependents, forKey: "dependents")
+        defaults.set(irsJovemExemption, forKey: "irsJovemExemption")
         defaults.set(name, forKey: "name")
         defaults.set(language.rawValue, forKey: "language")
         setOptional(ageBand?.rawValue, forKey: "profile.ageBand")
@@ -122,9 +134,22 @@ final class SalaryStore: ObservableObject {
         let grossMonthly: Double
         switch kind {
         case .gross: grossMonthly = amount
-        case .net: grossMonthly = TaxEngine.grossFromNet(amount)
+        case .net: grossMonthly = TaxEngine.grossFromNet(
+            amount,
+            marital: maritalSituation,
+            dependents: dependents,
+            jovemExemption: irsJovemExemption,
+            months: schedule.months
+        )
         }
-        return TaxEngine.breakdown(grossMonthly: grossMonthly, months: schedule.months, ajudasMonthly: ajudasMonthly)
+        return TaxEngine.breakdown(
+            grossMonthly: grossMonthly,
+            months: schedule.months,
+            ajudasMonthly: ajudasMonthly,
+            marital: maritalSituation,
+            dependents: dependents,
+            jovemExemption: irsJovemExemption
+        )
     }
 
     /// National percentile for the current gross salary.

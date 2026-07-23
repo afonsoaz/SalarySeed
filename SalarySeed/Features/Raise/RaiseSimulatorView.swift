@@ -11,8 +11,20 @@ struct RaiseSimulatorView: View {
 
     private var raised: SalaryBreakdown {
         let targetNet = current.netMonthly + netRaise
-        let newGross = TaxEngine.grossFromNet(targetNet)
-        return TaxEngine.breakdown(grossMonthly: newGross, months: current.months)
+        let newGross = TaxEngine.grossFromNet(
+            targetNet,
+            marital: store.maritalSituation,
+            dependents: store.dependents,
+            jovemExemption: store.irsJovemExemption,
+            months: current.months
+        )
+        return TaxEngine.breakdown(
+            grossMonthly: newGross,
+            months: current.months,
+            marital: store.maritalSituation,
+            dependents: store.dependents,
+            jovemExemption: store.irsJovemExemption
+        )
     }
 
     private var employerDeltaMonthly: Double {
