@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Quick edit of the core inputs from anywhere.
 /// v0.5: also takes ajudas de custo, clearly marked as outside the gross world.
+/// v0.8: the salary can be typed monthly (per payment) or as a yearly total.
 struct SalaryEditorView: View {
     @EnvironmentObject private var store: SalaryStore
     @Environment(\.dismiss) private var dismiss
@@ -9,8 +10,21 @@ struct SalaryEditorView: View {
     @State private var ajudasText = ""
     @State private var kind: AmountKind = .gross
     @State private var schedule: PaySchedule = .fourteen
+    @State private var inputPeriod: SalaryInputPeriod = .monthly
 
     private var s: Strings { store.s }
+
+    /// User taps to switch monthly <-> yearly. Converting only on this binding's
+    /// setter (not on the raw @State) keeps the onAppear setup from double-counting.
+    private var periodBinding: Binding<SalaryInputPeriod> {
+        Binding(
+            get: { inputPeriod },
+            set: { newValue in
+                if newValue != inputPeriod { convertAmount(to: newValue) }
+                inputPeriod = newValue
+            }
+        )
+    }
 
     var body: some View {
         ZStack {
@@ -22,16 +36,35 @@ struct SalaryEditorView: View {
                         .foregroundStyle(Theme.textPrimary)
                         .padding(.top, 24)
 
+                    // Monthly vs yearly: how the number below is read.
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(s.editorPeriodLabel)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Theme.textSecondary)
+                        SegmentedPicker(options: SalaryInputPeriod.allCases, selection: periodBinding) {
+                            $0.label(pt: s.pt)
+                        }
+                    }
+
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text("€").font(.system(size: 24)).foregroundStyle(Theme.textSecondary)
                         TextField(s.editorPlaceholder, text: $amountText)
                             .keyboardType(.numberPad)
                             .font(.system(size: 34, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
-                        Text(s.perMonthSuffix).font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
+                        Text(inputPeriod == .yearly ? s.perYearSuffix : s.perMonthSuffix)
+                            .font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
                     }
                     .padding(.bottom, 10)
                     .overlay(alignment: .bottom) { Rectangle().fill(Theme.accent).frame(height: 2) }
+
+                    if inputPeriod == .yearly {
+                        Text(s.editorYearlyNote(Int(schedule.months)))
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textSecondary)
+                            .lineSpacing(2)
+                            .padding(.top, -12)
+                    }
 
                     SegmentedPicker(options: AmountKind.allCases, selection: $kind) { $0.label(pt: s.pt) }
                     SegmentedPicker(options: PaySchedule.allCases, selection: $schedule) { $0.label(pt: s.pt) }
@@ -58,10 +91,13 @@ struct SalaryEditorView: View {
                     .padding(.top, 4)
 
                     PrimaryButton(title: s.updateButton) {
-                        if let v = Double(amountText), v > 0 { store.amount = v }
+                        if let v = Double(amountText), v > 0 {
+                            store.amount = inputPeriod == .yearly ? v / schedule.months : v
+                        }
                         store.ajudasMonthly = max(0, Double(ajudasText) ?? 0)
                         store.kind = kind
                         store.schedule = schedule
+                        store.inputYearly = inputPeriod == .yearly
                         dismiss()
                     }
                     .padding(.top, 8)
@@ -70,10 +106,23 @@ struct SalaryEditorView: View {
             }
         }
         .onAppear {
-            amountText = String(Int(store.amount))
-            ajudasText = store.ajudasMonthly > 0 ? String(Int(store.ajudasMonthly)) : ""
             kind = store.kind
             schedule = store.schedule
+            inputPeriod = store.inputYearly ? .yearly : .monthly
+            let shown = store.inputYearly ? store.amount * store.schedule.months : store.amount
+            amountText = String(Int(shown.rounded()))
+            ajudasText = store.ajudasMonthly > 0 ? String(Int(store.ajudasMonthly)) : ""
+        }
+    }
+
+    /// Convert the number in the field when the user flips monthly <-> yearly,
+    /// so the amount they see keeps meaning the same pay.
+    private func convertAmount(to period: SalaryInputPeriod) {
+        guard let v = Double(amountText), v > 0 else { return }
+        let months = schedule.months
+        switch period {
+        case .yearly:  amountText = String(Int((v * months).rounded()))   // was monthly
+        case .monthly: amountText = String(Int((v / months).rounded()))   // was yearly
         }
     }
 }

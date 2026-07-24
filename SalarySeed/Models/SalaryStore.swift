@@ -20,6 +20,20 @@ enum PaySchedule: String, CaseIterable, Identifiable {
     func label(pt: Bool) -> String { pt ? "\(rawValue) meses" : "\(rawValue) months" }
 }
 
+/// v0.8: how the salary editor reads the number the user types, monthly per
+/// payment or the whole year. Stored amount is always per paid month; the yearly
+/// figure is just monthly × the pay schedule.
+enum SalaryInputPeriod: String, CaseIterable, Identifiable {
+    case monthly, yearly
+    var id: String { rawValue }
+    func label(pt: Bool) -> String {
+        switch self {
+        case .monthly: pt ? "Mensal" : "Monthly"
+        case .yearly: pt ? "Anual" : "Yearly"
+        }
+    }
+}
+
 /// v1 is employees only; self-employed (soloSeed) comes later.
 enum EmploymentType: String, CaseIterable, Identifiable {
     case employee, selfEmployed
@@ -36,6 +50,9 @@ final class SalaryStore: ObservableObject {
     @Published var ajudasMonthly: Double { didSet { save() } }
     @Published var employment: EmploymentType { didSet { save() } }
     @Published var hasOnboarded: Bool { didSet { save() } }
+    /// v0.8: remembers whether the editor last showed the salary as monthly or
+    /// yearly, so it reopens the way the user prefers.
+    @Published var inputYearly: Bool { didSet { save() } }
 
     // v0.6: real tax inputs. Marital situation and dependants are asked in
     // onboarding; the IRS Jovem exemption (1.0 = 100% ... 0 = off) lives in profileSeed.
@@ -63,6 +80,7 @@ final class SalaryStore: ObservableObject {
         ajudasMonthly = defaults.double(forKey: "ajudasMonthly")
         employment = EmploymentType(rawValue: defaults.string(forKey: "employment") ?? "") ?? .employee
         hasOnboarded = defaults.bool(forKey: "hasOnboarded")
+        inputYearly = defaults.bool(forKey: "inputYearly")
         maritalSituation = MaritalSituation(rawValue: defaults.string(forKey: "maritalSituation") ?? "") ?? .single
         dependents = defaults.integer(forKey: "dependents")
         irsJovemExemption = defaults.double(forKey: "irsJovemExemption")
@@ -81,6 +99,7 @@ final class SalaryStore: ObservableObject {
         defaults.set(ajudasMonthly, forKey: "ajudasMonthly")
         defaults.set(employment.rawValue, forKey: "employment")
         defaults.set(hasOnboarded, forKey: "hasOnboarded")
+        defaults.set(inputYearly, forKey: "inputYearly")
         defaults.set(maritalSituation.rawValue, forKey: "maritalSituation")
         defaults.set(dependents, forKey: "dependents")
         defaults.set(irsJovemExemption, forKey: "irsJovemExemption")

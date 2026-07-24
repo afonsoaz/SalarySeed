@@ -105,6 +105,9 @@ enum TaxEngine {
 
     static let ias = 537.13
     static let minWage = 920.0
+    /// The fiscal year the engine models. Used by the IRS Jovem assessor to count
+    /// benefit years and to check the age limit at the end of the income year.
+    static let taxYear = 2026
     /// IRS Jovem yearly exemption cap: 55 × IAS = €29 542,15.
     static let jovemAnnualCap = 55 * ias
     /// Dedução específica, categoria A: 8,54 × IAS = €4 587,09.
@@ -256,8 +259,13 @@ enum TaxEngine {
         let avgRate = fullBase > 0 ? taxFull / fullBase : 0
 
         let coleta = avgRate * nonExemptBase
-        let credits = Double(dependents) * dependentCredit + generalExpenseCredit
-        return max(0, coleta - credits)
+        // Dedução à coleta per dependant comes off first, never below zero.
+        let afterDependents = max(0, coleta - Double(dependents) * dependentCredit)
+        // The general-expense credit (health, education, invoices) only helps if there
+        // is IRS left to reduce: you deduct the smaller of €1,000 and what you still owe,
+        // never more. So it never turns into an extra refund on its own.
+        let generalApplied = min(generalExpenseCredit, afterDependents)
+        return afterDependents - generalApplied
     }
 
     // MARK: Breakdown
@@ -308,5 +316,75 @@ enum TaxEngine {
             if midNet < net { lo = mid } else { hi = mid }
         }
         return (lo + hi) / 2
+    }
+
+    // MARK: IRS Jovem eligibility assessment (v0.8)
+
+    /// Why a person is (or is not) getting IRS Jovem this year.
+    enum JovemReason {
+        case eligible      // gets an exemption this year
+        case tooOld        // over 35 at the end of the income year
+        case isDependent   // still a tax dependant this year
+        case otherRegime   // used RNH / IFICI / Regressar, which excludes IRS Jovem
+        case notStarted    // first income year is in the future
+        case exhausted     // already past the 10th benefit year
+    }
+
+    /// The outcome of the profileSeed self-assessment: whether IRS Jovem applies,
+    /// which benefit year the person is in, and the exemption fraction to use.
+    struct JovemAssessment {
+        let eligible: Bool
+        /// 0, 0.25, 0.5, 0.75 or 1.0.
+        let exemption: Double
+        /// The ordinal benefit year 1...10, when there is one.
+        let benefitYear: Int?
+        let reason: JovemReason
+
+        /// Yearly exempt-income cap (55 × IAS), for display.
+        var annualCap: Double { jovemAnnualCap }
+    }
+
+    /// The exemption for a given benefit year (1...10): 100% year 1, 75% years 2-4,
+    /// 50% years 5-7, 25% years 8-10.
+    static func jovemRate(benefitYear n: Int) -> Double {
+        switch n {
+        case 1: return 1.0
+        case 2...4: return 0.75
+        case 5...7: return 0.50
+        case 8...10: return 0.25
+        default: return 0
+        }
+    }
+
+    /// Assess IRS Jovem from the plain inputs collected in profileSeed.
+    ///
+    /// Rules (OE2025/2026, confirmed 2026): age ≤ 35 at year end, up to 10 benefit
+    /// years counted from the first year of Category A/B income while not a dependant,
+    /// no overlap with RNH/IFICI/Regressar. We assume the person earned income each
+    /// year since that first year (so benefit year = taxYear − firstIncomeYear + 1);
+    /// gaps in real life pause the count, which only ever helps, so this is the
+    /// conservative read. The exemption never applies while still a dependant.
+    static func assessJovem(age: Int,
+                            firstIncomeYear: Int,
+                            isDependentThisYear: Bool,
+                            usedOtherRegime: Bool,
+                            year: Int = taxYear) -> JovemAssessment {
+        if usedOtherRegime {
+            return JovemAssessment(eligible: false, exemption: 0, benefitYear: nil, reason: .otherRegime)
+        }
+        if isDependentThisYear {
+            return JovemAssessment(eligible: false, exemption: 0, benefitYear: nil, reason: .isDependent)
+        }
+        if age > 35 {
+            return JovemAssessment(eligible: false, exemption: 0, benefitYear: nil, reason: .tooOld)
+        }
+        let n = year - firstIncomeYear + 1
+        if n < 1 {
+            return JovemAssessment(eligible: false, exemption: 0, benefitYear: nil, reason: .notStarted)
+        }
+        if n > 10 {
+            return JovemAssessment(eligible: false, exemption: 0, benefitYear: nil, reason: .exhausted)
+        }
+        return JovemAssessment(eligible: true, exemption: jovemRate(benefitYear: n), benefitYear: n, reason: .eligible)
     }
 }

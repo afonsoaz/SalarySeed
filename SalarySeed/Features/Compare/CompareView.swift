@@ -148,41 +148,49 @@ struct CompareView: View {
     }
 }
 
-// MARK: - Interactive national distribution (v0.7)
+// MARK: - Interactive national distribution (v0.8)
 
-/// The national distribution as a playable chart. It rests on the user's own
-/// spot (their bar highlighted, their percentile and salary in the readout).
-/// Drag across it to explore any point: the readout tracks the salary and
-/// percentile under the finger and names how many people sit in that band.
-/// Lift the finger and it springs back to the user.
+/// The national distribution as a percentile you can play with. The bell curve
+/// (salary axis) sits on top for context, with a marker at the current salary.
+/// Below it a linear percentile slider is the thing you drag: pick any percentile
+/// and the readout shows how much people at that level earn. Let go and it springs
+/// back to the user's own percentile.
 private struct InteractiveDistribution: View {
     let userGross: Double
     let userPercentile: Double
     let s: Strings
 
-    @State private var scrubFrac: Double? = nil
+    /// The percentile (0-100) under the finger, or nil when resting on the user.
+    @State private var scrubPct: Double? = nil
 
     private var bars: [Double] { PercentileEngine.distributionBars }
-    private var scrubbing: Bool { scrubFrac != nil }
-    private var userFrac: Double { PercentileEngine.fractionForSalary(userGross) }
-    private var activeFrac: Double { scrubFrac ?? userFrac }
-    private var activeGross: Double { scrubbing ? PercentileEngine.salaryAtFraction(scrubFrac!) : userGross }
-    private var activePct: Double { scrubbing ? PercentileEngine.percentile(grossMonthly: activeGross) : userPercentile }
-    private var activeBar: Int { PercentileEngine.barIndex(forFraction: activeFrac) }
-    private var userBar: Int { PercentileEngine.barIndex(forFraction: userFrac) }
+    private var scrubbing: Bool { scrubPct != nil }
+    private var activePct: Double { scrubPct ?? userPercentile }
+    /// Salary at the active percentile. On the user's own spot we use their exact
+    /// gross rather than the model inverse, so their real number always shows.
+    private var activeSalary: Double {
+        scrubbing ? PercentileEngine.salaryAtPercentile(activePct) : userGross
+    }
+    private var curveFrac: Double { PercentileEngine.fractionForSalary(activeSalary) }
+    private var userCurveFrac: Double { PercentileEngine.fractionForSalary(userGross) }
+    private var activeBar: Int { PercentileEngine.barIndex(forFraction: curveFrac) }
+    private var userBar: Int { PercentileEngine.barIndex(forFraction: userCurveFrac) }
+    private var sliderFrac: Double { min(1, max(0, activePct / 100)) }
+    private var userSliderFrac: Double { min(1, max(0, userPercentile / 100)) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 SectionLabel(s.natDistribution)
                 Spacer()
-                Text(scrubbing ? s.releaseToReset : s.dragToExplore)
+                Text(scrubbing ? s.releaseToReset : s.exploreByPercentile)
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.textFaint)
             }
 
             readout
 
+            // Bell curve (salary axis) with a marker at the active salary.
             GeometryReader { geo in
                 let w = geo.size.width
                 let maxBar = bars.max() ?? 1
@@ -191,45 +199,88 @@ private struct InteractiveDistribution: View {
                         ForEach(bars.indices, id: \.self) { i in
                             RoundedRectangle(cornerRadius: 2)
                                 .fill(barColor(i))
-                                .frame(height: max(3, 84 * bars[i] / maxBar))
+                                .frame(height: max(3, 74 * bars[i] / maxBar))
                                 .frame(maxWidth: .infinity)
                         }
                     }
-                    .frame(height: 84, alignment: .bottom)
+                    .frame(height: 74, alignment: .bottom)
 
-                    // indicator line + handle at the active position
                     ZStack {
                         Rectangle()
                             .fill(Theme.accent.opacity(0.5))
-                            .frame(width: 1.5, height: 92)
+                            .frame(width: 1.5, height: 82)
                         Circle()
                             .fill(Theme.accent)
-                            .frame(width: 11, height: 11)
+                            .frame(width: 10, height: 10)
                             .overlay(Circle().stroke(Theme.background, lineWidth: 2))
-                            .offset(y: -46)
+                            .offset(y: -41)
                     }
-                    .position(x: max(6, min(w - 6, activeFrac * w)), y: 42)
-                    .animation(scrubbing ? nil : .spring(response: 0.4, dampingFraction: 0.8), value: activeFrac)
+                    .position(x: max(6, min(w - 6, curveFrac * w)), y: 37)
+                    .animation(scrubbing ? nil : .spring(response: 0.4, dampingFraction: 0.8), value: curveFrac)
                 }
-                .contentShape(Rectangle())
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { v in scrubFrac = min(1, max(0, v.location.x / w)) }
-                        .onEnded { _ in
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { scrubFrac = nil }
-                        }
-                )
             }
-            .frame(height: 92)
+            .frame(height: 82)
 
             HStack {
                 Text("€600").font(.system(size: 10)).foregroundStyle(Theme.textFaint)
                 Spacer()
                 Text("€10k+").font(.system(size: 10)).foregroundStyle(Theme.textFaint)
             }
+
+            // The percentile slider: the thing you drag.
+            percentileSlider
+
+            Text(s.exploreHint)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textFaint)
         }
         .padding(16)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private var percentileSlider: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            GeometryReader { geo in
+                let w = geo.size.width
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.white.opacity(0.08))
+                        .frame(height: 6)
+                    Capsule()
+                        .fill(Theme.accent.opacity(0.5))
+                        .frame(width: max(6, sliderFrac * w), height: 6)
+                    // the user's own percentile, a fixed tick to return to
+                    Rectangle()
+                        .fill(Theme.textPrimary.opacity(0.35))
+                        .frame(width: 1.5, height: 16)
+                        .offset(x: min(w - 1, max(0, userSliderFrac * w)) - 0.75)
+                    Circle()
+                        .fill(Theme.accent)
+                        .frame(width: 20, height: 20)
+                        .overlay(Circle().stroke(Theme.background, lineWidth: 2))
+                        .offset(x: min(w - 20, max(0, sliderFrac * w - 10)))
+                }
+                .frame(height: 24)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { v in scrubPct = min(99.9, max(0.5, v.location.x / w * 100)) }
+                        .onEnded { _ in
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { scrubPct = nil }
+                        }
+                )
+                .animation(scrubbing ? nil : .spring(response: 0.4, dampingFraction: 0.8), value: sliderFrac)
+            }
+            .frame(height: 24)
+
+            HStack {
+                Text(s.lowestEarners).font(.system(size: 10)).foregroundStyle(Theme.textFaint)
+                Spacer()
+                Text(s.youMarker).font(.system(size: 10)).foregroundStyle(Theme.textSecondary)
+                Spacer()
+                Text(s.highestEarners).font(.system(size: 10)).foregroundStyle(Theme.textFaint)
+            }
+        }
     }
 
     private func barColor(_ i: Int) -> Color {
@@ -240,40 +291,19 @@ private struct InteractiveDistribution: View {
     }
 
     private var readout: some View {
-        let share = PercentileEngine.distributionBarShares[activeBar]
-        let band = PercentileEngine.barBand(activeBar)
-        return VStack(alignment: .leading, spacing: 3) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(String(format: "%.0f%%", activePct))
-                    .font(.system(size: 22, weight: .medium))
+        VStack(alignment: .leading, spacing: 3) {
+            Text(s.percentileEarns(s.ordinalPercentile(Int(activePct.rounded()))))
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
+            HStack(alignment: .firstTextBaseline, spacing: 5) {
+                Text(eur(activeSalary))
+                    .font(.system(size: 30, weight: .medium))
                     .foregroundStyle(Theme.accent)
                     .contentTransition(.numericText())
-                Text(s.earnLess)
-                    .font(.system(size: 13))
+                Text(s.perMonthSuffix)
+                    .font(.system(size: 14))
                     .foregroundStyle(Theme.textSecondary)
-                Spacer(minLength: 6)
-                Text(s.atLevel(eur(activeGross)))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
             }
-            Text(s.bandShare(pct(share), rangeText(band)))
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textFaint)
-        }
-    }
-
-    private func pct(_ fraction: Double) -> String {
-        let v = fraction * 100
-        if v < 1 { return String(format: "%.1f%%", v) }
-        return String(format: "%.0f%%", v)
-    }
-
-    private func rangeText(_ band: (lower: Double?, upper: Double?)) -> String {
-        switch (band.lower, band.upper) {
-        case let (nil, hi?): return s.bandUnder(eur(hi))
-        case let (lo?, nil): return s.bandOver(eur(lo))
-        case let (lo?, hi?): return "\(eur(lo)) – \(eur(hi))"
-        default: return ""
         }
     }
 }

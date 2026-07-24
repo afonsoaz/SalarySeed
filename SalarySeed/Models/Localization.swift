@@ -96,6 +96,29 @@ struct Strings {
     var yearly: String { t("Yearly", "Anual") }
     func grossLabel(yearly: Bool) -> String { t("Gross / \(yearly ? "year" : "month")", "Bruto / \(yearly ? "ano" : "mês")") }
     func netLabel(yearly: Bool) -> String { t("Net / \(yearly ? "year" : "month")", "Líquido / \(yearly ? "ano" : "mês")") }
+    // v0.8: three-way result view (monthly ÷12, monthly ÷14, annual)
+    var grossWord: String { t("Gross", "Bruto") }
+    var netWord: String { t("Net", "Líquido") }
+    var resultM12: String { t("Mo ×12", "Mês ×12") }
+    var resultM14: String { t("Mo ×14", "Mês ×14") }
+    var resultYear: String { t("Year", "Ano") }
+    func periodSuffix(_ mode: Int) -> String {
+        // 0 = ÷12 monthly, 1 = ÷14 monthly, 2 = annual
+        switch mode {
+        case 2: return t("year", "ano")
+        case 1: return t("month (×14)", "mês (×14)")
+        default: return t("month (×12)", "mês (×12)")
+        }
+    }
+    func resultCaption(_ mode: Int) -> String? {
+        switch mode {
+        case 0: return t("Your yearly pay spread evenly over 12 months.",
+                         "O teu salário anual repartido por 12 meses.")
+        case 1: return t("What lands in each of your 14 payments.",
+                         "O que entra em cada um dos teus 14 pagamentos.")
+        default: return nil
+        }
+    }
     var effLine1: String { t("Of every €100 your company spends,", "Por cada €100 que a tua empresa gasta,") }
     var effLine2: String { t("reaches your pocket", "chegam ao teu bolso") }
 
@@ -179,6 +202,29 @@ struct Strings {
     }
     func bandUnder(_ hi: String) -> String { t("under \(hi)", "menos de \(hi)") }
     func bandOver(_ lo: String) -> String { t("over \(lo)", "mais de \(lo)") }
+    // v0.8: percentile explorer (drag a percentile, see the salary there)
+    var exploreByPercentile: String { t("Explore by percentile", "Explora por percentil") }
+    var exploreHint: String { t("Drag the handle. Let go to return to you.", "Arrasta o cursor. Larga para voltar a ti.") }
+    func percentileEarns(_ p: String) -> String { t("The \(p) percentile earns", "O percentil \(p) ganha") }
+    var aboutPerMonth: String { t("about / month", "cerca de / mês") }
+    func ordinalPercentile(_ n: Int) -> String {
+        if pt { return "\(n)º" }
+        let suffix: String
+        switch n % 100 {
+        case 11, 12, 13: suffix = "th"
+        default:
+            switch n % 10 {
+            case 1: suffix = "st"
+            case 2: suffix = "nd"
+            case 3: suffix = "rd"
+            default: suffix = "th"
+            }
+        }
+        return "\(n)\(suffix)"
+    }
+    var youMarker: String { t("You", "Tu") }
+    var lowestEarners: String { t("Lowest", "Mais baixos") }
+    var highestEarners: String { t("Highest", "Mais altos") }
     var peopleLikeYou: String { t("People like you", "Pessoas como tu") }
     var earnLess: String { t("earn less", "ganham menos") }
     var medianWord: String { t("median", "mediana") }
@@ -275,7 +321,7 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.7. Estimates only, not official tax or financial advice.", "SalarySeed v0.7. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.8. Estimates only, not official tax or financial advice.", "SalarySeed v0.8. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }
@@ -292,10 +338,57 @@ struct Strings {
           "Escalões: 100% (ano 1), 75% (anos 2 a 4), 50% (anos 5 a 7), 25% (anos 8 a 10). Até 55 × IAS por ano.")
     }
 
+    // v0.8: IRS Jovem eligibility assessor
+    var irsJovemCheck: String { t("Not sure? Check your eligibility", "Não sabes? Verifica se tens direito") }
+    var irsJovemManual: String { t("Or set it by hand", "Ou define à mão") }
+    var jovemAssessTitle: String { t("IRS Jovem", "IRS Jovem") }
+    var jovemAssessIntro: String {
+        t("A few questions to find out if you qualify this year, and for how much. Nothing leaves your phone.",
+          "Umas perguntas para saber se tens direito este ano, e a quanto. Nada sai do teu telemóvel.")
+    }
+    var jovemAgeQ: String { t("How old are you?", "Que idade tens?") }
+    var jovemAgeHint: String { t("Must be 35 or under at the end of the year.", "Tens de ter 35 ou menos no fim do ano.") }
+    var jovemFirstYearQ: String { t("First year you earned income on your own?", "Primeiro ano em que tiveste rendimentos por ti?") }
+    var jovemFirstYearHint: String {
+        t("The first year you earned a salary and filed IRS not as a dependant. This sets which benefit year you're in.",
+          "O primeiro ano em que ganhaste salário e entregaste IRS já não como dependente. Define em que ano do benefício estás.")
+    }
+    var jovemDependentQ: String { t("Are you a dependant on someone else's IRS this year?", "Este ano és dependente no IRS de outra pessoa?") }
+    var jovemRegimeQ: String { t("Have you used RNH, IFICI or Programa Regressar?", "Já usaste RNH, IFICI ou Programa Regressar?") }
+    var yesWord: String { t("Yes", "Sim") }
+    var noWord: String { t("No", "Não") }
+    var jovemSeeResult: String { t("See my exemption", "Ver a minha isenção") }
+
+    var jovemExemptThisYear: String { t("exemption on your IRS this year", "de isenção no teu IRS este ano") }
+    func jovemBenefitYear(_ n: Int) -> String { t("You're in benefit year \(n) of 10.", "Estás no ano \(n) de 10 do benefício.") }
+    func jovemCapLine(_ yearly: String, monthly: String) -> String {
+        t("Exempt up to \(yearly) a year (about \(monthly) a month).",
+          "Isento até \(yearly) por ano (cerca de \(monthly) por mês).")
+    }
+    var jovemNotEligible: String { t("You don't qualify this year", "Não tens direito este ano") }
+    var jovemReasonTooOld: String { t("IRS Jovem is only for people 35 or under.", "O IRS Jovem é só para quem tem 35 anos ou menos.") }
+    var jovemReasonDependent: String { t("While you're a dependant on someone else's IRS, the benefit doesn't apply.", "Enquanto fores dependente no IRS de outra pessoa, o benefício não se aplica.") }
+    var jovemReasonRegime: String { t("IRS Jovem can't be combined with RNH, IFICI or Programa Regressar.", "O IRS Jovem não se junta com RNH, IFICI ou Programa Regressar.") }
+    var jovemReasonExhausted: String { t("You've passed the 10 benefit years. The exemption has run out.", "Já passaste os 10 anos do benefício. A isenção terminou.") }
+    var jovemReasonNotStarted: String { t("That first income year is in the future. Come back when it starts.", "Esse primeiro ano de rendimentos ainda está no futuro. Volta quando começar.") }
+    var jovemApply: String { t("Use this in the app", "Usar isto na app") }
+    var jovemApplied: String { t("Done. Your IRS now uses this exemption.", "Feito. O teu IRS passa a usar esta isenção.") }
+    var jovemDisclaimer: String {
+        t("A guide, not an official ruling. Non-consecutive years and dependant years can change the count. Confirm on the Portal das Finanças.",
+          "Um guia, não uma decisão oficial. Anos não seguidos e anos como dependente podem mudar a contagem. Confirma no Portal das Finanças.")
+    }
+
     // MARK: Salary editor
 
     var editorTitle: String { t("Your salary", "O teu salário") }
     var editorPlaceholder: String { t("Monthly amount", "Valor mensal") }
+    // v0.8: monthly vs yearly input
+    var editorPeriodLabel: String { t("Enter it as", "Escreve como") }
+    var perYearSuffix: String { t("/yr", "/ano") }
+    func editorYearlyNote(_ months: Int) -> String {
+        t("Total for the year. We split it across your \(months) payments.",
+          "Total do ano. Dividimos pelos teus \(months) pagamentos.")
+    }
     var updateButton: String { t("Update", "Atualizar") }
     var updateSalaryButton: String { t("Update my salary", "Atualizar o meu salário") }
     var editorAjudasLabel: String { t("Ajudas de custo / month (optional)", "Ajudas de custo / mês (opcional)") }

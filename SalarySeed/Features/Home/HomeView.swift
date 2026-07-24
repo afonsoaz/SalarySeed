@@ -5,20 +5,41 @@ import SwiftUI
 /// v0.3: all copy comes from the string table (EN + PT).
 struct HomeView: View {
     @EnvironmentObject private var store: SalaryStore
-    @State private var period: Period = .monthly
+    @State private var period: ResultPeriod = .m14
+    @State private var pickedInitial = false
     @State private var showEditor = false
     @State private var showRaiseSeed = false
     @State private var showFutureSeed = false
 
-    enum Period: String, CaseIterable, Identifiable {
-        case monthly, yearly
+    /// v0.8: three ways to read the result. Two are monthly (the yearly pay spread
+    /// over 12, or over the 14 real payments) and one is the yearly total.
+    enum ResultPeriod: String, CaseIterable, Identifiable {
+        case m12, m14, year
         var id: String { rawValue }
+        /// 0 = monthly ÷12, 1 = monthly ÷14, 2 = annual. Drives the copy helpers.
+        var modeIndex: Int { self == .m12 ? 0 : (self == .m14 ? 1 : 2) }
+        var isAnnual: Bool { self == .year }
+        func label(_ s: Strings) -> String {
+            switch self {
+            case .m12: return s.resultM12
+            case .m14: return s.resultM14
+            case .year: return s.resultYear
+            }
+        }
+        /// Multiplier on a per-payment monthly value to reach this view.
+        func factor(months: Double) -> Double {
+            switch self {
+            case .m12: return months / 12
+            case .m14: return months / 14
+            case .year: return months
+            }
+        }
     }
 
     private var s: Strings { store.s }
     private var b: SalaryBreakdown { store.breakdown }
-    private var isYearly: Bool { period == .yearly }
-    private var factor: Double { isYearly ? b.months : 1 }
+    private var isAnnual: Bool { period.isAnnual }
+    private var factor: Double { period.factor(months: b.months) }
 
     var body: some View {
         NavigationStack {
@@ -50,6 +71,12 @@ struct HomeView: View {
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showRaiseSeed) { RaiseSimulatorView() }
             .sheet(isPresented: $showFutureSeed) { FutureSeedView() }
+            .onAppear {
+                // Open on the lens that equals the user's real per-payment amount.
+                guard !pickedInitial else { return }
+                period = store.schedule == .twelve ? .m12 : .m14
+                pickedInitial = true
+            }
         }
     }
 
@@ -62,10 +89,10 @@ struct HomeView: View {
             }
             .foregroundStyle(Theme.accent)
             Spacer()
-            SegmentedPicker(options: Period.allCases, selection: $period) {
-                $0 == .monthly ? s.monthly : s.yearly
+            SegmentedPicker(options: ResultPeriod.allCases, selection: $period) {
+                $0.label(s)
             }
-            .frame(width: 170)
+            .frame(width: 188)
             Button { showEditor = true } label: {
                 Image(systemName: "pencil.circle.fill")
                     .font(.system(size: 24))
@@ -90,7 +117,7 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(s.grossLabel(yearly: isYearly))
+                    Text("\(s.grossWord) / \(s.periodSuffix(period.modeIndex))")
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.textSecondary)
                     RollingEuro(value: b.grossMonthly * factor, color: Theme.textPrimary, fontSize: 30)
@@ -100,7 +127,7 @@ struct HomeView: View {
                 Rectangle().fill(Color.white.opacity(0.08)).frame(width: 1, height: 44)
 
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(s.netLabel(yearly: isYearly))
+                    Text("\(s.netWord) / \(s.periodSuffix(period.modeIndex))")
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.textSecondary)
                     HStack(alignment: .firstTextBaseline, spacing: 5) {
@@ -110,15 +137,20 @@ struct HomeView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            // A short note on what the 12x / 14x monthly view means.
+            if let cap = s.resultCaption(period.modeIndex) {
+                Text(cap)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textFaint)
+            }
             // Net above is from the salary alone. Ajudas de custo show as their own line,
             // so it is always clear which net comes from gross and which comes on top.
             if b.ajudasMonthly > 0 {
-                Text(s.heroAjudas(
-                    eur(isYearly ? b.ajudasYearly : b.ajudasMonthly),
-                    total: eur(isYearly ? b.pocketYearly : b.pocketMonthly)
-                ))
-                .font(.system(size: 12))
-                .foregroundStyle(Theme.textSecondary)
+                let ajudasPart = isAnnual ? b.ajudasYearly : b.ajudasMonthly
+                let pocket = b.netMonthly * factor + ajudasPart
+                Text(s.heroAjudas(eur(ajudasPart), total: eur(pocket)))
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textSecondary)
             }
         }
         .padding(.top, 2)
@@ -168,7 +200,7 @@ struct HomeView: View {
             HStack {
                 SectionLabel(s.theDetails)
                 Spacer()
-                Text(s.perPeriod(yearly: isYearly))
+                Text(s.perPeriod(yearly: isAnnual))
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.textFaint)
             }
@@ -214,8 +246,8 @@ struct HomeView: View {
 
             if b.ajudasMonthly > 0 {
                 AjudasCard(
-                    value: eur(isYearly ? b.ajudasYearly : b.ajudasMonthly),
-                    yearlyLine: isYearly ? nil : s.ajudasCardYearly(eur(b.ajudasYearly)),
+                    value: eur(isAnnual ? b.ajudasYearly : b.ajudasMonthly),
+                    yearlyLine: isAnnual ? nil : s.ajudasCardYearly(eur(b.ajudasYearly)),
                     body_: s.ajudasCardBody,
                     title: s.ajudasCardTitle
                 )

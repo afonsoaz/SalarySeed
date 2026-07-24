@@ -6,6 +6,7 @@ import SwiftUI
 struct ProfileView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var showEditor = false
+    @State private var showJovemAssessor = false
     @State private var activeDimension: CompareDimension?
 
     private var s: Strings { store.s }
@@ -56,6 +57,7 @@ struct ProfileView: View {
             }
             .background(Theme.background)
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
+            .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
             }
@@ -136,12 +138,37 @@ struct ProfileView: View {
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(2)
 
+            // Primary path: the guided eligibility check.
+            Button { showJovemAssessor = true } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 13))
+                    Text(s.irsJovemCheck)
+                        .font(.system(size: 13, weight: .medium))
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 11))
+                }
+                .foregroundStyle(Theme.accent)
+                .padding(.vertical, 11)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity)
+                .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 11))
+                .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.accentBorder))
+            }
+            .padding(.top, 2)
+
+            // Manual fallback: set the exemption by hand.
+            Text(s.irsJovemManual)
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textFaint)
+                .padding(.top, 4)
+
             HStack(spacing: 6) {
                 ForEach(ProfileView.jovemOptions, id: \.value) { option in
                     jovemChip(option)
                 }
             }
-            .padding(.top, 2)
 
             Text(s.irsJovemNote)
                 .font(.system(size: 10))
