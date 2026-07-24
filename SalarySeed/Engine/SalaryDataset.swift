@@ -74,21 +74,67 @@ enum SalaryDataset {
         var median: Double { mean * exp(-sigma * sigma / 2) }
     }
 
-    // MARK: Occupation [QP Oct 2024, Quadro 113, CPP major groups]
+    // MARK: Sector [QP Oct 2024, Quadro 104: ganho médio by CAE × antiguidade]
 
-    /// GEP-MTSSS, Quadros de Pessoal, Oct 2024 ganho médio by profissão
-    /// (Quadro 113). CPP group 6, agriculture, is not offered in the
-    /// picker: €1,167.21.
-    static let occupation: [OccupationGroup: Cell] = [
-        .managers:       Cell(mean: 3_295.85, sigma: 0.60),
-        .specialists:    Cell(mean: 2_400.04, sigma: 0.60),
-        .technicians:    Cell(mean: 1_947.34, sigma: 0.60),
-        .administrative: Cell(mean: 1_391.17, sigma: 0.60),
-        .services:       Cell(mean: 1_162.67, sigma: 0.60),
-        .trades:         Cell(mean: 1_246.38, sigma: 0.60),
-        .operators:      Cell(mean: 1_341.97, sigma: 0.60),
-        .elementary:     Cell(mean: 1_058.48, sigma: 0.60),
+    /// Overall mean gross monthly (ganho médio) per sector, used when tenure is
+    /// unknown. GEP Quadros de Pessoal, Oct 2024, Quadro 104 (TOTAL column).
+    static let sectorTotalMean: [Sector: Double] = [
+        .agriculture: 1210.12, .extractive: 2021.23, .manufacturing: 1521.41,
+        .energy: 3320.84, .water: 1478.51, .construction: 1336.73,
+        .autoTrade: 1351.55, .wholesale: 1769.01, .retail: 1317.08,
+        .transport: 1856.47, .hospitality: 1125.34, .media: 2262.35,
+        .telecom: 2449.54, .it: 2628.75, .finance: 2718.0, .realEstate: 1535.48,
+        .consulting: 1980.2, .admin: 1367.59, .publicAdmin: 1479.66,
+        .education: 1682.53, .health: 1712.74, .socialWork: 1125.87,
+        .arts: 2222.99, .otherServices: 1356.2,
     ]
+
+    /// Mean gross monthly per sector × tenure band. Six values per sector, in the
+    /// GEP "escalão de antiguidade" order: <1, 1-4, 5-9, 10-14, 15-19, 20+ years.
+    /// Source: GEP Quadros de Pessoal, Oct 2024, Quadro 104.
+    static let sectorTenureMean: [Sector: [Double]] = [
+        .agriculture: [1131.83, 1200.88, 1242.7, 1273.28, 1338.8, 1346.85],
+        .extractive: [1747.09, 1950.12, 1957.4, 2349.12, 2337.34, 2165.24],
+        .manufacturing: [1343.11, 1409.87, 1485.24, 1566.44, 1684.77, 1767.74],
+        .energy: [2405.17, 2929.42, 2696.98, 3372.6, 3875.47, 4149.32],
+        .water: [1229.57, 1303.73, 1390.48, 1545.14, 1738.47, 2014.81],
+        .construction: [1208.09, 1293.61, 1370.48, 1430.54, 1543.3, 1689.99],
+        .autoTrade: [1189.44, 1270.64, 1356.87, 1427.75, 1547.97, 1585.92],
+        .wholesale: [1488.26, 1642.36, 1724.76, 1885.84, 2035.72, 2152.63],
+        .retail: [1152.68, 1246.37, 1343.96, 1419.85, 1477.37, 1515.73],
+        .transport: [1379.2, 1561.54, 1764.14, 1959.51, 2394.48, 2527.4],
+        .hospitality: [1052.84, 1099.64, 1191.17, 1242.55, 1291.69, 1390.88],
+        .media: [1946.64, 2198.96, 2154.66, 2186.45, 2365.2, 2671.84],
+        .telecom: [1722.25, 2156.89, 2552.31, 2323.42, 2805.6, 2910.71],
+        .it: [2418.85, 2580.53, 2767.77, 2969.68, 3087.25, 3226.07],
+        .finance: [2140.86, 2417.09, 2672.93, 2773.49, 2730.86, 3151.46],
+        .realEstate: [1387.29, 1492.63, 1572.88, 1549.0, 1915.54, 2048.04],
+        .consulting: [1786.98, 1974.99, 1971.13, 2179.52, 2294.72, 2239.97],
+        .admin: [1225.7, 1384.59, 1414.26, 1544.89, 1587.08, 1847.93],
+        .publicAdmin: [1305.87, 1337.2, 1421.96, 1557.72, 1529.6, 1876.91],
+        .education: [1458.13, 1605.75, 1699.23, 1732.2, 1772.38, 1911.75],
+        .health: [1375.79, 1478.63, 1803.34, 2131.63, 2078.2, 1935.73],
+        .socialWork: [1030.75, 1045.86, 1094.19, 1166.33, 1218.41, 1289.77],
+        .arts: [2256.89, 2440.9, 2029.23, 1878.96, 1852.68, 2055.72],
+        .otherServices: [1182.25, 1251.71, 1349.09, 1415.87, 1491.72, 1679.08],
+    ]
+
+    /// Within-cell dispersion for the log-normal percentile model. The crossed
+    /// sector×tenure cell is narrower (both fixed) than a sector taken whole.
+    static let sectorSigma = 0.55
+    static let sectorTenureSigma = 0.50
+
+    /// Build the cohort cell for a sector, optionally crossed with a tenure band.
+    /// Falls back to the sector total when tenure is unknown.
+    static func sectorCell(_ sector: Sector, tenure: TenureBand?) -> Cell {
+        if let tb = tenure, let arr = sectorTenureMean[sector], tb.index < arr.count {
+            return Cell(mean: arr[tb.index], sigma: sectorTenureSigma)
+        }
+        if let m = sectorTotalMean[sector] {
+            return Cell(mean: m, sigma: sectorSigma)
+        }
+        return Cell(mean: qpNationalMean2024, sigma: sectorSigma)
+    }
 
     // MARK: Education [QP Oct 2024, Quadro 105, count-weighted aggregates]
 

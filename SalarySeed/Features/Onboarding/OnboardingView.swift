@@ -39,7 +39,8 @@ struct OnboardingView: View {
     @State private var ageBand: AgeBand?
     @State private var region: PTRegion?
     @State private var education: EducationLevel?
-    @State private var occupation: OccupationGroup?
+    @State private var sectorSel: Sector?
+    @State private var tenureYearsSel: Int = 3
 
     private var s: Strings { store.s }
     private let totalSteps = 9
@@ -64,7 +65,7 @@ struct OnboardingView: View {
                 case 5: profileStep(dimensionID: "age")
                 case 6: profileStep(dimensionID: "region")
                 case 7: profileStep(dimensionID: "education")
-                default: profileStep(dimensionID: "occupation")
+                default: sectorStep
                 }
             }
             .padding(24)
@@ -102,7 +103,8 @@ struct OnboardingView: View {
         store.ageBand = ageBand
         store.region = region
         store.education = education
-        store.occupation = occupation
+        store.sector = sectorSel
+        store.tenureYears = (sectorSel != nil) ? tenureYearsSel : nil
         store.hasOnboarded = true
     }
 
@@ -466,8 +468,7 @@ struct OnboardingView: View {
         switch id {
         case "age": AgeBand.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) }
         case "region": PTRegion.allCases.filter { $0.cohort != nil }.map { DimensionOption(id: $0.rawValue, label: $0.label) }
-        case "education": EducationLevel.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: s.pt)) }
-        default: OccupationGroup.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: s.pt)) }
+        default: EducationLevel.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: s.pt)) }
         }
     }
 
@@ -475,8 +476,7 @@ struct OnboardingView: View {
         switch id {
         case "age": ageBand?.rawValue
         case "region": region?.rawValue
-        case "education": education?.rawValue
-        default: occupation?.rawValue
+        default: education?.rawValue
         }
     }
 
@@ -484,8 +484,87 @@ struct OnboardingView: View {
         switch id {
         case "age": ageBand = optionID.flatMap(AgeBand.init(rawValue:))
         case "region": region = optionID.flatMap(PTRegion.init(rawValue:))
-        case "education": education = optionID.flatMap(EducationLevel.init(rawValue:))
-        default: occupation = optionID.flatMap(OccupationGroup.init(rawValue:))
+        default: education = optionID.flatMap(EducationLevel.init(rawValue:))
+        }
+    }
+
+    // MARK: Step 8, sector + tenure (last step)
+
+    private var sectorStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 30)
+            Text(s.sectorQuestion)
+                .font(.system(size: 26, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(s.onbProfileWhy)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.top, 8)
+
+            ScrollView {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+                    ForEach(Sector.allCases) { sector in
+                        sectorChip(sector)
+                    }
+                }
+                .padding(.top, 16)
+
+                if sectorSel != nil {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(s.tenureQuestion)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Theme.textPrimary)
+                        HStack {
+                            Text(tenureYearsSel == 0 ? TenureBand.lt1.label(pt: s.pt) : s.yearsText(tenureYearsSel))
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundStyle(Theme.textPrimary)
+                                .contentTransition(.numericText())
+                            Spacer()
+                            HStack(spacing: 16) {
+                                stepperButton(system: "minus") {
+                                    if tenureYearsSel > 0 { tenureYearsSel -= 1 }
+                                }
+                                .opacity(tenureYearsSel > 0 ? 1 : 0.35)
+                                stepperButton(system: "plus") {
+                                    if tenureYearsSel < 40 { tenureYearsSel += 1 }
+                                }
+                            }
+                        }
+                    }
+                    .padding(.top, 18)
+                }
+            }
+
+            Spacer(minLength: 4)
+            PrimaryButton(title: s.okButton) { finish() }
+            bigSkipButton(s.skipQuestion) {
+                sectorSel = nil
+                finish()
+            }
+        }
+    }
+
+    private func sectorChip(_ sector: Sector) -> some View {
+        let isSelected = sector == sectorSel
+        return Button {
+            withAnimation(.easeOut(duration: 0.12)) { sectorSel = sector }
+        } label: {
+            Text(sector.label(pt: s.pt))
+                .font(.system(size: 12.5, weight: isSelected ? .medium : .regular))
+                .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 11)
+                .padding(.horizontal, 8)
+                .background(
+                    isSelected ? Theme.accent : Color.white.opacity(0.06),
+                    in: RoundedRectangle(cornerRadius: 11)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11)
+                        .stroke(isSelected ? Theme.accent : Theme.cardBorder, lineWidth: 1)
+                )
         }
     }
 

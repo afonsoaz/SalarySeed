@@ -66,7 +66,10 @@ final class SalaryStore: ObservableObject {
     @Published var ageBand: AgeBand? { didSet { save() } }
     @Published var region: PTRegion? { didSet { save() } }
     @Published var education: EducationLevel? { didSet { save() } }
-    @Published var occupation: OccupationGroup? { didSet { save() } }
+    // v0.8.3: sector (GEP CAE) replaces the old occupation group; tenure years in
+    // that sector cross with it for the sector×tenure percentile.
+    @Published var sector: Sector? { didSet { save() } }
+    @Published var tenureYears: Int? { didSet { save() } }
 
     // v0.3: language. Follows the device by default, can be changed in the profile tab.
     @Published var language: AppLanguage { didSet { save() } }
@@ -88,7 +91,9 @@ final class SalaryStore: ObservableObject {
         ageBand = AgeBand(rawValue: defaults.string(forKey: "profile.ageBand") ?? "")
         region = PTRegion(rawValue: defaults.string(forKey: "profile.region") ?? "")
         education = EducationLevel(rawValue: defaults.string(forKey: "profile.education") ?? "")
-        occupation = OccupationGroup(rawValue: defaults.string(forKey: "profile.occupation") ?? "")
+        sector = Sector(rawValue: defaults.string(forKey: "profile.sector") ?? "")
+        let ty = defaults.object(forKey: "profile.tenureYears") as? Int
+        tenureYears = ty
         language = AppLanguage(rawValue: defaults.string(forKey: "language") ?? "") ?? .auto
     }
 
@@ -108,7 +113,9 @@ final class SalaryStore: ObservableObject {
         setOptional(ageBand?.rawValue, forKey: "profile.ageBand")
         setOptional(region?.rawValue, forKey: "profile.region")
         setOptional(education?.rawValue, forKey: "profile.education")
-        setOptional(occupation?.rawValue, forKey: "profile.occupation")
+        setOptional(sector?.rawValue, forKey: "profile.sector")
+        if let tenureYears { defaults.set(tenureYears, forKey: "profile.tenureYears") }
+        else { defaults.removeObject(forKey: "profile.tenureYears") }
     }
 
     private func setOptional(_ value: String?, forKey key: String) {
@@ -138,8 +145,18 @@ final class SalaryStore: ObservableObject {
 
     /// How many of the four profile signals are filled (0 to 4).
     var profileFilledCount: Int {
-        [ageBand != nil, region != nil, education != nil, occupation != nil]
+        [ageBand != nil, region != nil, education != nil, sector != nil]
             .filter { $0 }.count
+    }
+
+    /// The tenure band derived from the entered years (nil until years are set).
+    var tenureBand: TenureBand? {
+        tenureYears.map { TenureBand.from(years: $0) }
+    }
+
+    /// The cohort cell for the user's sector, crossed with tenure when known.
+    var sectorCell: CohortCell? {
+        sector.map { SalaryDataset.sectorCell($0, tenure: tenureBand) }
     }
 
     /// Sprout growth stage 0 to 5: the salary plants the seed (1);

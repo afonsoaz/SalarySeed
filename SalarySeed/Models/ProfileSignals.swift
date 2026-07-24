@@ -82,29 +82,89 @@ enum EducationLevel: String, CaseIterable, Identifiable {
     }
 }
 
-/// Broad occupation groups (CPP major-group flavor, deliberately coarse).
-enum OccupationGroup: String, CaseIterable, Identifiable {
-    case managers
-    case specialists
-    case technicians
-    case administrative = "admin"
-    case services
-    case trades
-    case operators
-    case elementary
+/// Economic sector (GEP CAE-Rev.3). v0.8.3 replaces the old occupation groups:
+/// people know their sector far better than an ISCO occupation major group. The
+/// list is a curated, non-overlapping cut of Quadro 104 — sections, plus the key
+/// divisions people actually recognise (retail vs wholesale, health vs social
+/// work, IT vs the rest of "information & communication"). Raw values are STABLE
+/// IDs (persisted); they key the GEP sector tables in SalaryDataset.
+enum Sector: String, CaseIterable, Identifiable {
+    case agriculture, extractive, manufacturing, energy, water, construction
+    case autoTrade, wholesale, retail, transport, hospitality
+    case media, telecom, it, finance, realEstate, consulting
+    case admin, publicAdmin, education, health, socialWork, arts, otherServices
 
     var id: String { rawValue }
 
     func label(pt: Bool) -> String {
         switch self {
-        case .managers: pt ? "Direção e gestão" : "Directors & Managers"
-        case .specialists: pt ? "Especialistas" : "Specialists & Professionals"
-        case .technicians: pt ? "Técnicos" : "Technicians"
-        case .administrative: pt ? "Administrativos" : "Administrative"
-        case .services: pt ? "Serviços e vendas" : "Services & Sales"
-        case .trades: pt ? "Operários qualificados" : "Skilled Trades"
-        case .operators: pt ? "Operadores de máquinas" : "Machine Operators"
-        case .elementary: pt ? "Trabalho não qualificado" : "Elementary Occupations"
+        case .agriculture:   return pt ? "Agricultura e pescas" : "Agriculture & fishing"
+        case .extractive:    return pt ? "Indústrias extractivas" : "Mining & quarrying"
+        case .manufacturing: return pt ? "Indústria transformadora" : "Manufacturing"
+        case .energy:        return pt ? "Eletricidade e gás" : "Electricity & gas"
+        case .water:         return pt ? "Água e saneamento" : "Water & waste"
+        case .construction:  return pt ? "Construção" : "Construction"
+        case .autoTrade:     return pt ? "Comércio e reparação de veículos" : "Vehicle sales & repair"
+        case .wholesale:     return pt ? "Comércio por grosso" : "Wholesale trade"
+        case .retail:        return pt ? "Comércio a retalho" : "Retail"
+        case .transport:     return pt ? "Transportes e armazenagem" : "Transport & storage"
+        case .hospitality:   return pt ? "Alojamento e restauração" : "Hospitality & food"
+        case .media:         return pt ? "Edição, media e audiovisual" : "Publishing & media"
+        case .telecom:       return pt ? "Telecomunicações" : "Telecommunications"
+        case .it:            return pt ? "Informática e serviços de informação" : "IT & information services"
+        case .finance:       return pt ? "Banca e seguros" : "Banking & insurance"
+        case .realEstate:    return pt ? "Atividades imobiliárias" : "Real estate"
+        case .consulting:    return pt ? "Consultoria científica e técnica" : "Consulting, science & technical"
+        case .admin:         return pt ? "Serviços administrativos e de apoio" : "Administrative & support"
+        case .publicAdmin:   return pt ? "Administração pública e defesa" : "Public administration & defence"
+        case .education:     return pt ? "Educação" : "Education"
+        case .health:        return pt ? "Saúde" : "Healthcare"
+        case .socialWork:    return pt ? "Apoio social" : "Social work"
+        case .arts:          return pt ? "Artes, cultura e desporto" : "Arts, culture & sport"
+        case .otherServices: return pt ? "Outros serviços" : "Other services"
+        }
+    }
+}
+
+/// Seniority as tenure in the sector, banded exactly as GEP's "escalão de
+/// antiguidade" (Quadro 104). We ask the user for a number of years and map it
+/// to the band that indexes the sector×tenure means.
+enum TenureBand: String, CaseIterable, Identifiable {
+    case lt1, y1to4, y5to9, y10to14, y15to19, y20plus
+
+    var id: String { rawValue }
+
+    /// 0-based index into SalaryDataset.sectorTenureMean arrays.
+    var index: Int {
+        switch self {
+        case .lt1: return 0
+        case .y1to4: return 1
+        case .y5to9: return 2
+        case .y10to14: return 3
+        case .y15to19: return 4
+        case .y20plus: return 5
+        }
+    }
+
+    static func from(years: Int) -> TenureBand {
+        switch years {
+        case ..<1: return .lt1
+        case 1...4: return .y1to4
+        case 5...9: return .y5to9
+        case 10...14: return .y10to14
+        case 15...19: return .y15to19
+        default: return .y20plus
+        }
+    }
+
+    func label(pt: Bool) -> String {
+        switch self {
+        case .lt1: return pt ? "menos de 1 ano" : "under 1 year"
+        case .y1to4: return pt ? "1 a 4 anos" : "1–4 years"
+        case .y5to9: return pt ? "5 a 9 anos" : "5–9 years"
+        case .y10to14: return pt ? "10 a 14 anos" : "10–14 years"
+        case .y15to19: return pt ? "15 a 19 anos" : "15–19 years"
+        case .y20plus: return pt ? "20+ anos" : "20+ years"
         }
     }
 }

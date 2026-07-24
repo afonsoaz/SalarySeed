@@ -49,10 +49,6 @@ extension EducationLevel {
     var cohort: CohortCell? { SalaryDataset.education[self] }
 }
 
-extension OccupationGroup {
-    var cohort: CohortCell? { SalaryDataset.occupation[self] }
-}
-
 // MARK: - UI-facing dimension descriptors (shared by compareSeed + profileSeed)
 
 struct DimensionOption: Identifiable {
@@ -108,14 +104,6 @@ struct CompareDimension: Identifiable {
             selectedID: { $0.education?.rawValue },
             select: { store, id in store.education = id.flatMap(EducationLevel.init(rawValue:)) },
             cell: { EducationLevel(rawValue: $0)?.cohort }
-        ),
-        CompareDimension(
-            id: "occupation",
-            icon: "briefcase",
-            options: { pt in OccupationGroup.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: pt)) } },
-            selectedID: { $0.occupation?.rawValue },
-            select: { store, id in store.occupation = id.flatMap(OccupationGroup.init(rawValue:)) },
-            cell: { OccupationGroup(rawValue: $0)?.cohort }
         ),
     ]
 }

@@ -7,6 +7,7 @@ struct ProfileView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var showEditor = false
     @State private var showJovemAssessor = false
+    @State private var showSectorSheet = false
     @State private var activeDimension: CompareDimension?
 
     private var s: Strings { store.s }
@@ -31,6 +32,7 @@ struct ProfileView: View {
 
                     VStack(alignment: .leading, spacing: 10) {
                         SectionLabel(s.addMore)
+                        sectorRow
                         ForEach(CompareDimension.all) { dim in
                             dimensionRow(dim)
                         }
@@ -58,6 +60,7 @@ struct ProfileView: View {
             .background(Theme.background)
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
+            .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
             }
@@ -279,6 +282,66 @@ struct ProfileView: View {
         }
         .padding(14)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    /// Sector + tenure, opened as one sheet. Shows the current pick or an add prompt.
+    private var sectorRow: some View {
+        Button { showSectorSheet = true } label: {
+            if let sector = store.sector {
+                HStack(spacing: 12) {
+                    Image(systemName: "building.2")
+                        .font(.system(size: 18))
+                        .foregroundStyle(Theme.accent)
+                        .frame(width: 28)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(s.sectorRowTitle)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text(sectorSubtitle(sector))
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "pencil")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Theme.accent)
+                }
+                .padding(14)
+                .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+            } else {
+                HStack(spacing: 12) {
+                    Image(systemName: "building.2")
+                        .font(.system(size: 18))
+                        .foregroundStyle(Theme.textSecondary)
+                        .frame(width: 28)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(s.sectorRowTitle)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text(s.sectorAddHint)
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.accent)
+                    }
+                    Spacer()
+                    Text(s.addPill)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Color(hex: 0x06281C))
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
+                }
+                .padding(14)
+                .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+                .opacity(0.9)
+            }
+        }
+    }
+
+    private func sectorSubtitle(_ sector: Sector) -> String {
+        if let y = store.tenureYears {
+            return "\(sector.label(pt: s.pt)) · \(s.yearsText(y))"
+        }
+        return sector.label(pt: s.pt)
     }
 
     private func dimensionRow(_ dim: CompareDimension) -> some View {

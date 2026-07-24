@@ -7,6 +7,7 @@ import SwiftUI
 struct CompareView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var activeDimension: CompareDimension?
+    @State private var showSectorSheet = false
 
     private var s: Strings { store.s }
 
@@ -24,6 +25,7 @@ struct CompareView: View {
                 .padding(.bottom, 24)
             }
             .background(Theme.background)
+            .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
             }
@@ -92,6 +94,21 @@ struct CompareView: View {
     private var layers: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(s.peopleLikeYou)
+
+            // Sector × tenure leads: it's the combined "people like you" cohort.
+            if let sector = store.sector, let cell = store.sectorCell {
+                SectorCard(
+                    sector: sector,
+                    tenureYears: store.tenureYears,
+                    result: CohortEngine.result(grossMonthly: store.breakdown.grossMonthly, cell: cell),
+                    cell: cell,
+                    userGross: store.breakdown.grossMonthly,
+                    s: s
+                ) { showSectorSheet = true }
+            } else {
+                lockedSectorRow
+            }
+
             ForEach(CompareDimension.all) { dim in
                 if let option = dim.selectedOption(in: store, pt: s.pt), let cell = dim.cell(option.id) {
                     LayerCard(
@@ -106,10 +123,37 @@ struct CompareView: View {
                     lockedLayerRow(dim)
                 }
             }
-            // offerSeed (compare job offers) is hidden until it actually ships.
-            // Bring the LockedRow back here when the feature lands.
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
+    }
+
+    private var lockedSectorRow: some View {
+        Button { showSectorSheet = true } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "building.2")
+                    .font(.system(size: 18))
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(width: 28)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(s.sectorRowTitle)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(s.sectorAddHint)
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.accent)
+                }
+                Spacer()
+                Text(s.addPill)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Color(hex: 0x06281C))
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4)
+                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
+            }
+            .padding(14)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+            .opacity(0.9)
+        }
     }
 
     private func lockedLayerRow(_ dim: CompareDimension) -> some View {
@@ -382,6 +426,100 @@ private struct LayerCard: View {
     }
 
     /// Salary at a percentile (0-100) within this cohort's log-normal.
+    private func salaryAt(_ p: Double) -> Double {
+        let clamped = min(99.9, max(0.1, p))
+        return cell.median * exp(cell.sigma * PercentileEngine.normInv(clamped / 100))
+    }
+
+    private var caption: String {
+        let diff = userGross - result.median
+        return s.medianCaption(median: eur(result.median), diff: diff, diffText: eur(abs(diff)))
+    }
+}
+
+// MARK: - Sector × tenure card (the combined cohort)
+
+private struct SectorCard: View {
+    let sector: Sector
+    let tenureYears: Int?
+    let result: CohortResult
+    let cell: CohortCell
+    let userGross: Double
+    let s: Strings
+    let onTap: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: onTap) {
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(s.sectorKicker)
+                            .font(.system(size: 12))
+                            .foregroundStyle(Theme.textSecondary)
+                        HStack(spacing: 5) {
+                            Text(cohortName)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundStyle(Theme.textPrimary)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Image(systemName: "pencil")
+                                .font(.system(size: 10))
+                                .foregroundStyle(Theme.textFaint)
+                        }
+                    }
+                    Spacer(minLength: 8)
+                    Text("\(result.percentile)%")
+                        .font(.system(size: 24, weight: .medium))
+                        .foregroundStyle(Theme.accent)
+                }
+            }
+            .buttonStyle(.plain)
+
+            PercentileSlider(userPercentile: Double(result.percentile), salaryAt: salaryAt, s: s)
+                .padding(.top, 12)
+
+            Text(caption)
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.textSecondary)
+                .multilineTextAlignment(.leading)
+                .padding(.top, 10)
+
+            if tenureYears == nil {
+                Text(s.tenureAddHint)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.accent)
+                    .padding(.top, 6)
+            }
+
+            if result.edge {
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 9))
+                    Text(s.edgeChip)
+                        .font(.system(size: 10))
+                }
+                .foregroundStyle(Theme.segEmployeeSS)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 3)
+                .background(Theme.segEmployeeSS.opacity(0.10), in: RoundedRectangle(cornerRadius: 7))
+                .overlay(RoundedRectangle(cornerRadius: 7).stroke(Theme.segEmployeeSS.opacity(0.25)))
+                .padding(.top, 7)
+            }
+
+            Text(CohortEngine.sourceLine)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textFaint)
+                .padding(.top, 6)
+        }
+        .padding(.horizontal, 15)
+        .padding(.vertical, 14)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        .transition(.scale(scale: 0.97).combined(with: .opacity))
+    }
+
+    private var cohortName: String {
+        s.sectorCohort(sector.label(pt: s.pt), tenure: tenureYears.map { s.yearsText($0) })
+    }
+
     private func salaryAt(_ p: Double) -> Double {
         let clamped = min(99.9, max(0.1, p))
         return cell.median * exp(cell.sigma * PercentileEngine.normInv(clamped / 100))

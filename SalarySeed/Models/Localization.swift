@@ -306,9 +306,32 @@ struct Strings {
         id == "age" ? t("\(label) year olds", "\(label) anos") : label
     }
 
+    // MARK: v0.8.3 sector + tenure
+
+    var sectorRowTitle: String { t("Your sector", "O teu setor") }
+    var sectorSheetTitle: String { t("Which sector do you work in?", "Em que setor trabalhas?") }
+    var sectorQuestion: String { t("Which sector do\nyou work in?", "Em que setor\ntrabalhas?") }
+    var sectorNote: String { t("Economic activity (GEP CAE)", "Atividade económica (CAE, GEP)") }
+    var sectorAdd: String { t("Add your sector", "Adiciona o teu setor") }
+    var sectorAddHint: String { t("Compare with your sector and tenure", "Compara com o teu setor e antiguidade") }
+    var sectorKicker: String { t("Sector + tenure", "Setor + antiguidade") }
+    var tenureLabel: String { t("Years in the sector", "Anos no setor") }
+    var tenureQuestion: String { t("How many years in this sector?", "Há quantos anos neste setor?") }
+    var tenureHint: String { t("Roughly how long you've worked in this sector.", "Mais ou menos há quanto tempo trabalhas neste setor.") }
+    var tenureAddHint: String { t("Add your years to sharpen it", "Adiciona os anos para afinar") }
+    func yearsText(_ n: Int) -> String {
+        if n >= 40 { return t("40+ years", "40+ anos") }
+        return n == 1 ? t("\(n) year", "\(n) ano") : t("\(n) years", "\(n) anos")
+    }
+    /// The cohort name for the sector card: "Retail · 5–9 years" style.
+    func sectorCohort(_ sector: String, tenure: String?) -> String {
+        if let tenure { return "\(sector) · \(tenure)" }
+        return sector
+    }
+
     // MARK: Picker sheet
 
-    var sheetPrivacy: String { t("Stays on your phone. Used for your comparison and, later, for growthSeed tips.", "Fica no teu telemóvel. Serve para a tua comparação e, mais tarde, para as dicas do growthSeed.") }
+    var sheetPrivacy: String { t("Stays on your phone. Used for your comparison.", "Fica no teu telemóvel. Serve para a tua comparação.") }
     var removeDetail: String { t("Remove", "Remover") }
 
     // MARK: Profile
@@ -331,7 +354,7 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.8.2. Estimates only, not official tax or financial advice.", "SalarySeed v0.8.2. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.8.3. Estimates only, not official tax or financial advice.", "SalarySeed v0.8.3. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }
