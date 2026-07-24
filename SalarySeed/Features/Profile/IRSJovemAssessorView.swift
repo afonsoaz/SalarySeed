@@ -134,7 +134,8 @@ struct IRSJovemAssessorView: View {
 
     private func stepperRow(value: Binding<Int>, range: ClosedRange<Int>, unit: String) -> some View {
         HStack {
-            Text(unit.isEmpty ? "\(value.wrappedValue)" : "\(value.wrappedValue) \(unit)")
+            // verbatim: keep the year as "2021", not the locale-grouped "2 021".
+            Text(verbatim: unit.isEmpty ? "\(value.wrappedValue)" : "\(value.wrappedValue) \(unit)")
                 .font(.system(size: 20, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
                 .contentTransition(.numericText())

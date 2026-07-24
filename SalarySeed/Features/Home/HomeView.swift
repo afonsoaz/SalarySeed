@@ -263,6 +263,8 @@ struct HomeView: View {
     /// employer withholds from the tables; the real tax settles the next year,
     /// so there is usually a small refund or amount left to pay. Always yearly.
     private var annualSettlementCard: some View {
+        // No real IRS due for the year (salary below the taxable threshold).
+        let noIRS = b.annualIRSSettled < 1
         let balance = b.annualBalance
         let evenish = abs(balance) < 20
         let refund = balance >= 0
@@ -282,21 +284,36 @@ struct HomeView: View {
                 settlementFigure(label: s.annualSettled, value: eur(b.annualIRSSettled))
             }
 
-            HStack(spacing: 6) {
-                Image(systemName: evenish ? "equal.circle.fill" : (refund ? "arrow.down.left.circle.fill" : "arrow.up.right.circle.fill"))
-                    .font(.system(size: 14))
-                    .foregroundStyle(accent)
-                Text(evenish
-                     ? s.annualEven
-                     : (refund ? s.annualRefund(eur(abs(balance))) : s.annualToPay(eur(abs(balance)))))
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(accent)
-            }
+            if noIRS {
+                HStack(spacing: 6) {
+                    Image(systemName: "leaf.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Theme.accent)
+                    Text(s.annualNoIRS)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Theme.accent)
+                }
+                Text(b.annualIRSWithheld >= 1 ? s.annualNoIRSRefund(eur(b.annualIRSWithheld)) : s.annualNoIRSSub)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textSecondary)
+                    .lineSpacing(2)
+            } else {
+                HStack(spacing: 6) {
+                    Image(systemName: evenish ? "equal.circle.fill" : (refund ? "arrow.down.left.circle.fill" : "arrow.up.right.circle.fill"))
+                        .font(.system(size: 14))
+                        .foregroundStyle(accent)
+                    Text(evenish
+                         ? s.annualEven
+                         : (refund ? s.annualRefund(eur(abs(balance))) : s.annualToPay(eur(abs(balance)))))
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(accent)
+                }
 
-            Text(s.annualNote)
-                .font(.system(size: 10))
-                .foregroundStyle(Theme.textFaint)
-                .lineSpacing(2)
+                Text(s.annualNote)
+                    .font(.system(size: 10))
+                    .foregroundStyle(Theme.textFaint)
+                    .lineSpacing(2)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
@@ -357,39 +374,7 @@ struct HomeView: View {
                 title: s.ajudasNudgeTitle,
                 subtitle: s.ajudasNudgeSub
             ) { showFutureSeed = true }
-            growthTeaser
         }
-    }
-
-    /// growthSeed teaser. Groundwork only: an entry point, no advice logic or content.
-    private var growthTeaser: some View {
-        HStack(spacing: 12) {
-            SproutView(stage: 2, size: 24)
-                .saturation(0)
-                .opacity(0.75)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(s.growthTitle)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(s.growthSub)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textSecondary)
-                Text(s.growthSoon)
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.accent)
-            }
-            Spacer()
-            Image(systemName: "lock.fill")
-                .font(.system(size: 12))
-                .foregroundStyle(Theme.textFaint)
-        }
-        .padding(14)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(Theme.cardBorder, style: StrokeStyle(lineWidth: 1, dash: [4, 4]))
-        )
-        .opacity(0.9)
     }
 
     private var disclaimer: some View {

@@ -67,7 +67,14 @@ struct SalaryEditorView: View {
                     }
 
                     SegmentedPicker(options: AmountKind.allCases, selection: $kind) { $0.label(pt: s.pt) }
-                    SegmentedPicker(options: PaySchedule.allCases, selection: $schedule) { $0.label(pt: s.pt) }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        SegmentedPicker(options: PaySchedule.allCases, selection: $schedule) { $0.label(pt: s.pt) }
+                        Text(s.monthsHint)
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textSecondary)
+                            .lineSpacing(2)
+                    }
 
                     VStack(alignment: .leading, spacing: 6) {
                         Text(s.editorAjudasLabel)

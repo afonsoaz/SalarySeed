@@ -34,7 +34,6 @@ struct ProfileView: View {
                         ForEach(CompareDimension.all) { dim in
                             dimensionRow(dim)
                         }
-                        LockedRow(icon: "doc.text", title: s.cvTitle, unlock: s.cvHint)
                     }
                     .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
 

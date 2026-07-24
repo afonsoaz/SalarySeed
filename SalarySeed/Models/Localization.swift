@@ -64,14 +64,14 @@ struct Strings {
 
     var grossOrNet: String { t("Is that gross or net?", "Esse valor é bruto ou líquido?") }
     var howManyMonths: String { t("Paid over how many months?", "Recebes em quantos meses?") }
-    var monthsHint: String { t("In Portugal most people get 14, with holiday and Christmas pay.", "Em Portugal o normal são 14, com subsídio de férias e de Natal.") }
+    var monthsHint: String { t("14 is the norm: holiday and Christmas pay come separately. With 12, those subsidies are split across every month (duodécimos).", "14 é o normal: os subsídios de férias e Natal vêm à parte. Com 12, esses subsídios vêm repartidos por todos os meses (duodécimos).") }
     var fiveSeconds: String { t("This takes 5 seconds. Your number stays on your phone.", "Demora 5 segundos. O número fica no teu telemóvel.") }
     var revealButton: String { t("Show my breakdown", "Mostrar as minhas contas") }
     var salaryNeeded: String { t("The salary is the one thing we need.", "O salário é a única coisa de que precisamos.") }
 
     // v0.5 onboarding: ajudas step + one-by-one profile questions
-    var onbAjudasTitle: String { t("Do you get ajudas\nde custo?", "Recebes ajudas\nde custo?") }
-    var onbAjudasSub: String { t("Amounts paid on top of the salary, straight to net. You can add or change this later.", "Valores pagos à parte do salário, direto no líquido. Podes adicionar ou mudar isto mais tarde.") }
+    var onbAjudasTitle: String { t("Meal allowance or\najudas de custo?", "Subsídio de alimentação\nou ajudas de custo?") }
+    var onbAjudasSub: String { t("Amounts paid on top of the salary, straight to net, like the meal allowance (subsídio de alimentação) or ajudas de custo. You can change this later.", "Valores pagos à parte do salário, direto no líquido, como o subsídio de alimentação ou as ajudas de custo. Podes mudar isto mais tarde.") }
     var onbProfileWhy: String { t("This improves your comparison. You can skip it.", "Isto melhora a tua comparação. Podes saltar.") }
     var skipStep: String { t("Skip", "Saltar") }
 
@@ -149,6 +149,12 @@ struct Strings {
     func annualRefund(_ amount: String) -> String { t("About \(amount) back at settlement", "Cerca de \(amount) a receber no acerto") }
     func annualToPay(_ amount: String) -> String { t("About \(amount) left to pay at settlement", "Cerca de \(amount) a pagar no acerto") }
     var annualEven: String { t("Withholding lands about right", "A retenção fica quase certa") }
+    // v0.8.1: no IRS at all (salary below the taxable threshold)
+    var annualNoIRS: String { t("You pay no IRS this year", "Não pagas IRS este ano") }
+    var annualNoIRSSub: String { t("Your salary is below the level where IRS starts.", "O teu salário fica abaixo do valor a partir do qual há IRS.") }
+    func annualNoIRSRefund(_ amount: String) -> String {
+        t("You get back the \(amount) withheld during the year.", "Recebes de volta os \(amount) retidos durante o ano.")
+    }
     var annualNote: String {
         t("Estimate on the 2026 brackets, assuming about €1,000 of the usual deductions (health, education, invoices). Your real total can shift it.",
           "Estimativa nos escalões de 2026, assumindo cerca de €1.000 das deduções habituais (saúde, educação, faturas). O teu total real pode mudar isto.")
@@ -180,9 +186,6 @@ struct Strings {
     var raiseNudgeSub: String { t("What would a €100 net raise cost your employer?", "Quanto custaria à empresa dar-te mais €100 líquidos?") }
     var ajudasNudgeTitle: String { t("Paid partly in ajudas de custo?", "Recebes parte em ajudas de custo?") }
     var ajudasNudgeSub: String { t("See what it's costing your pension.", "Vê quanto isso custa à tua reforma.") }
-    var growthTitle: String { t("Steps to improve your salary", "Passos para melhorar o teu salário") }
-    var growthSub: String { t("Simple ideas to earn more, based on your profile.", "Ideias simples para ganhares mais, com base no teu perfil.") }
-    var growthSoon: String { t("growthSeed · coming soon", "growthSeed · em breve") }
     var homeDisclaimer: String { t("Estimates based on 2026 tax tables for mainland Portugal (Continente). Not official tax advice.", "Estimativas com base nas tabelas fiscais de 2026 para o Continente. Não é aconselhamento fiscal oficial.") }
 
     // MARK: Compare
@@ -311,8 +314,6 @@ struct Strings {
     var nameLabel: String { t("Name", "Nome") }
     var namePlaceholder: String { t("Add your name", "O teu nome") }
     var addMore: String { t("Add more, unlock more", "Adiciona mais, vê mais") }
-    var cvTitle: String { t("CV upload", "Carregar o CV") }
-    var cvHint: String { t("Later: better comparisons and tips", "Mais tarde: melhores comparações e dicas") }
     var appSection: String { "App" }
     var languageLabel: String { t("Language", "Idioma") }
     var premiumLabel: String { "Premium" }
@@ -321,7 +322,7 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.8. Estimates only, not official tax or financial advice.", "SalarySeed v0.8. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.8.1. Estimates only, not official tax or financial advice.", "SalarySeed v0.8.1. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }
@@ -348,10 +349,10 @@ struct Strings {
     }
     var jovemAgeQ: String { t("How old are you?", "Que idade tens?") }
     var jovemAgeHint: String { t("Must be 35 or under at the end of the year.", "Tens de ter 35 ou menos no fim do ano.") }
-    var jovemFirstYearQ: String { t("First year you earned income on your own?", "Primeiro ano em que tiveste rendimentos por ti?") }
+    var jovemFirstYearQ: String { t("First year you filed IRS independently", "Primeiro ano com IRS declarado independentemente") }
     var jovemFirstYearHint: String {
-        t("The first year you earned a salary and filed IRS not as a dependant. This sets which benefit year you're in.",
-          "O primeiro ano em que ganhaste salário e entregaste IRS já não como dependente. Define em que ano do benefício estás.")
+        t("The first year you filed IRS on your own, no longer as a dependant. This sets which benefit year you're in.",
+          "O primeiro ano em que entregaste o IRS por ti, já não como dependente. Define em que ano do benefício estás.")
     }
     var jovemDependentQ: String { t("Are you a dependant on someone else's IRS this year?", "Este ano és dependente no IRS de outra pessoa?") }
     var jovemRegimeQ: String { t("Have you used RNH, IFICI or Programa Regressar?", "Já usaste RNH, IFICI ou Programa Regressar?") }
@@ -391,10 +392,10 @@ struct Strings {
     }
     var updateButton: String { t("Update", "Atualizar") }
     var updateSalaryButton: String { t("Update my salary", "Atualizar o meu salário") }
-    var editorAjudasLabel: String { t("Ajudas de custo / month (optional)", "Ajudas de custo / mês (opcional)") }
+    var editorAjudasLabel: String { t("Meal allowance & ajudas de custo / month (optional)", "Subsídio de alimentação e ajudas de custo / mês (opcional)") }
     var editorAjudasNote: String {
-        t("Amounts paid straight to net, like ajudas de custo. Not included in percentiles or comparisons, which use the gross salary.",
-          "Valores pagos diretamente no líquido, como ajudas de custo. Não entram nos percentis nem nas comparações, que usam o salário bruto.")
+        t("Amounts paid straight to net, like the meal allowance (subsídio de alimentação) or ajudas de custo. Not included in percentiles or comparisons, which use the gross salary.",
+          "Valores pagos diretamente no líquido, como o subsídio de alimentação ou as ajudas de custo. Não entram nos percentis nem nas comparações, que usam o salário bruto.")
     }
 
     // MARK: raiseSeed
