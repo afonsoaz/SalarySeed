@@ -1,13 +1,30 @@
 import SwiftUI
 
-/// First-run flow, v0.6 edition.
+/// How the salary is entered on the combined first step: paid 12x, 14x, or as a
+/// yearly total. Maps to the store's pay schedule + yearly-input flag.
+enum SalaryEntryMode: String, CaseIterable, Identifiable {
+    case twelve, fourteen, yearly
+    var id: String { rawValue }
+    func label(pt: Bool) -> String {
+        switch self {
+        case .twelve: return "12x"
+        case .fourteen: return "14x"
+        case .yearly: return pt ? "Anual" : "Yearly"
+        }
+    }
+    /// Yearly totals assume the common 14-payment schedule for the per-payment split.
+    var schedule: PaySchedule { self == .twelve ? .twelve : .fourteen }
+    var inputYearly: Bool { self == .yearly }
+}
+
+/// First-run flow, v0.8.2 edition.
 ///
-/// Warm welcome + name, then the one mandatory number (the salary), then the
-/// gross/net and months toggles, then marital situation and dependants (for a
-/// real IRS estimate), then ajudas de custo, then the four profile questions
-/// asked one by one: age, region, education, profession. Marital and dependants
-/// have sensible defaults (single, 0); everything is skippable EXCEPT the salary.
-/// The IRS Jovem exemption is set later in profileSeed. Answers commit at the end.
+/// Warm welcome + name, then the one mandatory salary step (amount + gross/net +
+/// 12x/14x/yearly, all on one screen), then marital situation and dependants,
+/// then ajudas de custo, then the four profile questions one by one. Every step
+/// has an explicit OK button, so selecting an option never auto-advances; the
+/// skippable steps also show a clear, larger Skip. Everything is skippable EXCEPT
+/// the salary. The IRS Jovem exemption is set later in profileSeed.
 struct OnboardingView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var step = 0
@@ -15,7 +32,7 @@ struct OnboardingView: View {
     @State private var nameText = ""
     @State private var amountText = ""
     @State private var kind: AmountKind = .gross
-    @State private var schedule: PaySchedule = .fourteen
+    @State private var entryMode: SalaryEntryMode = .fourteen
     @State private var ajudasText = ""
     @State private var maritalSel: MaritalSituation = .single
     @State private var dependentsSel: Int = 0
@@ -23,16 +40,13 @@ struct OnboardingView: View {
     @State private var region: PTRegion?
     @State private var education: EducationLevel?
     @State private var occupation: OccupationGroup?
-    @FocusState private var amountFocused: Bool
-    @FocusState private var ajudasFocused: Bool
 
     private var s: Strings { store.s }
-    private let totalSteps = 10
+    private let totalSteps = 9
 
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
-            // faint light at the top, part of the sprout personality pass
             RadialGradient(
                 colors: [Theme.accent.opacity(0.07), .clear],
                 center: .top, startRadius: 0, endRadius: 420
@@ -44,18 +58,20 @@ struct OnboardingView: View {
                 switch step {
                 case 0: welcomeStep
                 case 1: salaryStep
-                case 2: detailsStep
-                case 3: maritalStep
-                case 4: dependentsStep
-                case 5: ajudasStep
-                case 6: profileStep(dimensionID: "age")
-                case 7: profileStep(dimensionID: "region")
-                case 8: profileStep(dimensionID: "education")
+                case 2: maritalStep
+                case 3: dependentsStep
+                case 4: ajudasStep
+                case 5: profileStep(dimensionID: "age")
+                case 6: profileStep(dimensionID: "region")
+                case 7: profileStep(dimensionID: "education")
                 default: profileStep(dimensionID: "occupation")
                 }
             }
             .padding(24)
         }
+        // Tap empty space to drop the keyboard.
+        .contentShape(Rectangle())
+        .onTapGesture { dismissKeyboard() }
     }
 
     private var trimmedName: String {
@@ -68,14 +84,18 @@ struct OnboardingView: View {
     }
 
     private func advance() {
+        dismissKeyboard()
         withAnimation { step += 1 }
     }
 
     private func finish() {
+        dismissKeyboard()
         store.name = trimmedName
-        store.amount = salaryValue ?? 1500
+        let raw = salaryValue ?? 1500
+        store.schedule = entryMode.schedule
+        store.inputYearly = entryMode.inputYearly
+        store.amount = entryMode.inputYearly ? raw / entryMode.schedule.months : raw
         store.kind = kind
-        store.schedule = schedule
         store.ajudasMonthly = max(0, Double(ajudasText) ?? 0)
         store.maritalSituation = maritalSel
         store.dependents = dependentsSel
@@ -90,6 +110,7 @@ struct OnboardingView: View {
         HStack {
             if step > 0 {
                 Button {
+                    dismissKeyboard()
                     withAnimation { step -= 1 }
                 } label: {
                     Image(systemName: "arrow.left")
@@ -164,103 +185,84 @@ struct OnboardingView: View {
                 advance()
             } label: {
                 Text(s.welcomeSkip)
-                    .font(.system(size: 12))
+                    .font(.system(size: 13))
                     .foregroundStyle(Theme.textSecondary)
                     .frame(maxWidth: .infinity)
+                    .padding(.vertical, 6)
             }
-            .padding(.top, 12)
+            .padding(.top, 10)
 
             SeedDots(count: totalSteps, current: 0)
                 .frame(maxWidth: .infinity)
-                .padding(.top, 14)
+                .padding(.top, 12)
         }
     }
 
-    // MARK: Step 1, the one number (the only mandatory answer)
+    // MARK: Step 1, the salary (amount + gross/net + 12x/14x/yearly), all here
 
     private var salaryStep: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Spacer().frame(height: 64)
-            Text(s.salaryTitle)
-                .font(.system(size: 30, weight: .medium))
+            Spacer().frame(height: 22)
+            Text(s.salaryQuestion(trimmedName.isEmpty ? nil : trimmedName))
+                .font(.system(size: 27, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
-            Text(trimmedName.isEmpty ? s.salarySub : s.salarySubNamed(trimmedName))
-                .font(.system(size: 14))
+                .fixedSize(horizontal: false, vertical: true)
+
+            // gross/net
+            Text(s.grossOrNet)
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
+                .padding(.top, 24)
+            SegmentedPicker(options: AmountKind.allCases, selection: $kind) { $0.label(pt: s.pt) }
                 .padding(.top, 8)
 
+            // 12x / 14x / yearly
+            Text(s.howYouGetPaid)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.top, 18)
+            SegmentedPicker(options: SalaryEntryMode.allCases, selection: $entryMode) { $0.label(pt: s.pt) }
+                .padding(.top, 8)
+            Text(s.entryModeHint)
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textFaint)
+                .padding(.top, 6)
+
+            // the amount, kept low so the keyboard never hides the toggles above it
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("€")
-                    .font(.system(size: 30))
+                    .font(.system(size: 28))
                     .foregroundStyle(Theme.textSecondary)
                 TextField("1500", text: $amountText)
                     .keyboardType(.numberPad)
-                    .focused($amountFocused)
-                    .font(.system(size: 42, weight: .medium))
+                    .font(.system(size: 38, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
-                Text(s.perMonthSuffix)
+                Text(entryMode == .yearly ? s.perYearSuffix : s.perMonthSuffix)
                     .font(.system(size: 15))
                     .foregroundStyle(Theme.textSecondary)
             }
-            .padding(.bottom, 10)
+            .padding(.bottom, 8)
             .overlay(alignment: .bottom) {
                 Rectangle().fill(Theme.accent).frame(height: 2)
             }
-            .padding(.top, 44)
+            .padding(.top, 26)
 
             if salaryValue == nil {
                 Text(s.salaryNeeded)
                     .font(.system(size: 12))
                     .foregroundStyle(Theme.textSecondary)
-                    .padding(.top, 12)
+                    .padding(.top, 10)
             }
 
-            Spacer()
-            PrimaryButton(title: s.continueButton) {
+            Spacer(minLength: 12)
+            PrimaryButton(title: s.okButton) {
                 if salaryValue != nil { advance() }
             }
             .opacity(salaryValue == nil ? 0.4 : 1)
         }
-        .onAppear { amountFocused = true }
     }
 
-    // MARK: Step 2, gross/net + months
-
-    private var detailsStep: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Spacer().frame(height: 34)
-            Text(s.grossOrNet)
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(Theme.textPrimary)
-            SegmentedPicker(options: AmountKind.allCases, selection: $kind) { $0.label(pt: s.pt) }
-                .padding(.top, 12)
-
-            Text(s.howManyMonths)
-                .font(.system(size: 18, weight: .medium))
-                .foregroundStyle(Theme.textPrimary)
-                .padding(.top, 34)
-            Text(s.monthsHint)
-                .font(.system(size: 12))
-                .foregroundStyle(Theme.textSecondary)
-                .padding(.top, 4)
-            SegmentedPicker(options: PaySchedule.allCases, selection: $schedule) { $0.label(pt: s.pt) }
-                .padding(.top, 12)
-
-            HStack(spacing: 8) {
-                Image(systemName: "lock")
-                    .font(.system(size: 13))
-                Text(s.fiveSeconds)
-                    .font(.system(size: 12))
-            }
-            .foregroundStyle(Theme.textSecondary)
-            .padding(.top, 34)
-
-            Spacer()
-            PrimaryButton(title: s.continueButton) { advance() }
-        }
-    }
-
-    // MARK: Step 3, marital situation (for a real IRS estimate)
+    // MARK: Step 2, marital situation
 
     private var maritalStep: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -282,7 +284,7 @@ struct OnboardingView: View {
             .padding(.top, 24)
 
             Spacer()
-            PrimaryButton(title: s.continueButton) { advance() }
+            PrimaryButton(title: s.okButton) { advance() }
         }
     }
 
@@ -320,7 +322,7 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 4, dependants
+    // MARK: Step 3, dependants
 
     private var dependentsStep: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -359,7 +361,7 @@ struct OnboardingView: View {
             .padding(.top, 40)
 
             Spacer()
-            PrimaryButton(title: s.continueButton) { advance() }
+            PrimaryButton(title: s.okButton) { advance() }
         }
     }
 
@@ -376,16 +378,17 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 5, ajudas de custo (skippable)
+    // MARK: Step 4, ajudas de custo (skippable)
 
     private var ajudasStep: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Spacer().frame(height: 64)
+            Spacer().frame(height: 56)
             Text(s.onbAjudasTitle)
-                .font(.system(size: 30, weight: .medium))
+                .font(.system(size: 28, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
             Text(s.onbAjudasSub)
-                .font(.system(size: 14))
+                .font(.system(size: 13.5))
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3)
                 .padding(.top, 8)
@@ -396,7 +399,6 @@ struct OnboardingView: View {
                     .foregroundStyle(Theme.textSecondary)
                 TextField("0", text: $ajudasText)
                     .keyboardType(.numberPad)
-                    .focused($ajudasFocused)
                     .font(.system(size: 42, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
                 Text(s.perMonthSuffix)
@@ -405,31 +407,25 @@ struct OnboardingView: View {
             }
             .padding(.bottom, 10)
             .overlay(alignment: .bottom) {
-                Rectangle().fill(Theme.danger.opacity(0.7)).frame(height: 2)
+                Rectangle().fill(Theme.accent).frame(height: 2)
             }
-            .padding(.top, 44)
-
-            Text(s.editorAjudasNote)
-                .font(.system(size: 12))
-                .foregroundStyle(Theme.textSecondary)
-                .lineSpacing(2)
-                .padding(.top, 12)
+            .padding(.top, 40)
 
             Spacer()
-            PrimaryButton(title: s.continueButton) { advance() }
-            skipButton {
+            PrimaryButton(title: s.okButton) { advance() }
+            bigSkipButton(s.skipStep) {
                 ajudasText = ""
                 advance()
             }
         }
     }
 
-    // MARK: Steps 6 to 9, the profile, one question at a time
+    // MARK: Steps 5 to 8, the profile, one question at a time
 
     private func profileStep(dimensionID id: String) -> some View {
         let isLast = step == totalSteps - 1
         return VStack(alignment: .leading, spacing: 0) {
-            Spacer().frame(height: 40)
+            Spacer().frame(height: 36)
             Text(s.dimSheetTitle(id))
                 .font(.system(size: 26, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
@@ -447,14 +443,19 @@ struct OnboardingView: View {
             ScrollView {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
                     ForEach(profileOptions(id)) { option in
-                        profileChip(dimensionID: id, option: option, isLast: isLast)
+                        profileChip(dimensionID: id, option: option)
                     }
                 }
                 .padding(.top, 20)
+                .padding(.bottom, 8)
             }
 
-            Spacer(minLength: 0)
-            skipButton {
+            Spacer(minLength: 4)
+            // Selecting a chip only highlights it. OK confirms; Skip moves on.
+            PrimaryButton(title: s.okButton) {
+                if isLast { finish() } else { advance() }
+            }
+            bigSkipButton(s.skipQuestion) {
                 setSelection(id, nil)
                 if isLast { finish() } else { advance() }
             }
@@ -464,7 +465,6 @@ struct OnboardingView: View {
     private func profileOptions(_ id: String) -> [DimensionOption] {
         switch id {
         case "age": AgeBand.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) }
-        // Only regions with published data, same rule as compareSeed.
         case "region": PTRegion.allCases.filter { $0.cohort != nil }.map { DimensionOption(id: $0.rawValue, label: $0.label) }
         case "education": EducationLevel.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: s.pt)) }
         default: OccupationGroup.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: s.pt)) }
@@ -489,13 +489,10 @@ struct OnboardingView: View {
         }
     }
 
-    private func profileChip(dimensionID: String, option: DimensionOption, isLast: Bool) -> some View {
+    private func profileChip(dimensionID: String, option: DimensionOption) -> some View {
         let isSelected = option.id == selectedID(dimensionID)
         return Button {
-            setSelection(dimensionID, option.id)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                if isLast { finish() } else { advance() }
-            }
+            withAnimation(.easeOut(duration: 0.15)) { setSelection(dimensionID, option.id) }
         } label: {
             Text(option.label)
                 .font(.system(size: 13, weight: isSelected ? .medium : .regular))
@@ -514,14 +511,18 @@ struct OnboardingView: View {
         }
     }
 
-    private func skipButton(_ action: @escaping () -> Void) -> some View {
+    /// A clear, full-width Skip for the steps where the info is optional.
+    private func bigSkipButton(_ title: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(s.skipStep)
-                .font(.system(size: 13))
+            Text(title)
+                .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(Theme.textSecondary)
                 .frame(maxWidth: .infinity)
+                .padding(.vertical, 15)
+                .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.cardBorder, lineWidth: 1))
         }
-        .padding(.top, 12)
+        .padding(.top, 10)
     }
 }
 
@@ -534,10 +535,10 @@ struct PrimaryButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 15, weight: .medium))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(Color(hex: 0x06281C))
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 15)
+                .padding(.vertical, 16)
                 .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
         }
     }

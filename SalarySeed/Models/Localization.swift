@@ -48,7 +48,7 @@ struct Strings {
 
     // MARK: Onboarding
 
-    var welcomeTitle: String { t("Let's plant\nyour seed.", "Vamos plantar\na tua semente.") }
+    var welcomeTitle: String { t("Let's understand\nwhat you earn.", "Vamos compreender\nquanto ganhas.") }
     var welcomeSub: String { t("Type one number and see what you really earn, what you cost, and how you compare.", "Escreve um número e vê quanto ganhas na verdade, quanto custas e como te comparas.") }
     var welcomeAskName: String { t("What's your name?", "Como te chamas?") }
     var welcomeNamePlaceholder: String { t("Your first name", "O teu primeiro nome") }
@@ -59,8 +59,16 @@ struct Strings {
     var salaryTitle: String { t("How much do\nyou make?", "Quanto é que\ntu ganhas?") }
     var salarySub: String { t("Just the monthly number. That's it.", "Só o valor mensal. Mais nada.") }
     func salarySubNamed(_ name: String) -> String { t("Nice to meet you, \(name). Just the monthly number.", "Prazer, \(name). Só o valor mensal.") }
+    /// v0.8.2 combined salary step: greet by name and ask simply.
+    func salaryQuestion(_ name: String?) -> String {
+        if let name, !name.isEmpty { return t("\(name), how much do you make?", "\(name), quanto ganhas?") }
+        return t("How much do you make?", "Quanto ganhas?")
+    }
+    var howYouGetPaid: String { t("How do you get paid?", "Como recebes?") }
+    var entryModeHint: String { t("12x or 14x = payments a year. Yearly = the whole-year total.", "12x ou 14x = pagamentos por ano. Anual = o total do ano.") }
     var perMonthSuffix: String { t("/mo", "/mês") }
     var continueButton: String { t("Continue", "Continuar") }
+    var okButton: String { t("OK", "OK") }
 
     var grossOrNet: String { t("Is that gross or net?", "Esse valor é bruto ou líquido?") }
     var howManyMonths: String { t("Paid over how many months?", "Recebes em quantos meses?") }
@@ -74,6 +82,7 @@ struct Strings {
     var onbAjudasSub: String { t("Amounts paid on top of the salary, straight to net, like the meal allowance (subsídio de alimentação) or ajudas de custo. You can change this later.", "Valores pagos à parte do salário, direto no líquido, como o subsídio de alimentação ou as ajudas de custo. Podes mudar isto mais tarde.") }
     var onbProfileWhy: String { t("This improves your comparison. You can skip it.", "Isto melhora a tua comparação. Podes saltar.") }
     var skipStep: String { t("Skip", "Saltar") }
+    var skipQuestion: String { t("Skip, I'd rather not say", "Saltar, prefiro não dizer") }
 
     // v0.6 onboarding: marital situation + dependants (real IRS estimate)
     var onbMaritalTitle: String { t("What's your\nsituation?", "Qual é a tua\nsituação?") }
@@ -322,7 +331,7 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.8.1. Estimates only, not official tax or financial advice.", "SalarySeed v0.8.1. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.8.2. Estimates only, not official tax or financial advice.", "SalarySeed v0.8.2. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }

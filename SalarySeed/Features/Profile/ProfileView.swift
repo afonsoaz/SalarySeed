@@ -54,6 +54,7 @@ struct ProfileView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
+            .scrollDismissesKeyboard(.interactively)
             .background(Theme.background)
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }

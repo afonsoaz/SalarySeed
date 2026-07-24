@@ -98,6 +98,7 @@ struct CompareView: View {
                         dimension: dim,
                         option: option,
                         result: CohortEngine.result(grossMonthly: store.breakdown.grossMonthly, cell: cell),
+                        cell: cell,
                         userGross: store.breakdown.grossMonthly,
                         s: s
                     ) { activeDimension = dim }
@@ -314,13 +315,15 @@ private struct LayerCard: View {
     let dimension: CompareDimension
     let option: DimensionOption
     let result: CohortResult
+    let cell: CohortCell
     let userGross: Double
     let s: Strings
     let onTap: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
-            VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Only the header edits the dimension, so the slider below is free to drag.
+            Button(action: onTap) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(s.dimRowTitle(dimension.id))
@@ -340,57 +343,122 @@ private struct LayerCard: View {
                         .font(.system(size: 24, weight: .medium))
                         .foregroundStyle(Theme.accent)
                 }
+            }
+            .buttonStyle(.plain)
 
-                PercentileBar(percent: result.percentile)
-                    .padding(.top, 12)
+            PercentileSlider(userPercentile: Double(result.percentile), salaryAt: salaryAt, s: s)
+                .padding(.top, 12)
 
-                HStack {
-                    Text(s.earnLess)
-                    Spacer()
-                    Text(s.medianWord)
-                    Spacer()
-                    Text(s.earnMore)
+            Text(caption)
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.textSecondary)
+                .multilineTextAlignment(.leading)
+                .padding(.top, 10)
+
+            if result.thin || result.edge {
+                HStack(spacing: 4) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 9))
+                    Text(result.thin ? s.thinChip : s.edgeChip)
+                        .font(.system(size: 10))
                 }
+                .foregroundStyle(Theme.segEmployeeSS)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 3)
+                .background(Theme.segEmployeeSS.opacity(0.10), in: RoundedRectangle(cornerRadius: 7))
+                .overlay(RoundedRectangle(cornerRadius: 7).stroke(Theme.segEmployeeSS.opacity(0.25)))
+                .padding(.top, 7)
+            }
+
+            Text(CohortEngine.sourceLine)
                 .font(.system(size: 10))
                 .foregroundStyle(Theme.textFaint)
-                .padding(.top, 4)
-
-                Text(caption)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textSecondary)
-                    .multilineTextAlignment(.leading)
-                    .padding(.top, 8)
-
-                if result.thin || result.edge {
-                    HStack(spacing: 4) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 9))
-                        Text(result.thin ? s.thinChip : s.edgeChip)
-                            .font(.system(size: 10))
-                    }
-                    .foregroundStyle(Theme.segEmployeeSS)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(Theme.segEmployeeSS.opacity(0.10), in: RoundedRectangle(cornerRadius: 7))
-                    .overlay(RoundedRectangle(cornerRadius: 7).stroke(Theme.segEmployeeSS.opacity(0.25)))
-                    .padding(.top, 7)
-                }
-
-                Text(CohortEngine.sourceLine)
-                    .font(.system(size: 10))
-                    .foregroundStyle(Theme.textFaint)
-                    .padding(.top, 6)
-            }
-            .padding(.horizontal, 15)
-            .padding(.vertical, 14)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+                .padding(.top, 6)
         }
+        .padding(.horizontal, 15)
+        .padding(.vertical, 14)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
         .transition(.scale(scale: 0.97).combined(with: .opacity))
+    }
+
+    /// Salary at a percentile (0-100) within this cohort's log-normal.
+    private func salaryAt(_ p: Double) -> Double {
+        let clamped = min(99.9, max(0.1, p))
+        return cell.median * exp(cell.sigma * PercentileEngine.normInv(clamped / 100))
     }
 
     private var caption: String {
         let diff = userGross - result.median
         return s.medianCaption(median: eur(result.median), diff: diff, diffText: eur(abs(diff)))
+    }
+}
+
+// MARK: - Reusable percentile slider (used by every cohort layer)
+
+/// A compact version of the national explorer's slider: drag to any percentile
+/// and the readout shows the salary at that level. It rests on the user's own
+/// percentile (a fixed tick marks it) and springs back on release.
+private struct PercentileSlider: View {
+    let userPercentile: Double
+    let salaryAt: (Double) -> Double
+    let s: Strings
+
+    @State private var scrubPct: Double? = nil
+
+    private var scrubbing: Bool { scrubPct != nil }
+    private var activePct: Double { scrubPct ?? userPercentile }
+    private var activeSalary: Double { salaryAt(activePct) }
+    private var frac: Double { min(1, max(0, activePct / 100)) }
+    private var userFrac: Double { min(1, max(0, userPercentile / 100)) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(s.percentileEarns(s.ordinalPercentile(Int(activePct.rounded()))))
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textSecondary)
+                Spacer(minLength: 6)
+                Text(eur(activeSalary))
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(Theme.accent)
+                    .contentTransition(.numericText())
+                Text(s.perMonthSuffix)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+
+            GeometryReader { geo in
+                let w = geo.size.width
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.white.opacity(0.08))
+                        .frame(height: 6)
+                    Capsule()
+                        .fill(Theme.accent.opacity(scrubbing ? 0.9 : 0.5))
+                        .frame(width: max(6, frac * w), height: 6)
+                    Rectangle()
+                        .fill(Theme.textPrimary.opacity(0.35))
+                        .frame(width: 1.5, height: 14)
+                        .offset(x: min(w - 1, max(0, userFrac * w)) - 0.75)
+                    Circle()
+                        .fill(Theme.accent)
+                        .frame(width: 18, height: 18)
+                        .overlay(Circle().stroke(Theme.background, lineWidth: 2))
+                        .offset(x: min(w - 18, max(0, frac * w - 9)))
+                }
+                .frame(height: 22)
+                .contentShape(Rectangle())
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { v in scrubPct = min(99.9, max(0.5, v.location.x / w * 100)) }
+                        .onEnded { _ in
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { scrubPct = nil }
+                        }
+                )
+                .animation(scrubbing ? nil : .spring(response: 0.4, dampingFraction: 0.8), value: frac)
+            }
+            .frame(height: 22)
+        }
     }
 }
 

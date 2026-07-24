@@ -29,6 +29,8 @@ struct SalaryEditorView: View {
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture { dismissKeyboard() }
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     Text(s.editorTitle)
@@ -89,7 +91,7 @@ struct SalaryEditorView: View {
                             Text(s.perMonthSuffix).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
                         }
                         .padding(.bottom, 8)
-                        .overlay(alignment: .bottom) { Rectangle().fill(Theme.danger.opacity(0.7)).frame(height: 2) }
+                        .overlay(alignment: .bottom) { Rectangle().fill(Theme.accent).frame(height: 2) }
                         Text(s.editorAjudasNote)
                             .font(.system(size: 11))
                             .foregroundStyle(Theme.textSecondary)
@@ -111,6 +113,7 @@ struct SalaryEditorView: View {
                 }
                 .padding(24)
             }
+            .scrollDismissesKeyboard(.interactively)
         }
         .onAppear {
             kind = store.kind

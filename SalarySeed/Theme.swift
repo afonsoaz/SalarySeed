@@ -1,4 +1,15 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
+
+/// Resign the first responder so the keyboard drops. Called when the user taps
+/// empty space in a screen that has a text field open.
+func dismissKeyboard() {
+    #if canImport(UIKit)
+    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    #endif
+}
 
 /// SalarySeed design tokens — matches the onboarding HTML mockup.
 enum Theme {
