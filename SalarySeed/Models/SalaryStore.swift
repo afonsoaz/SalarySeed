@@ -70,7 +70,10 @@ final class SalaryStore: ObservableObject {
     // Stored as stable raw-value IDs; these are the future growthSeed inputs too.
     @Published var name: String { didSet { save() } }
     @Published var ageBand: AgeBand? { didSet { save() } }
-    @Published var region: PTRegion? { didSet { save() } }
+    /// v0.9.1: the user picks a município; the district and the NUTS 2024 region
+    /// are DERIVED from it, never stored and never asked for separately.
+    /// See Concelhos.swift for why the district could not be the input.
+    @Published var concelhoID: String? { didSet { save() } }
     @Published var education: EducationLevel? { didSet { save() } }
     // v0.8.3: sector (GEP CAE) replaces the old occupation group; tenure years
     // cross with it for the sector×tenure percentile.
@@ -122,7 +125,10 @@ final class SalaryStore: ObservableObject {
         irsJovemExemption = defaults.double(forKey: "irsJovemExemption")
         name = defaults.string(forKey: "name") ?? ""
         ageBand = AgeBand(rawValue: defaults.string(forKey: "profile.ageBand") ?? "")
-        region = PTRegion(rawValue: defaults.string(forKey: "profile.region") ?? "")
+        concelhoID = defaults.string(forKey: "profile.concelho")
+        // v0.9.1 migration: the old NUTS II answer is dropped rather than guessed
+        // backwards into a município. The question is simply asked again.
+        defaults.removeObject(forKey: "profile.region")
         education = EducationLevel(rawValue: defaults.string(forKey: "profile.education") ?? "")
         sector = Sector(rawValue: defaults.string(forKey: "profile.sector") ?? "")
         tenureYears = defaults.object(forKey: "profile.tenureYears") as? Int
@@ -150,7 +156,7 @@ final class SalaryStore: ObservableObject {
         defaults.set(name, forKey: "name")
         defaults.set(language.rawValue, forKey: "language")
         setOptional(ageBand?.rawValue, forKey: "profile.ageBand")
-        setOptional(region?.rawValue, forKey: "profile.region")
+        setOptional(concelhoID, forKey: "profile.concelho")
         setOptional(education?.rawValue, forKey: "profile.education")
         setOptional(sector?.rawValue, forKey: "profile.sector")
         setOptional(jobTitleID, forKey: "profile.jobTitle")
@@ -196,13 +202,24 @@ final class SalaryStore: ObservableObject {
     /// The resolved job title, if one is picked and still in the catalogue.
     var jobTitle: JobTitle? { JobTitleCatalog.title(jobTitleID) }
 
+    /// The resolved município, if one is picked and still in the catalogue.
+    var concelho: Concelho? { ConcelhoCatalog.concelho(concelhoID) }
+
+    /// Derived, exactly, from the município. Not yet used for any comparison;
+    /// this is what the v0.9.2 map will be drawn from.
+    var district: District? { concelho?.district }
+
+    /// Derived, exactly, from the município. Every existing cohort comparison
+    /// keys on this, so it stays a PTRegion and nothing downstream changes.
+    var region: PTRegion? { concelho?.region }
+
     /// Every signal the seed counts. v0.9 grew this from 4 to 10, so the sprout
     /// maps the fraction filled onto its 5 drawn stages instead of counting
     /// signals one for one.
     var signalsFilled: [Bool] {
         [
             ageBand != nil,
-            region != nil,
+            concelhoID != nil,
             education != nil,
             sector != nil,
             tenureYears != nil,

@@ -71,6 +71,10 @@ struct CompareDimension: Identifiable {
         return options(pt).first { $0.id == id }
     }
 
+    /// v0.9.1: this dimension is answered by picking a município, not by tapping
+    /// a chip, so its rows open `ConcelhoSheet`.
+    var usesConcelhoPicker: Bool { id == "region" }
+
     /// Only dimensions that have real data ship. A dimension whose dataset
     /// table is empty (no published cells yet) stays out of the pickers and
     /// compare layers, and comes back the moment its data lands.
@@ -94,7 +98,11 @@ struct CompareDimension: Identifiable {
             // stay hidden until their data lands; QP covers Continente).
             options: { _ in PTRegion.allCases.filter { $0.cohort != nil }.map { DimensionOption(id: $0.rawValue, label: $0.label) } },
             selectedID: { $0.region?.rawValue },
-            select: { store, id in store.region = id.flatMap(PTRegion.init(rawValue:)) },
+            // v0.9.1: region is derived from the município, so it cannot be set
+            // directly. Passing nil clears the município; anything else is
+            // ignored, and the views open ConcelhoSheet instead of the chip
+            // picker for this dimension (see `usesConcelhoPicker`).
+            select: { store, id in if id == nil { store.concelhoID = nil } },
             cell: { PTRegion(rawValue: $0)?.cohort }
         ),
         CompareDimension(

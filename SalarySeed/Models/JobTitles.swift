@@ -409,20 +409,15 @@ enum JobTitleCatalog {
         all.filter { $0.family == family }
     }
 
-    /// True when any whitespace-separated or slash-separated word starts with
-    /// the query. Slashes matter here: "Programador / Engenheiro de software"
-    /// has to be findable by "engenheiro".
+    /// v0.9.1: both helpers moved to `SearchText` so the concelho picker and this
+    /// one cannot drift apart. Kept as thin forwarders because the call sites read
+    /// better with them.
     static func hasWordPrefix(_ haystack: String, _ q: String) -> Bool {
-        haystack
-            .split(whereSeparator: { $0 == " " || $0 == "/" || $0 == "," || $0 == "(" })
-            .contains { $0.hasPrefix(q) }
+        SearchText.hasWordPrefix(haystack, q)
     }
 
-    /// Diacritic and case insensitive, so "eletrico" matches "elétrico" and
-    /// "PROGRAMADOR" matches "Programador".
     static func fold(_ text: String) -> String {
-        text.folding(options: [.diacriticInsensitive, .caseInsensitive],
-                     locale: Locale(identifier: "pt_PT"))
+        SearchText.fold(text)
     }
 
     /// Ranked search across both languages plus the synonym list. Prefix matches

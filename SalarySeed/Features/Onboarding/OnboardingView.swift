@@ -37,7 +37,7 @@ struct OnboardingView: View {
     @State private var maritalSel: MaritalSituation = .single
     @State private var dependentsSel: Int = 0
     @State private var ageBand: AgeBand?
-    @State private var region: PTRegion?
+    @State private var concelhoSel: String?
     @State private var education: EducationLevel?
     @State private var sectorSel: Sector?
     @State private var tenureYearsSel: Int = 3
@@ -63,7 +63,7 @@ struct OnboardingView: View {
                 case 3: dependentsStep
                 case 4: ajudasStep
                 case 5: profileStep(dimensionID: "age")
-                case 6: profileStep(dimensionID: "region")
+                case 6: concelhoStep
                 case 7: profileStep(dimensionID: "education")
                 default: sectorStep
                 }
@@ -101,7 +101,7 @@ struct OnboardingView: View {
         store.maritalSituation = maritalSel
         store.dependents = dependentsSel
         store.ageBand = ageBand
-        store.region = region
+        store.concelhoID = concelhoSel
         store.education = education
         store.sector = sectorSel
         store.tenureYears = (sectorSel != nil) ? tenureYearsSel : nil
@@ -467,7 +467,6 @@ struct OnboardingView: View {
     private func profileOptions(_ id: String) -> [DimensionOption] {
         switch id {
         case "age": AgeBand.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) }
-        case "region": PTRegion.allCases.filter { $0.cohort != nil }.map { DimensionOption(id: $0.rawValue, label: $0.label) }
         default: EducationLevel.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label(pt: s.pt)) }
         }
     }
@@ -475,7 +474,6 @@ struct OnboardingView: View {
     private func selectedID(_ id: String) -> String? {
         switch id {
         case "age": ageBand?.rawValue
-        case "region": region?.rawValue
         default: education?.rawValue
         }
     }
@@ -483,8 +481,43 @@ struct OnboardingView: View {
     private func setSelection(_ id: String, _ optionID: String?) {
         switch id {
         case "age": ageBand = optionID.flatMap(AgeBand.init(rawValue:))
-        case "region": region = optionID.flatMap(PTRegion.init(rawValue:))
         default: education = optionID.flatMap(EducationLevel.init(rawValue:))
+        }
+    }
+
+    // MARK: Step 6, município (v0.9.1, replaces the NUTS II region question)
+
+    /// Asks for the município instead of the region. The region the comparison
+    /// uses is derived from it and shown back straight away, so the trade is
+    /// visible: one more specific answer, a correct region instead of a guessed
+    /// one. See Concelhos.swift for why the district could not be the input.
+    private var concelhoStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 36)
+            Text(s.concelhoQuestion)
+                .font(.system(size: 26, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+            Text(s.concelhoWhy)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
+                .padding(.top, 8)
+
+            ConcelhoPickerList(selectedID: $concelhoSel, onPick: nil, s: s)
+                .padding(.top, 16)
+
+            if let picked = ConcelhoCatalog.concelho(concelhoSel) {
+                Text(s.concelhoDerived(picked.region.label))
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.accent)
+                    .padding(.top, 8)
+            }
+
+            Spacer(minLength: 4)
+            PrimaryButton(title: s.okButton) { advance() }
+            bigSkipButton(s.skipQuestion) {
+                concelhoSel = nil
+                advance()
+            }
         }
     }
 

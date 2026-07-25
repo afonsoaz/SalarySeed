@@ -12,6 +12,8 @@ struct CompareView: View {
     // so "not now" means not now and not never.
     @State private var activeSignalSheet: SignalSheet?
     @State private var snoozed: Set<String> = []
+    // v0.9.1: the region layer is answered by picking a município.
+    @State private var showConcelhoSheet = false
 
     private var s: Strings { store.s }
 
@@ -31,6 +33,7 @@ struct CompareView: View {
             }
             .background(Theme.background)
             .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
+            .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
             .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
@@ -179,7 +182,7 @@ struct CompareView: View {
                         cell: cell,
                         userGross: store.breakdown.grossMonthly,
                         s: s
-                    ) { activeDimension = dim }
+                    ) { open(dim) }
                 } else {
                     lockedLayerRow(dim)
                 }
@@ -219,8 +222,13 @@ struct CompareView: View {
         }
     }
 
+    /// Region opens the município search; everything else opens its chip picker.
+    private func open(_ dim: CompareDimension) {
+        if dim.usesConcelhoPicker { showConcelhoSheet = true } else { activeDimension = dim }
+    }
+
     private func lockedLayerRow(_ dim: CompareDimension) -> some View {
-        Button { activeDimension = dim } label: {
+        Button { open(dim) } label: {
             HStack(spacing: 12) {
                 Image(systemName: dim.icon)
                     .font(.system(size: 18))

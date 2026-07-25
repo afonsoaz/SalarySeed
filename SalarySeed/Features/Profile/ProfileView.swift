@@ -11,6 +11,8 @@ struct ProfileView: View {
     @State private var activeDimension: CompareDimension?
     // v0.9
     @State private var activeSignalSheet: SignalSheet?
+    // v0.9.1
+    @State private var showConcelhoSheet = false
 
     private var s: Strings { store.s }
 
@@ -66,6 +68,7 @@ struct ProfileView: View {
             .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
             .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
             .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
+            .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
             }
@@ -456,6 +459,13 @@ struct ProfileView: View {
         }
     }
 
+    /// "Torres Vedras · Oeste e Vale do Tejo". The derived region is always shown,
+    /// because it is what the comparison actually uses.
+    private func concelhoSubtitle(_ regionLabel: String) -> String {
+        guard let concelho = store.concelho else { return regionLabel }
+        return "\(concelho.name) · \(concelho.region.label)"
+    }
+
     private func sectorSubtitle(_ sector: Sector) -> String {
         if let y = store.tenureYears {
             return "\(sector.label(pt: s.pt)) · \(s.yearsText(y))"
@@ -464,7 +474,10 @@ struct ProfileView: View {
     }
 
     private func dimensionRow(_ dim: CompareDimension) -> some View {
-        Button { activeDimension = dim } label: {
+        Button {
+            // v0.9.1: region is derived, so its row opens the município search.
+            if dim.usesConcelhoPicker { showConcelhoSheet = true } else { activeDimension = dim }
+        } label: {
             if let option = dim.selectedOption(in: store, pt: s.pt) {
                 HStack(spacing: 12) {
                     Image(systemName: dim.icon)
@@ -472,10 +485,10 @@ struct ProfileView: View {
                         .foregroundStyle(Theme.accent)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(s.dimShort(dim.id))
+                        Text(dim.usesConcelhoPicker ? s.concelhoRowTitle : s.dimShort(dim.id))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
-                        Text(option.label)
+                        Text(dim.usesConcelhoPicker ? concelhoSubtitle(option.label) : option.label)
                             .font(.system(size: 11))
                             .foregroundStyle(Theme.textSecondary)
                     }
@@ -493,10 +506,10 @@ struct ProfileView: View {
                         .foregroundStyle(Theme.textSecondary)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(s.dimShort(dim.id))
+                        Text(dim.usesConcelhoPicker ? s.concelhoRowTitle : s.dimShort(dim.id))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundStyle(Theme.textPrimary)
-                        Text(s.dimProfileHint(dim.id))
+                        Text(dim.usesConcelhoPicker ? s.concelhoAddHint : s.dimProfileHint(dim.id))
                             .font(.system(size: 11))
                             .foregroundStyle(Theme.accent)
                     }

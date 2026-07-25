@@ -281,7 +281,7 @@ struct Strings {
     }
     func dimSheetNote(_ id: String) -> String? {
         switch id {
-        case "region": return t("NUTS II regions", "Regiões NUTS II")
+        case "region": return t("Your município sets your region", "O teu concelho define a tua região")
         case "occupation": return t("Broad occupation groups", "Grandes grupos de profissões")
         default: return nil
         }
@@ -289,7 +289,7 @@ struct Strings {
     func dimAdd(_ id: String) -> String {
         switch id {
         case "age": t("Add your age", "Adiciona a tua idade")
-        case "region": t("Add your region", "Adiciona a tua região")
+        case "region": t("Add your município", "Adiciona o teu concelho")
         case "education": t("Add your education", "Adiciona a tua escolaridade")
         default: t("Add your profession", "Adiciona a tua profissão")
         }
@@ -354,7 +354,7 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.9. Estimates only, not official tax or financial advice.", "SalarySeed v0.9. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.9.1. Estimates only, not official tax or financial advice.", "SalarySeed v0.9.1. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }
@@ -565,4 +565,22 @@ struct Strings {
           "Fica no teu telemóvel. Alguns destes ainda não são comparados, estão a ser reunidos para a comparação ficar melhor mais à frente.")
     }
     var saveButton: String { t("Save", "Guardar") }
+
+    // MARK: v0.9.1 município
+
+    var concelhoRowTitle: String { t("Your município", "O teu concelho") }
+    var concelhoAddHint: String { t("Sets your region for the comparison", "Define a tua região para a comparação") }
+    var concelhoSheetTitle: String { t("Which município do you work in?", "Em que concelho trabalhas?") }
+    var concelhoQuestion: String { t("Which município\ndo you work in?", "Em que concelho\ntrabalhas?") }
+    var concelhoSearchPlaceholder: String { t("Search your município", "Procura o teu concelho") }
+    var concelhoNoResults: String { t("Nothing matched. Try a shorter word.", "Nada encontrado. Tenta uma palavra mais curta.") }
+    /// Said before the question, not after. Districts and regions do not line up,
+    /// so the município is the only answer that gets the region right.
+    var concelhoWhy: String {
+        t("Districts and statistical regions don't line up, so we ask for the município and work the region out from it. Mainland only for now.",
+          "Os distritos e as regiões estatísticas não coincidem, por isso perguntamos o concelho e daí tiramos a região. Só continente, para já.")
+    }
+    func concelhoDerived(_ region: String) -> String {
+        t("Your region: \(region)", "A tua região: \(region)")
+    }
 }
