@@ -44,6 +44,7 @@ struct Strings {
 
     var tabHome: String { t("Home", "Início") }
     var tabCompare: String { t("Compare", "Comparar") }
+    var tabMap: String { t("Map", "Mapa") }
     var tabProfile: String { t("Profile", "Perfil") }
 
     // MARK: Onboarding
@@ -354,7 +355,7 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.9.1. Estimates only, not official tax or financial advice.", "SalarySeed v0.9.1. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.9.2. Estimates only, not official tax or financial advice.", "SalarySeed v0.9.2. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }
@@ -583,4 +584,45 @@ struct Strings {
     func concelhoDerived(_ region: String) -> String {
         t("Your region: \(region)", "A tua região: \(region)")
     }
+
+    // MARK: v0.9.2 mapSeed
+
+    var mapTitle: String { t("What your sector pays,\nby district", "Quanto paga o teu setor,\npor distrito") }
+    var mapAllSectors: String { t("All sectors together", "Todos os setores juntos") }
+    var mapPickSector: String { t("Pick your sector to see it properly", "Escolhe o teu setor para veres a sério") }
+    var mapSectorHint: String { t("Tap to change sector", "Toca para mudar de setor") }
+    var mapVsNational: String { t("vs the country", "vs o país") }
+    var mapVsHome: String { t("vs where I am", "vs onde estou") }
+    var mapNeedConcelho: String { t("Add your município", "Adiciona o teu concelho") }
+    var mapBaselineNationalName: String { t("the mainland average", "a média do continente") }
+    var mapYouAreHere: String { t("You're here", "Estás aqui") }
+    var mapHomeTag: String { t("You", "Tu") }
+    var mapTapHint: String { t("Tap a district to see its numbers.", "Toca num distrito para veres os números.") }
+    var mapAllDistricts: String { t("Every district", "Todos os distritos") }
+    var mapLegendTop: String { t("+30% or more", "+30% ou mais") }
+    var mapLegendBottom: String { t("-30% or less", "-30% ou menos") }
+    var mapLegendSame: String { t("about the same", "mais ou menos igual") }
+    var mapThinTag: String { t("few data", "poucos dados") }
+
+    func mapMeanLine(_ amount: String, _ baseline: String) -> String {
+        t("Average \(amount) a month, against \(baseline).",
+          "Média de \(amount) por mês, contra \(baseline).")
+    }
+    func mapCellSize(_ n: Int) -> String {
+        t("Based on \(n) employees.", "Com base em \(n) trabalhadores.")
+    }
+    func mapThinCell(_ n: Int) -> String {
+        t("Only \(n) employees in this cell. A handful of people move this number, so treat it lightly.",
+          "Só \(n) trabalhadores nesta célula. Um punhado de pessoas mexe com este número, por isso leva-o com calma.")
+    }
+
+    var mapNoTenureNote: String {
+        t("Sector only. The official tables never cross district with time at the company, and adding the national tenure effect would shift every district by the same amount, so not a single colour or percentage here would change.",
+          "Só por setor. As tabelas oficiais nunca cruzam distrito com antiguidade na empresa, e aplicar o efeito nacional da antiguidade mexeria em todos os distritos por igual, por isso nem uma cor nem uma percentagem aqui mudariam.")
+    }
+    var mapScopeNote: String {
+        t("Mainland only, private-contract employees, October 2024. These are averages for everyone in the sector, not for your job.",
+          "Só continente, trabalhadores com contrato privado, outubro de 2024. São médias de toda a gente do setor, não da tua profissão.")
+    }
+    var mapGeoCredit: String { "Fronteiras: CAOP, Direção-Geral do Território" }
 }

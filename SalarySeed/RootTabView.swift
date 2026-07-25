@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// The three main screens. v0.8.2: a paged TabView so the user can swipe
-/// horizontally between Home, Compare and Profile, with a custom bottom bar
-/// that also lets them tap to jump. safeAreaInset reserves the bar's space so
-/// each screen's scroll content never hides behind it.
+/// The main screens. v0.8.2: a paged TabView so the user can swipe horizontally,
+/// with a custom bottom bar that also lets them tap to jump. safeAreaInset
+/// reserves the bar's space so each screen's scroll content never hides behind it.
+/// v0.9.2 adds mapSeed as the fourth tab, between Compare and Profile.
 struct RootTabView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var tab = 0
@@ -14,7 +14,8 @@ struct RootTabView: View {
         TabView(selection: $tab) {
             HomeView().tag(0)
             CompareView().tag(1)
-            ProfileView().tag(2)
+            MapView().tag(2)
+            ProfileView().tag(3)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .ignoresSafeArea(.keyboard)
@@ -30,7 +31,8 @@ private struct CustomTabBar: View {
     let s: Strings
 
     private var items: [(icon: String, title: String)] {
-        [("house.fill", s.tabHome), ("chart.bar.fill", s.tabCompare), ("person.fill", s.tabProfile)]
+        [("house.fill", s.tabHome), ("chart.bar.fill", s.tabCompare),
+         ("map.fill", s.tabMap), ("person.fill", s.tabProfile)]
     }
 
     var body: some View {

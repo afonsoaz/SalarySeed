@@ -1,0 +1,288 @@
+import SwiftUI
+
+/// v0.9.2 mapSeed: what your sector pays across the 18 mainland districts.
+///
+/// Data is GEP Quadro 110 (ganho médio by CAE × distrito) with Quadro 61 for the
+/// worker counts. See DistrictDataset for why tenure is not in here, and why
+/// adding it would not change a single colour on this map.
+struct MapView: View {
+    @EnvironmentObject private var store: SalaryStore
+
+    @State private var baseline: MapBaseline = .national
+    @State private var selected: District?
+    @State private var showSectorSheet = false
+    @State private var showConcelhoSheet = false
+
+    private var s: Strings { store.s }
+
+    private var home: District? { store.district }
+
+    private var baselineValue: Double? {
+        DistrictDataset.baseline(sector: store.sector, mode: baseline, home: home)
+    }
+
+    private var readings: [DistrictReading] {
+        guard let baselineValue else { return [] }
+        return DistrictComparison.readings(sector: store.sector, baseline: baselineValue)
+    }
+
+    /// The row the readout shows: whatever was tapped, else the user's own.
+    private var focus: DistrictReading? {
+        let target = selected ?? home
+        return readings.first { $0.district == target }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    header
+                    sectorRow
+                    baselinePicker
+                    mapBlock
+                    focusCard
+                    districtList
+                    footnotes
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 24)
+            }
+            .background(Theme.background)
+            .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
+            .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
+        }
+    }
+
+    // MARK: Header
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text("mapSeed")
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.accent)
+            Text(s.mapTitle)
+                .font(.system(size: 22, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+        }
+        .padding(.top, 8)
+    }
+
+    /// Which sector the map is showing. Tapping it opens the same sheet
+    /// compareSeed uses, so the two screens can never disagree.
+    private var sectorRow: some View {
+        Button { showSectorSheet = true } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "building.2")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Theme.accent)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(store.sector?.label(pt: s.pt) ?? s.mapAllSectors)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(store.sector == nil ? s.mapPickSector : s.mapSectorHint)
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(store.sector == nil ? Theme.accent : Theme.textFaint)
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textFaint)
+            }
+            .padding(13)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        }
+    }
+
+    private var baselinePicker: some View {
+        HStack(spacing: 8) {
+            baselineChip(.national, s.mapVsNational)
+            baselineChip(.home, s.mapVsHome)
+        }
+    }
+
+    private func baselineChip(_ mode: MapBaseline, _ label: String) -> some View {
+        let enabled = mode == .national || home != nil
+        let isOn = baseline == mode && enabled
+        return Button {
+            if enabled {
+                withAnimation(.easeOut(duration: 0.15)) { baseline = mode }
+            } else {
+                showConcelhoSheet = true
+            }
+        } label: {
+            Text(enabled ? label : s.mapNeedConcelho)
+                .font(.system(size: 12, weight: isOn ? .medium : .regular))
+                .foregroundStyle(isOn ? Color(hex: 0x06281C) : (enabled ? Theme.textPrimary : Theme.accent))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 9)
+                .background(isOn ? Theme.accent : Color.white.opacity(0.05),
+                            in: RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(isOn ? Theme.accent : Theme.cardBorder, lineWidth: 1)
+                )
+        }
+    }
+
+    // MARK: Map
+
+    /// Portugal is tall and narrow (the outline is about 0.49 wide for 1.0 high),
+    /// so a full-height map leaves a lot of empty width. The legend and the
+    /// readout live in that space instead of below the map.
+    private var mapBlock: some View {
+        HStack(alignment: .top, spacing: 14) {
+            PortugalMap(readings: readings, home: home, selected: $selected)
+                .frame(height: 360)
+
+            VStack(alignment: .leading, spacing: 14) {
+                MapLegend(s: s)
+                if home != nil {
+                    HStack(spacing: 5) {
+                        RoundedRectangle(cornerRadius: 2)
+                            .stroke(Theme.textPrimary, lineWidth: 1.5)
+                            .frame(width: 14, height: 10)
+                        Text(s.mapYouAreHere)
+                            .font(.system(size: 9.5))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                Text(s.mapTapHint)
+                    .font(.system(size: 9.5))
+                    .foregroundStyle(Theme.textFaint)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: Readout
+
+    @ViewBuilder
+    private var focusCard: some View {
+        if let focus {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    Text(focus.district.label)
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary)
+                    if focus.district == home {
+                        Text(s.mapHomeTag)
+                            .font(.system(size: 9, weight: .medium))
+                            .foregroundStyle(Color(hex: 0x06281C))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 2)
+                            .background(Theme.accent, in: Capsule())
+                    }
+                    Spacer()
+                    Text(DistrictComparison.formatted(focus.pct))
+                        .font(.system(size: 19, weight: .semibold))
+                        .foregroundStyle(Theme.mapColor(bucket: focus.bucket))
+                }
+                Text(s.mapMeanLine(eur(focus.mean), baselineName))
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let count = focus.count {
+                    Text(focus.thin ? s.mapThinCell(count) : s.mapCellSize(count))
+                        .font(.system(size: 10))
+                        .foregroundStyle(focus.thin ? Theme.danger : Theme.textFaint)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        }
+    }
+
+    private var baselineName: String {
+        switch baseline {
+        case .national: return s.mapBaselineNationalName
+        case .home: return home?.label ?? s.mapBaselineNationalName
+        }
+    }
+
+    // MARK: List
+    //
+    // The map answers "where", the list answers "how much". It is also the table
+    // view that keeps this screen readable for anyone who cannot separate the red
+    // from the green, which is why every row carries its own number.
+
+    private var districtList: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            SectionLabel(s.mapAllDistricts)
+            ForEach(readings) { reading in
+                listRow(reading)
+            }
+        }
+    }
+
+    private func listRow(_ reading: DistrictReading) -> some View {
+        let isHome = reading.district == home
+        let isSelected = reading.district == selected
+        return Button {
+            withAnimation(.easeOut(duration: 0.15)) {
+                selected = isSelected ? nil : reading.district
+            }
+        } label: {
+            HStack(spacing: 10) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Theme.mapColor(bucket: reading.bucket, thin: reading.thin))
+                    .frame(width: 4, height: 26)
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 5) {
+                        Text(reading.district.label)
+                            .font(.system(size: 13.5, weight: isHome ? .semibold : .regular))
+                            .foregroundStyle(Theme.textPrimary)
+                        if isHome {
+                            Image(systemName: "location.fill")
+                                .font(.system(size: 8))
+                                .foregroundStyle(Theme.accent)
+                        }
+                        if reading.thin {
+                            Text(s.mapThinTag)
+                                .font(.system(size: 8.5))
+                                .foregroundStyle(Theme.danger)
+                        }
+                    }
+                    Text(eur(reading.mean))
+                        .font(.system(size: 10.5))
+                        .foregroundStyle(Theme.textFaint)
+                }
+                Spacer()
+                Text(DistrictComparison.formatted(reading.pct))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Theme.mapColor(bucket: reading.bucket))
+            }
+            .padding(.vertical, 7)
+            .padding(.horizontal, 10)
+            .background(
+                isSelected ? Color.white.opacity(0.06) : Color.clear,
+                in: RoundedRectangle(cornerRadius: 10)
+            )
+        }
+    }
+
+    // MARK: Footnotes
+
+    private var footnotes: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(s.mapNoTenureNote)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(s.mapScopeNote)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(DistrictDataset.referenceLabel)
+                .font(.system(size: 9.5))
+                .foregroundStyle(Theme.textFaint)
+            Text(s.mapGeoCredit)
+                .font(.system(size: 9.5))
+                .foregroundStyle(Theme.textFaint)
+        }
+        .padding(.top, 2)
+    }
+}
