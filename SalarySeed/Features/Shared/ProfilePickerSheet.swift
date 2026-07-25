@@ -12,7 +12,7 @@ struct ProfilePickerSheet: View {
 
     /// Preview: what the sprout will look like once this detail is planted.
     private var previewStage: Int {
-        min(5, store.sproutStage + (selectedID == nil ? 1 : 0))
+        store.sproutStage(withExtra: selectedID == nil ? 1 : 0)
     }
 
     var body: some View {

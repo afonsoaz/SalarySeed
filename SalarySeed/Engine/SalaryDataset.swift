@@ -89,7 +89,9 @@ enum SalaryDataset {
         .arts: 2222.99, .otherServices: 1356.2,
     ]
 
-    /// Mean gross monthly per sector × tenure band. Six values per sector, in the
+    /// Mean gross monthly per sector × tenure band, where tenure is antiguidade
+    /// NA EMPRESA (Quadro 104's own title), not time in the sector.
+    /// Six values per sector, in the
     /// GEP "escalão de antiguidade" order: <1, 1-4, 5-9, 10-14, 15-19, 20+ years.
     /// Source: GEP Quadros de Pessoal, Oct 2024, Quadro 104.
     static let sectorTenureMean: [Sector: [Double]] = [

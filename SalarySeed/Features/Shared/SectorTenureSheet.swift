@@ -3,6 +3,11 @@ import SwiftUI
 /// v0.8.3: pick your sector (GEP CAE) and your tenure in years. Both feed the
 /// sector×tenure percentile in compareSeed. Shared by profileSeed and the
 /// compare card. Local draft state commits only on "Save".
+///
+/// v0.9: the years asked for here are years AT THE CURRENT EMPLOYER. Quadro 104
+/// bands "antiguidade na empresa", so asking about the sector put people in the
+/// wrong cell. Only the wording changed; the value still lands in
+/// `store.tenureYears` and indexes the same table.
 struct SectorTenureSheet: View {
     @EnvironmentObject private var store: SalaryStore
     @Environment(\.dismiss) private var dismiss

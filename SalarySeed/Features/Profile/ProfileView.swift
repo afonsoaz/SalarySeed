@@ -9,6 +9,8 @@ struct ProfileView: View {
     @State private var showJovemAssessor = false
     @State private var showSectorSheet = false
     @State private var activeDimension: CompareDimension?
+    // v0.9
+    @State private var activeSignalSheet: SignalSheet?
 
     private var s: Strings { store.s }
 
@@ -37,6 +39,8 @@ struct ProfileView: View {
                             dimensionRow(dim)
                         }
                     }
+
+                    workSection
                     .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
 
                     taxSection
@@ -61,9 +65,124 @@ struct ProfileView: View {
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
             .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
+            .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
             }
+        }
+    }
+
+    // MARK: Your work (v0.9)
+
+    /// The signals added in v0.9. None of them are compared against yet, and the
+    /// footnote says so: an app that asks for something and then pretends it is
+    /// being used has spent trust it will need later.
+    private var workSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(s.workSectionTitle)
+
+            signalRow(
+                icon: "person.text.rectangle",
+                title: s.jobRowTitle,
+                value: store.jobTitle?.label(pt: s.pt),
+                hint: s.jobAddHint
+            ) { activeSignalSheet = .jobTitle }
+
+            signalRow(
+                icon: "building.columns",
+                title: s.employerRowTitle,
+                value: store.employerKind?.label(pt: s.pt),
+                hint: s.employerAddHint
+            ) { activeSignalSheet = .work }
+
+            signalRow(
+                icon: "clock",
+                title: s.scheduleRowTitle,
+                value: scheduleValue,
+                hint: s.scheduleAddHint
+            ) { activeSignalSheet = .work }
+
+            signalRow(
+                icon: "gift",
+                title: s.variableRowTitle,
+                value: variableValue,
+                hint: s.variableAddHint
+            ) { activeSignalSheet = .variablePay }
+
+            signalRow(
+                icon: "person.2",
+                title: s.genderRowTitle,
+                value: store.gender?.label(pt: s.pt),
+                hint: s.genderAddHint
+            ) { activeSignalSheet = .gender }
+
+            if let years = store.careerYears {
+                InfoRow(label: s.careerRowTitle, value: s.yearsText(years))
+            }
+
+            Text(s.collectedNotComparedNote)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
+    }
+
+    private var scheduleValue: String? {
+        guard let schedule = store.workSchedule else { return nil }
+        if let hours = store.weeklyHours {
+            return "\(schedule.label(pt: s.pt)) · \(s.hoursText(hours))"
+        }
+        return schedule.label(pt: s.pt)
+    }
+
+    private var variableValue: String? {
+        guard let amount = store.variableAnnual else { return nil }
+        return amount > 0 ? s.variableYearly(eur(amount)) : s.variableNone
+    }
+
+    /// One row of the v0.9 work section: filled shows the value and a pencil,
+    /// empty shows the reason to fill it and an add pill. Same shape as the
+    /// existing sector and dimension rows so the section does not read as bolted on.
+    private func signalRow(
+        icon: String,
+        title: String,
+        value: String?,
+        hint: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundStyle(value == nil ? Theme.textSecondary : Theme.accent)
+                    .frame(width: 28)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(value ?? hint)
+                        .font(.system(size: 11))
+                        .foregroundStyle(value == nil ? Theme.accent : Theme.textSecondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+                if value == nil {
+                    Text(s.addPill)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Color(hex: 0x06281C))
+                        .padding(.horizontal, 9)
+                        .padding(.vertical, 4)
+                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
+                } else {
+                    Image(systemName: "pencil")
+                        .font(.system(size: 14))
+                        .foregroundStyle(Theme.accent)
+                }
+            }
+            .padding(14)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+            .opacity(value == nil ? 0.9 : 1)
         }
     }
 

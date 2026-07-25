@@ -41,6 +41,12 @@ enum EmploymentType: String, CaseIterable, Identifiable {
 }
 
 /// Single source of truth for the user's inputs. Persisted in UserDefaults (local-first).
+///
+/// v0.9 note on scope: everything here still lives only on this phone. The new
+/// signals are collected, not uploaded. App Privacy stays "Data Not Collected"
+/// until there is an account, a consent flow and a backend, which is a separate
+/// decision. The reason they are collected now anyway is that a job title or a
+/// contract type cannot be asked about retroactively.
 final class SalaryStore: ObservableObject {
     @Published var amount: Double { didSet { save() } }
     @Published var kind: AmountKind { didSet { save() } }
@@ -66,10 +72,37 @@ final class SalaryStore: ObservableObject {
     @Published var ageBand: AgeBand? { didSet { save() } }
     @Published var region: PTRegion? { didSet { save() } }
     @Published var education: EducationLevel? { didSet { save() } }
-    // v0.8.3: sector (GEP CAE) replaces the old occupation group; tenure years in
-    // that sector cross with it for the sector×tenure percentile.
+    // v0.8.3: sector (GEP CAE) replaces the old occupation group; tenure years
+    // cross with it for the sector×tenure percentile.
     @Published var sector: Sector? { didSet { save() } }
+    /// v0.9: years AT THE CURRENT EMPLOYER (GEP's antiguidade na empresa), not
+    /// years in the sector. See the note on TenureBand.
     @Published var tenureYears: Int? { didSet { save() } }
+
+    // MARK: v0.9 signals (collected, not yet compared against)
+
+    /// Curated job title, a `JobTitleCatalog` id. The finest-grained signal in
+    /// the app and the one no published Portuguese source offers.
+    @Published var jobTitleID: String? { didSet { save() } }
+    /// Private / função pública / state-owned. Decides whether the GEP
+    /// comparison applies to this user at all.
+    @Published var employerKind: EmployerKind? { didSet { save() } }
+    /// Full-time or part-time.
+    @Published var workSchedule: WorkSchedule? { didSet { save() } }
+    /// Contracted hours a week. Only meaningful alongside `workSchedule`.
+    @Published var weeklyHours: Int? { didSet { save() } }
+    /// Optional, skippable. `.preferNot` is a real stored answer.
+    @Published var gender: Gender? { didSet { save() } }
+    /// Bonus, commission and prémios over a year, on top of the salary.
+    /// nil means "not answered yet"; 0 means "answered, and there is none".
+    /// Deliberately NOT fed into TaxEngine: withholding on non-monthly pay
+    /// follows different rules and the engine's 2026 tables are verified for
+    /// regular salary. Shown as a separate line, never folded into the estimate.
+    @Published var variableAnnual: Double? { didSet { save() } }
+    /// Total years of working experience, all employers. Collected because
+    /// tenure now means antiguidade na empresa and the two stopped being the
+    /// same number in v0.9.
+    @Published var careerYears: Int? { didSet { save() } }
 
     // v0.3: language. Follows the device by default, can be changed in the profile tab.
     @Published var language: AppLanguage { didSet { save() } }
@@ -92,8 +125,14 @@ final class SalaryStore: ObservableObject {
         region = PTRegion(rawValue: defaults.string(forKey: "profile.region") ?? "")
         education = EducationLevel(rawValue: defaults.string(forKey: "profile.education") ?? "")
         sector = Sector(rawValue: defaults.string(forKey: "profile.sector") ?? "")
-        let ty = defaults.object(forKey: "profile.tenureYears") as? Int
-        tenureYears = ty
+        tenureYears = defaults.object(forKey: "profile.tenureYears") as? Int
+        jobTitleID = defaults.string(forKey: "profile.jobTitle")
+        employerKind = EmployerKind(rawValue: defaults.string(forKey: "profile.employerKind") ?? "")
+        workSchedule = WorkSchedule(rawValue: defaults.string(forKey: "profile.workSchedule") ?? "")
+        weeklyHours = defaults.object(forKey: "profile.weeklyHours") as? Int
+        gender = Gender(rawValue: defaults.string(forKey: "profile.gender") ?? "")
+        variableAnnual = defaults.object(forKey: "profile.variableAnnual") as? Double
+        careerYears = defaults.object(forKey: "profile.careerYears") as? Int
         language = AppLanguage(rawValue: defaults.string(forKey: "language") ?? "") ?? .auto
     }
 
@@ -114,11 +153,22 @@ final class SalaryStore: ObservableObject {
         setOptional(region?.rawValue, forKey: "profile.region")
         setOptional(education?.rawValue, forKey: "profile.education")
         setOptional(sector?.rawValue, forKey: "profile.sector")
-        if let tenureYears { defaults.set(tenureYears, forKey: "profile.tenureYears") }
-        else { defaults.removeObject(forKey: "profile.tenureYears") }
+        setOptional(jobTitleID, forKey: "profile.jobTitle")
+        setOptional(employerKind?.rawValue, forKey: "profile.employerKind")
+        setOptional(workSchedule?.rawValue, forKey: "profile.workSchedule")
+        setOptional(gender?.rawValue, forKey: "profile.gender")
+        setInt(tenureYears, forKey: "profile.tenureYears")
+        setInt(weeklyHours, forKey: "profile.weeklyHours")
+        setInt(careerYears, forKey: "profile.careerYears")
+        if let variableAnnual { defaults.set(variableAnnual, forKey: "profile.variableAnnual") }
+        else { defaults.removeObject(forKey: "profile.variableAnnual") }
     }
 
     private func setOptional(_ value: String?, forKey key: String) {
+        if let value { defaults.set(value, forKey: key) } else { defaults.removeObject(forKey: key) }
+    }
+
+    private func setInt(_ value: Int?, forKey key: String) {
         if let value { defaults.set(value, forKey: key) } else { defaults.removeObject(forKey: key) }
     }
 
@@ -143,11 +193,31 @@ final class SalaryStore: ObservableObject {
         return n.isEmpty ? nil : n
     }
 
-    /// How many of the four profile signals are filled (0 to 4).
-    var profileFilledCount: Int {
-        [ageBand != nil, region != nil, education != nil, sector != nil]
-            .filter { $0 }.count
+    /// The resolved job title, if one is picked and still in the catalogue.
+    var jobTitle: JobTitle? { JobTitleCatalog.title(jobTitleID) }
+
+    /// Every signal the seed counts. v0.9 grew this from 4 to 10, so the sprout
+    /// maps the fraction filled onto its 5 drawn stages instead of counting
+    /// signals one for one.
+    var signalsFilled: [Bool] {
+        [
+            ageBand != nil,
+            region != nil,
+            education != nil,
+            sector != nil,
+            tenureYears != nil,
+            jobTitleID != nil,
+            employerKind != nil,
+            workSchedule != nil,
+            gender?.informative == true,
+            variableAnnual != nil,
+        ]
     }
+
+    var signalTotal: Int { signalsFilled.count }
+
+    /// How many profile signals are filled.
+    var profileFilledCount: Int { signalsFilled.filter { $0 }.count }
 
     /// The tenure band derived from the entered years (nil until years are set).
     var tenureBand: TenureBand? {
@@ -159,9 +229,25 @@ final class SalaryStore: ObservableObject {
         sector.map { SalaryDataset.sectorCell($0, tenure: tenureBand) }
     }
 
-    /// Sprout growth stage 0 to 5: the salary plants the seed (1);
-    /// each profile signal grows it one stage. Drives SproutView everywhere.
-    var sproutStage: Int { 1 + profileFilledCount }
+    /// True when the user is on a public-function contract, a population the
+    /// Quadros de Pessoal do not cover. Cohort cards carry a caveat in that case.
+    var outsideGEPScope: Bool { employerKind?.outsideGEP == true }
+
+    /// Sprout growth stage 1 to 5: the salary plants the seed, and the share of
+    /// profile signals filled grows it the rest of the way.
+    var sproutStage: Int { Self.sproutStage(filled: profileFilledCount, of: signalTotal) }
+
+    /// Stage the sprout would reach with `extra` more signals answered. Used by
+    /// the pickers to preview the reward before the user commits.
+    func sproutStage(withExtra extra: Int) -> Int {
+        Self.sproutStage(filled: min(signalTotal, profileFilledCount + extra), of: signalTotal)
+    }
+
+    static func sproutStage(filled: Int, of total: Int) -> Int {
+        guard total > 0, filled > 0 else { return 1 }
+        let grown = Int(ceil(4.0 * Double(filled) / Double(total)))
+        return min(5, 1 + grown)
+    }
 
     // MARK: Breakdown
 
@@ -191,6 +277,8 @@ final class SalaryStore: ObservableObject {
     /// National percentile for the current gross salary.
     /// Ajudas de custo are deliberately NOT included: published distributions
     /// are gross-salary based, and the UI says so wherever this number shows.
+    /// Neither is variable pay: GEP's ganho is a monthly figure that does not
+    /// carry annual bonuses, so folding them in would compare unlike with unlike.
     var percentile: Double {
         PercentileEngine.percentile(grossMonthly: breakdown.grossMonthly)
     }

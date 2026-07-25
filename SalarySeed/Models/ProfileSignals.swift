@@ -126,9 +126,17 @@ enum Sector: String, CaseIterable, Identifiable {
     }
 }
 
-/// Seniority as tenure in the sector, banded exactly as GEP's "escalão de
-/// antiguidade" (Quadro 104). We ask the user for a number of years and map it
-/// to the band that indexes the sector×tenure means.
+/// Seniority as tenure AT THE CURRENT EMPLOYER, banded exactly as GEP's
+/// "escalão de antiguidade na empresa" (Quadro 104).
+///
+/// v0.9 correctness fix: v0.8.3 asked for "years in the sector" and fed that
+/// straight into these bands. Quadro 104 is titled "GANHO MÉDIO, POR ACTIVIDADE
+/// ECONÓMICA, SEGUNDO O ESCALÃO DE ANTIGUIDADE NA EMPRESA", and the Relatório
+/// Único introductory note lists the worker variable as "antiguidade na
+/// empresa". Someone who had spent 8 years in IT across three employers was
+/// being placed in the 5-9 cell when GEP would have them in 1-4. The question
+/// now asks for years at the current employer; career total is a separate,
+/// collect-only signal (see SalaryStore.careerYears).
 enum TenureBand: String, CaseIterable, Identifiable {
     case lt1, y1to4, y5to9, y10to14, y15to19, y20plus
 
@@ -167,4 +175,102 @@ enum TenureBand: String, CaseIterable, Identifiable {
         case .y20plus: return pt ? "20+ anos" : "20+ years"
         }
     }
+}
+
+// MARK: - v0.9 signals
+
+/// Whether the employer pays under the Código do Trabalho (essentially all
+/// private employers, plus public companies and EPEs) or under the Regime do
+/// Contrato de Trabalho em Funções Públicas.
+///
+/// WHY THIS MATTERS MORE THAN IT LOOKS. The Relatório Único introductory note is
+/// explicit: employers are obliged to report "ficando excluídos desta obrigação
+/// os serviços e órgãos que apenas tenham trabalhadores abrangidos pelo Regime
+/// do Contrato de Trabalho em Funções Públicas". So GEP's tables do NOT cover
+/// staff on public-function contracts: direct public administration, state
+/// school teachers, most of the SNS career staff. The CAE O / P / Q rows exist,
+/// but they describe the Código do Trabalho slice of those activities, not the
+/// people most users would picture. Without this flag the app silently compares
+/// a funcionário público against a population he is not in.
+enum EmployerKind: String, CaseIterable, Identifiable {
+    case privateSector = "private"
+    case publicSector = "public"
+    case stateOwned = "stateowned"
+
+    var id: String { rawValue }
+
+    func label(pt: Bool) -> String {
+        switch self {
+        case .privateSector: return pt ? "Privado" : "Private"
+        case .publicSector:  return pt ? "Função pública" : "Public administration"
+        case .stateOwned:    return pt ? "Empresa pública / EPE" : "State-owned company / EPE"
+        }
+    }
+
+    func hint(pt: Bool) -> String {
+        switch self {
+        case .privateSector:
+            return pt ? "Empresa privada, IPSS, associação" : "Private company, non-profit, association"
+        case .publicSector:
+            return pt ? "Contrato de trabalho em funções públicas: Estado, câmara, escola pública, SNS"
+                      : "Public-function contract: state, council, state school, national health service"
+        case .stateOwned:
+            return pt ? "Empresa do Estado com contrato individual de trabalho" : "State-owned employer on a normal employment contract"
+        }
+    }
+
+    /// GEP's Quadros de Pessoal do not cover public-function contracts, so any
+    /// comparison shown to these users has to carry a caveat.
+    var outsideGEP: Bool { self == .publicSector }
+}
+
+/// Full-time or part-time, with the contracted weekly hours.
+///
+/// This is the cheapest data-quality field in the app. Published cell means mix
+/// full-timers and part-timers together, and a crowd database that does not
+/// record it will quietly pull every median down without anyone being able to
+/// see why.
+enum WorkSchedule: String, CaseIterable, Identifiable {
+    case fullTime = "ft"
+    case partTime = "pt"
+
+    var id: String { rawValue }
+
+    func label(pt isPT: Bool) -> String {
+        switch self {
+        case .fullTime: return isPT ? "Tempo inteiro" : "Full-time"
+        case .partTime: return isPT ? "Tempo parcial" : "Part-time"
+        }
+    }
+
+    /// The default weekly hours offered when this option is picked.
+    var defaultHours: Int { self == .fullTime ? 40 : 20 }
+}
+
+/// Optional and always skippable.
+///
+/// Collected for two reasons, both stated to the user before they answer: it is
+/// a real pay determinant in Portugal, and it is the axis the EU pay
+/// transparency directive is built around. Nothing in the app compares on it
+/// yet. `preferNot` is stored as an explicit answer rather than as nil, so a
+/// deliberate refusal can be told apart from a question never reached.
+enum Gender: String, CaseIterable, Identifiable {
+    case female = "f"
+    case male = "m"
+    case other = "o"
+    case preferNot = "na"
+
+    var id: String { rawValue }
+
+    func label(pt: Bool) -> String {
+        switch self {
+        case .female:    return pt ? "Feminino" : "Female"
+        case .male:      return pt ? "Masculino" : "Male"
+        case .other:     return pt ? "Outro" : "Other"
+        case .preferNot: return pt ? "Prefiro não dizer" : "Prefer not to say"
+        }
+    }
+
+    /// Only answers that carry information count towards the seed.
+    var informative: Bool { self != .preferNot }
 }

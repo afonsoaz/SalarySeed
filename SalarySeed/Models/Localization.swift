@@ -313,11 +313,11 @@ struct Strings {
     var sectorQuestion: String { t("Which sector do\nyou work in?", "Em que setor\ntrabalhas?") }
     var sectorNote: String { t("Economic activity (GEP CAE)", "Atividade económica (CAE, GEP)") }
     var sectorAdd: String { t("Add your sector", "Adiciona o teu setor") }
-    var sectorAddHint: String { t("Compare with your sector and tenure", "Compara com o teu setor e antiguidade") }
-    var sectorKicker: String { t("Sector + tenure", "Setor + antiguidade") }
-    var tenureLabel: String { t("Years in the sector", "Anos no setor") }
-    var tenureQuestion: String { t("How many years in this sector?", "Há quantos anos neste setor?") }
-    var tenureHint: String { t("Roughly how long you've worked in this sector.", "Mais ou menos há quanto tempo trabalhas neste setor.") }
+    var sectorAddHint: String { t("Compare with your sector and time at the company", "Compara com o teu setor e antiguidade na empresa") }
+    var sectorKicker: String { t("Sector + time at the company", "Setor + antiguidade na empresa") }
+    var tenureLabel: String { t("Years at this employer", "Anos nesta empresa") }
+    var tenureQuestion: String { t("How many years at your current employer?", "Há quantos anos estás na empresa onde trabalhas?") }
+    var tenureHint: String { t("Time at your current employer, not your whole career. That is how the official tables count it.", "Tempo na empresa onde estás agora, não a carreira toda. É assim que as tabelas oficiais contam.") }
     var tenureAddHint: String { t("Add your years to sharpen it", "Adiciona os anos para afinar") }
     func yearsText(_ n: Int) -> String {
         if n >= 40 { return t("40+ years", "40+ anos") }
@@ -354,7 +354,7 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.8.3. Estimates only, not official tax or financial advice.", "SalarySeed v0.8.3. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.9. Estimates only, not official tax or financial advice.", "SalarySeed v0.9. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }
@@ -457,4 +457,112 @@ struct Strings {
     var tradeOffTitle: String { t("What this means", "O que isto significa") }
     func tradeOffBody(_ amount: String) -> String { t("You gain \(amount) a month today. But your declared pay shrinks, so your pension and safety net shrink too. Nobody shows you this number.", "Ganhas \(amount) por mês hoje. Mas o teu salário declarado encolhe, e a tua reforma e a tua proteção social encolhem também. Ninguém te mostra este número.") }
     var futureDisclaimer: String { t("Very rough estimate with a test pension model. Not advice.", "Estimativa muito aproximada com um modelo de pensão de teste. Não é aconselhamento.") }
+
+    // MARK: v0.9 progressive enrichment
+
+    var enrichKicker: String { t("One quick question", "Uma pergunta rápida") }
+    var enrichSkip: String { t("Not now", "Agora não") }
+    func enrichProgress(_ done: Int, _ total: Int) -> String {
+        t("\(done) of \(total) answered", "\(done) de \(total) respondidas")
+    }
+    var enrichAllDone: String { t("You've answered everything. Nice.", "Já respondeste a tudo. Boa.") }
+
+    func enrichQuestion(_ id: String) -> String {
+        switch id {
+        case "employerKind": return t("Who do you work for?", "Para quem trabalhas?")
+        case "workSchedule": return t("Full-time or part-time?", "Tempo inteiro ou parcial?")
+        case "jobTitle": return t("What do you actually do?", "O que fazes exatamente?")
+        case "variablePay": return t("Any bonus on top of your salary?", "Recebes prémios além do salário?")
+        case "gender": return t("One optional question", "Uma pergunta opcional")
+        default: return ""
+        }
+    }
+
+    /// The reason, always shown before the answer. No question without a why.
+    func enrichWhy(_ id: String) -> String {
+        switch id {
+        case "employerKind":
+            return t("The official tables only cover private-contract workers. If you're on a public-function contract, we need to tell you the comparison doesn't fit you.",
+                     "As tabelas oficiais só cobrem quem tem contrato privado. Se estás em funções públicas, temos de te dizer que a comparação não serve para ti.")
+        case "workSchedule":
+            return t("Part-time pay mixed in with full-time pay drags every average down. Telling us keeps the numbers honest.",
+                     "Salários a tempo parcial misturados com tempo inteiro puxam todas as médias para baixo. Dizeres-nos mantém as contas honestas.")
+        case "jobTitle":
+            return t("Your sector says where you work. Your job says what you do, and that's where the real difference in pay is. Nothing compares on it yet, it's being gathered.",
+                     "O setor diz onde trabalhas. A profissão diz o que fazes, e é aí que está a diferença real nos salários. Ainda não compara nada, está a ser reunido.")
+        case "variablePay":
+            return t("Bonus and commission can be a big slice of the year. Kept apart from the salary so neither number lies.",
+                     "Prémios e comissões podem ser uma fatia grande do ano. Ficam à parte do salário para nenhum dos números mentir.")
+        case "gender":
+            return t("Pay differs by gender in Portugal and measuring that is the whole point of the new pay transparency rules. Skip it freely, it changes nothing else in the app.",
+                     "Os salários diferem entre homens e mulheres em Portugal e medir isso é o objetivo das novas regras de transparência salarial. Salta à vontade, não muda mais nada na app.")
+        default: return ""
+        }
+    }
+
+    // Employer kind
+    var employerRowTitle: String { t("Employer", "Empregador") }
+    var employerAddHint: String { t("Private, public or state-owned", "Privado, público ou empresa do Estado") }
+    var employerSheetTitle: String { t("Who do you work for?", "Para quem trabalhas?") }
+    var publicCaveatTitle: String { t("This comparison doesn't cover you", "Esta comparação não te cobre") }
+    var publicCaveatBody: String {
+        t("The Quadros de Pessoal leave out staff on public-function contracts, so these averages are private-sector pay. Your own pay scale isn't in here yet.",
+          "Os Quadros de Pessoal deixam de fora quem tem contrato de trabalho em funções públicas, por isso estas médias são do privado. A tua tabela remuneratória ainda não está aqui.")
+    }
+
+    // Work schedule
+    var scheduleRowTitle: String { t("Working time", "Tempo de trabalho") }
+    var scheduleAddHint: String { t("Full-time or part-time", "Tempo inteiro ou parcial") }
+    var hoursQuestion: String { t("Contracted hours a week", "Horas contratadas por semana") }
+    func hoursText(_ n: Int) -> String { t("\(n) hours", "\(n) horas") }
+    var partTimeNote: String {
+        t("You're part-time, so comparing against the average means comparing against mostly full-time pay.",
+          "Estás a tempo parcial, por isso comparar com a média é comparar com salários quase todos a tempo inteiro.")
+    }
+
+    // Job title
+    var jobRowTitle: String { t("Your job", "A tua profissão") }
+    var jobAddHint: String { t("The thing you'd say at a dinner table", "Aquilo que dirias num jantar") }
+    var jobSheetTitle: String { t("What do you do?", "O que fazes?") }
+    var jobSearchPlaceholder: String { t("Search your job", "Procura a tua profissão") }
+    var jobNoResults: String { t("Nothing matched. Try a shorter word.", "Nada encontrado. Tenta uma palavra mais curta.") }
+    var jobNotCompared: String {
+        t("Not compared yet. Portugal's published tables stop at broad groups, so this one is being gathered first.",
+          "Ainda não é comparada. As tabelas publicadas em Portugal ficam-se por grupos largos, por isso esta está primeiro a ser reunida.")
+    }
+    var jobBrowseAll: String { t("Browse all", "Ver todas") }
+
+    // Variable pay
+    var variableRowTitle: String { t("Bonus and commission", "Prémios e comissões") }
+    var variableAddHint: String { t("Anything on top of the salary", "Tudo o que vem além do salário") }
+    var variableSheetTitle: String { t("Bonus over a year", "Prémios ao longo do ano") }
+    var variableFieldLabel: String { t("Total for the year", "Total do ano") }
+    var variableNone: String { t("I don't get any", "Não recebo nada") }
+    var variableTaxNote: String {
+        t("Kept out of the monthly estimate on purpose. IRS on bonuses is withheld under different rules and we'd rather show nothing than show it wrong.",
+          "Fica de fora da estimativa mensal de propósito. O IRS dos prémios é retido por outras regras e preferimos não mostrar a mostrar mal.")
+    }
+    func variableYearly(_ amount: String) -> String { t("\(amount) a year", "\(amount) por ano") }
+
+    // Gender
+    var genderRowTitle: String { t("Gender", "Género") }
+    var genderAddHint: String { t("Optional", "Opcional") }
+    var genderSheetTitle: String { t("Gender", "Género") }
+
+    // Career years
+    var careerRowTitle: String { t("Career length", "Tempo de carreira") }
+    var careerQuestion: String { t("Total years working, all employers", "Anos a trabalhar ao todo, todas as empresas") }
+    var careerHint: String {
+        t("Different from your years at this employer, and worth keeping apart.",
+          "É diferente dos anos nesta empresa, e vale a pena ficarem separados.")
+    }
+
+    // Work details sheet (employer + schedule + career, edited together)
+    var workSheetTitle: String { t("About your work", "Sobre o teu trabalho") }
+    var workSectionTitle: String { t("Your work", "O teu trabalho") }
+    var collectedNotComparedNote: String {
+        t("Stays on your phone. Some of these aren't compared yet, they're being gathered so the comparison can get sharper later.",
+          "Fica no teu telemóvel. Alguns destes ainda não são comparados, estão a ser reunidos para a comparação ficar melhor mais à frente.")
+    }
+    var saveButton: String { t("Save", "Guardar") }
 }

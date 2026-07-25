@@ -8,6 +8,10 @@ struct CompareView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var activeDimension: CompareDimension?
     @State private var showSectorSheet = false
+    // v0.9: progressive enrichment. `snoozed` is intentionally in-memory only,
+    // so "not now" means not now and not never.
+    @State private var activeSignalSheet: SignalSheet?
+    @State private var snoozed: Set<String> = []
 
     private var s: Strings { store.s }
 
@@ -19,6 +23,7 @@ struct CompareView: View {
                     percentileHero
                     distributionChart
                     layers
+                    enrichment
                     sourceNote
                 }
                 .padding(.horizontal, 20)
@@ -26,9 +31,63 @@ struct CompareView: View {
             }
             .background(Theme.background)
             .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
+            .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
             }
+        }
+    }
+
+    /// v0.9: one unanswered question, under the comparison the user just read.
+    /// Placed after the layers on purpose: ask only once something useful has
+    /// already been given.
+    @ViewBuilder
+    private var enrichment: some View {
+        if let next = store.nextEnrichment(skipping: snoozed) {
+            EnrichmentCard(
+                signal: next,
+                onOpenSheet: { activeSignalSheet = SignalSheet.from($0) },
+                onSkip: {
+                    withAnimation(.easeOut(duration: 0.2)) { _ = snoozed.insert(next.rawValue) }
+                }
+            )
+        }
+    }
+
+    /// Shown whenever the user is on a public-function contract: the Quadros de
+    /// Pessoal exclude that population, so every cohort number above describes
+    /// somebody else.
+    @ViewBuilder
+    private var scopeCaveat: some View {
+        if store.outsideGEPScope {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(s.publicCaveatTitle)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.danger)
+                Text(s.publicCaveatBody)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.dangerSoft, in: RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Theme.dangerBorder, lineWidth: 1)
+            )
+        }
+    }
+
+    /// Shown when the user works part-time: the published averages are mostly
+    /// full-time pay, so the comparison is not like for like.
+    @ViewBuilder
+    private var partTimeCaveat: some View {
+        if store.workSchedule == .partTime {
+            Text(s.partTimeNote)
+                .font(.system(size: 10.5))
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -95,6 +154,8 @@ struct CompareView: View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(s.peopleLikeYou)
 
+            scopeCaveat
+
             // Sector × tenure leads: it's the combined "people like you" cohort.
             if let sector = store.sector, let cell = store.sectorCell {
                 SectorCard(
@@ -123,6 +184,8 @@ struct CompareView: View {
                     lockedLayerRow(dim)
                 }
             }
+
+            partTimeCaveat
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
     }
