@@ -57,8 +57,10 @@ enum DistrictComparison {
     /// Signed percentage, always with an explicit sign so "+0%" and "0%" cannot
     /// be confused with a missing value.
     static func formatted(_ pct: Double) -> String {
-        let rounded = (pct * 10).rounded() / 10
-        if abs(rounded) < 0.05 { return "0%" }
-        return String(format: "%+.0f%%", rounded)
+        // v0.9.3: the threshold has to match the rounding. It used to cut at
+        // 0.05 while printing zero decimals, so 0.4% printed as "+0%" and 0.02%
+        // printed as "0%" — two spellings of the same thing on one screen.
+        if abs(pct) < 0.5 { return "0%" }
+        return String(format: "%+.0f%%", pct)
     }
 }

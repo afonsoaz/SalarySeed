@@ -17,8 +17,14 @@ struct MapView: View {
 
     private var home: District? { store.district }
 
+    /// v0.9.3: if the user clears their município while the home baseline is
+    /// selected, fall back to the national one rather than showing a blank map.
+    private var effectiveBaseline: MapBaseline {
+        (baseline == .home && home == nil) ? .national : baseline
+    }
+
     private var baselineValue: Double? {
-        DistrictDataset.baseline(sector: store.sector, mode: baseline, home: home)
+        DistrictDataset.baseline(sector: store.sector, mode: effectiveBaseline, home: home)
     }
 
     private var readings: [DistrictReading] {
@@ -102,7 +108,7 @@ struct MapView: View {
 
     private func baselineChip(_ mode: MapBaseline, _ label: String) -> some View {
         let enabled = mode == .national || home != nil
-        let isOn = baseline == mode && enabled
+        let isOn = effectiveBaseline == mode && enabled
         return Button {
             if enabled {
                 withAnimation(.easeOut(duration: 0.15)) { baseline = mode }
@@ -176,11 +182,18 @@ struct MapView: View {
                             .background(Theme.accent, in: Capsule())
                     }
                     Spacer()
+                    // v0.9.3: the euro figure sits on the same line as the
+                    // percentage. It used to be buried in the sentence below,
+                    // which made the two numbers read as unrelated.
+                    Text(eur(focus.mean))
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(Theme.textSecondary)
                     Text(DistrictComparison.formatted(focus.pct))
                         .font(.system(size: 19, weight: .semibold))
                         .foregroundStyle(Theme.mapColor(bucket: focus.bucket))
+                        .frame(minWidth: 54, alignment: .trailing)
                 }
-                Text(s.mapMeanLine(eur(focus.mean), baselineName))
+                Text(s.mapBaselineLine(baselineName))
                     .font(.system(size: 11.5))
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -197,7 +210,7 @@ struct MapView: View {
     }
 
     private var baselineName: String {
-        switch baseline {
+        switch effectiveBaseline {
         case .national: return s.mapBaselineNationalName
         case .home: return home?.label ?? s.mapBaselineNationalName
         }
@@ -229,31 +242,32 @@ struct MapView: View {
             HStack(spacing: 10) {
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Theme.mapColor(bucket: reading.bucket, thin: reading.thin))
-                    .frame(width: 4, height: 26)
-                VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 5) {
-                        Text(reading.district.label)
-                            .font(.system(size: 13.5, weight: isHome ? .semibold : .regular))
-                            .foregroundStyle(Theme.textPrimary)
-                        if isHome {
-                            Image(systemName: "location.fill")
-                                .font(.system(size: 8))
-                                .foregroundStyle(Theme.accent)
-                        }
-                        if reading.thin {
-                            Text(s.mapThinTag)
-                                .font(.system(size: 8.5))
-                                .foregroundStyle(Theme.danger)
-                        }
-                    }
-                    Text(eur(reading.mean))
-                        .font(.system(size: 10.5))
-                        .foregroundStyle(Theme.textFaint)
+                    .frame(width: 4, height: 22)
+                Text(reading.district.label)
+                    .font(.system(size: 13.5, weight: isHome ? .semibold : .regular))
+                    .foregroundStyle(Theme.textPrimary)
+                    .lineLimit(1)
+                if isHome {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 8))
+                        .foregroundStyle(Theme.accent)
                 }
-                Spacer()
+                if reading.thin {
+                    Text(s.mapThinTag)
+                        .font(.system(size: 8.5))
+                        .foregroundStyle(Theme.danger)
+                }
+                Spacer(minLength: 6)
+                // v0.9.3: amount and percentage on one line, both right-aligned
+                // in fixed columns so they line up down the whole list.
+                Text(eur(reading.mean))
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textSecondary)
+                    .frame(minWidth: 62, alignment: .trailing)
                 Text(DistrictComparison.formatted(reading.pct))
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Theme.mapColor(bucket: reading.bucket))
+                    .frame(minWidth: 46, alignment: .trailing)
             }
             .padding(.vertical, 7)
             .padding(.horizontal, 10)

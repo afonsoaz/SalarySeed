@@ -102,11 +102,6 @@ final class SalaryStore: ObservableObject {
     /// follows different rules and the engine's 2026 tables are verified for
     /// regular salary. Shown as a separate line, never folded into the estimate.
     @Published var variableAnnual: Double? { didSet { save() } }
-    /// Total years of working experience, all employers. Collected because
-    /// tenure now means antiguidade na empresa and the two stopped being the
-    /// same number in v0.9.
-    @Published var careerYears: Int? { didSet { save() } }
-
     // v0.3: language. Follows the device by default, can be changed in the profile tab.
     @Published var language: AppLanguage { didSet { save() } }
 
@@ -129,6 +124,9 @@ final class SalaryStore: ObservableObject {
         // v0.9.1 migration: the old NUTS II answer is dropped rather than guessed
         // backwards into a município. The question is simply asked again.
         defaults.removeObject(forKey: "profile.region")
+        // v0.9.3: career-total tenure is no longer asked for. Only antiguidade na
+        // empresa is, because that is the only one any published table crosses.
+        defaults.removeObject(forKey: "profile.careerYears")
         education = EducationLevel(rawValue: defaults.string(forKey: "profile.education") ?? "")
         sector = Sector(rawValue: defaults.string(forKey: "profile.sector") ?? "")
         tenureYears = defaults.object(forKey: "profile.tenureYears") as? Int
@@ -138,7 +136,6 @@ final class SalaryStore: ObservableObject {
         weeklyHours = defaults.object(forKey: "profile.weeklyHours") as? Int
         gender = Gender(rawValue: defaults.string(forKey: "profile.gender") ?? "")
         variableAnnual = defaults.object(forKey: "profile.variableAnnual") as? Double
-        careerYears = defaults.object(forKey: "profile.careerYears") as? Int
         language = AppLanguage(rawValue: defaults.string(forKey: "language") ?? "") ?? .auto
     }
 
@@ -165,7 +162,6 @@ final class SalaryStore: ObservableObject {
         setOptional(gender?.rawValue, forKey: "profile.gender")
         setInt(tenureYears, forKey: "profile.tenureYears")
         setInt(weeklyHours, forKey: "profile.weeklyHours")
-        setInt(careerYears, forKey: "profile.careerYears")
         if let variableAnnual { defaults.set(variableAnnual, forKey: "profile.variableAnnual") }
         else { defaults.removeObject(forKey: "profile.variableAnnual") }
     }
@@ -226,7 +222,12 @@ final class SalaryStore: ObservableObject {
             jobTitleID != nil,
             employerKind != nil,
             workSchedule != nil,
-            gender?.informative == true,
+            // v0.9.3: any answer counts as answered, including "prefer not to
+            // say". `informative` still gates whether the value is usable as
+            // data, but a deliberate refusal is a completed question, and
+            // counting it otherwise made the finished state unreachable for
+            // anyone who chose it.
+            gender != nil,
             variableAnnual != nil,
         ]
     }

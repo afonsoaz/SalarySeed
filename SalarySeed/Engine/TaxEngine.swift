@@ -19,6 +19,16 @@ enum MaritalSituation: String, CaseIterable, Identifiable {
         }
     }
 
+    /// v0.9.3: a compact form for inline rows. The full label wrapped to two lines
+    /// in the profile's fiscal list, making that row taller than the ones around it.
+    func shortLabel(pt: Bool) -> String {
+        switch self {
+        case .single: pt ? "Não casado" : "Single"
+        case .marriedTwo: pt ? "Casado, 2 titulares" : "Married, both earn"
+        case .marriedOne: pt ? "Casado, 1 titular" : "Married, one earner"
+        }
+    }
+
     func hint(pt: Bool) -> String {
         switch self {
         case .single: pt ? "Solteiro, divorciado ou viúvo" : "Not married"

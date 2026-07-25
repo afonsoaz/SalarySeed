@@ -107,7 +107,7 @@ struct CompareView: View {
             Spacer()
             HStack(spacing: 6) {
                 SproutView(stage: store.sproutStage, size: 22)
-                Text(s.planted(store.profileFilledCount, of: 4))
+                Text(s.profileProgressCount(store.profileFilledCount, store.signalTotal))
                     .font(.system(size: 10))
                     .foregroundStyle(Theme.textFaint)
             }

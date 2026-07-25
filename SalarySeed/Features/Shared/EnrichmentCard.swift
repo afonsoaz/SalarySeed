@@ -112,8 +112,9 @@ struct EnrichmentCard: View {
                 .font(.system(size: 12.5))
                 .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 11)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
+                .frame(maxWidth: .infinity, minHeight: Theme.chipHeight)
                 .background(Color.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 11))
                 .overlay(
                     RoundedRectangle(cornerRadius: 11)

@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// v0.9: employer kind, working time and career length, edited together.
+/// v0.9: employer kind and working time, edited together.
+/// v0.9.3: the career-total question is gone (see below).
 ///
 /// These three belong on one screen because they are one thought ("what kind of
 /// job is this"), and because employer kind changes what the app is allowed to
@@ -16,8 +17,6 @@ struct WorkDetailsSheet: View {
     @State private var employer: EmployerKind?
     @State private var schedule: WorkSchedule?
     @State private var hours: Int = 40
-    @State private var career: Int = 0
-    @State private var careerSet: Bool = false
 
     private var s: Strings { store.s }
 
@@ -46,10 +45,6 @@ struct WorkDetailsSheet: View {
 
                     timeSection
 
-                    Divider().overlay(Theme.cardBorder).padding(.vertical, 16)
-
-                    careerSection
-
                     Text(s.collectedNotComparedNote)
                         .font(.system(size: 10))
                         .foregroundStyle(Theme.textFaint)
@@ -69,8 +64,6 @@ struct WorkDetailsSheet: View {
             employer = store.employerKind
             schedule = store.workSchedule
             hours = store.weeklyHours ?? store.workSchedule?.defaultHours ?? 40
-            career = store.careerYears ?? 0
-            careerSet = store.careerYears != nil
         }
     }
 
@@ -119,21 +112,6 @@ struct WorkDetailsSheet: View {
         }
     }
 
-    private var careerSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(s.careerQuestion)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(Theme.textPrimary)
-            Text(s.careerHint)
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textFaint)
-                .padding(.top, 2)
-            stepper(value: $career, min: 0, max: 50, text: s.yearsText(career))
-                .padding(.top, 8)
-                .onChange(of: career) { _, _ in careerSet = true }
-        }
-    }
-
     private var saveButton: some View {
         Button {
             commit()
@@ -152,7 +130,6 @@ struct WorkDetailsSheet: View {
         store.employerKind = employer
         store.workSchedule = schedule
         store.weeklyHours = schedule == nil ? nil : hours
-        if careerSet { store.careerYears = career }
     }
 
     // MARK: Pieces

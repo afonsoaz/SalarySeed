@@ -35,6 +35,15 @@ enum Theme {
     static let dangerSoft = Color(hex: 0xE06A5E).opacity(0.08)
     static let dangerBorder = Color(hex: 0xE06A5E).opacity(0.22)
 
+    /// v0.9.3: the fiscal rows share one height so a long picker value cannot
+    /// make its row taller than its neighbours.
+    static let fiscalRowHeight: CGFloat = 30
+
+    /// v0.9.3: every chip grid in the app uses this, so a two-line label like
+    /// "Comércio e reparação de veículos" and a one-line one like "Construção"
+    /// occupy the same box and the grid stops looking ragged.
+    static let chipHeight: CGFloat = 52
+
     // MARK: v0.9.2 mapSeed diverging ramp
 
     /// Seven steps: three red, a neutral midpoint, three green. Polarity, so a

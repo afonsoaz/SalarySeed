@@ -135,8 +135,10 @@ enum Sector: String, CaseIterable, Identifiable {
 /// Único introductory note lists the worker variable as "antiguidade na
 /// empresa". Someone who had spent 8 years in IT across three employers was
 /// being placed in the 5-9 cell when GEP would have them in 1-4. The question
-/// now asks for years at the current employer; career total is a separate,
-/// collect-only signal (see SalaryStore.careerYears).
+/// now asks for years at the current employer only. v0.9.3 removed the separate
+/// career-total question: no published table crosses anything with it, and two
+/// near-identical "how many years" questions in one app is a way to get both
+/// answered badly.
 enum TenureBand: String, CaseIterable, Identifiable {
     case lt1, y1to4, y5to9, y10to14, y15to19, y20plus
 

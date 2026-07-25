@@ -132,8 +132,9 @@ struct SectorTenureSheet: View {
                 .font(.system(size: 12.5, weight: isSelected ? .medium : .regular))
                 .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 11)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
+                .frame(maxWidth: .infinity, minHeight: Theme.chipHeight)
                 .padding(.horizontal, 8)
                 .background(
                     isSelected ? Theme.accent : Color.white.opacity(0.06),

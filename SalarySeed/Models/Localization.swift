@@ -201,7 +201,6 @@ struct Strings {
     // MARK: Compare
 
     var compareTitle: String { t("Where you stand", "Como te comparas") }
-    func planted(_ n: Int, of total: Int) -> String { t("\(n) of \(total) planted", "\(n) de \(total) plantados") }
     var allPortugal: String { t("All of Portugal", "Portugal inteiro") }
     var earnLessThanYou: String { t("of workers earn less than you", "dos trabalhadores ganham menos do que tu") }
     var grossVsGross: String { t("Gross vs gross · GEP-MTSSS e INE · 2024 · estimate", "Bruto vs bruto · GEP-MTSSS e INE · 2024 · estimativa") }
@@ -341,12 +340,21 @@ struct Strings {
         if let name { return t("\(name)'s profile", "Perfil de \(name)") }
         return t("Your profile", "O teu perfil")
     }
-    var yourSeed: String { t("Your seed", "A tua semente") }
-    var seedSub: String { t("Each detail you add improves your comparison.", "Cada detalhe que adicionas melhora a tua comparação.") }
+    // v0.9.3: the sprout drawing stays, the seed vocabulary does not.
+    var profileProgressTitle: String { t("Your details", "Os teus dados") }
+    var profileProgressSub: String { t("Each one you add sharpens your comparison.", "Cada um que adicionas afina a tua comparação.") }
+    var profileDoneTitle: String { t("All done", "Está tudo") }
+    var profileDoneSub: String {
+        t("Nothing left to ask. Your comparison is as precise as this app can make it.",
+          "Não falta nada. A tua comparação está tão precisa quanto a app consegue.")
+    }
+    func profileProgressCount(_ filled: Int, _ total: Int) -> String {
+        t("\(filled) of \(total)", "\(filled) de \(total)")
+    }
+    var demographicsTitle: String { t("About you", "Sobre ti") }
     var yourSalary: String { t("Your salary", "O teu salário") }
     var nameLabel: String { t("Name", "Nome") }
     var namePlaceholder: String { t("Add your name", "O teu nome") }
-    var addMore: String { t("Add more, unlock more", "Adiciona mais, vê mais") }
     var appSection: String { "App" }
     var languageLabel: String { t("Language", "Idioma") }
     var premiumLabel: String { "Premium" }
@@ -355,7 +363,7 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.9.2. Estimates only, not official tax or financial advice.", "SalarySeed v0.9.2. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.9.3. Estimates only, not official tax or financial advice.", "SalarySeed v0.9.3. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }
@@ -550,15 +558,7 @@ struct Strings {
     var genderAddHint: String { t("Optional", "Opcional") }
     var genderSheetTitle: String { t("Gender", "Género") }
 
-    // Career years
-    var careerRowTitle: String { t("Career length", "Tempo de carreira") }
-    var careerQuestion: String { t("Total years working, all employers", "Anos a trabalhar ao todo, todas as empresas") }
-    var careerHint: String {
-        t("Different from your years at this employer, and worth keeping apart.",
-          "É diferente dos anos nesta empresa, e vale a pena ficarem separados.")
-    }
-
-    // Work details sheet (employer + schedule + career, edited together)
+    // Work details sheet (employer + schedule, edited together)
     var workSheetTitle: String { t("About your work", "Sobre o teu trabalho") }
     var workSectionTitle: String { t("Your work", "O teu trabalho") }
     var collectedNotComparedNote: String {
@@ -604,9 +604,9 @@ struct Strings {
     var mapLegendSame: String { t("about the same", "mais ou menos igual") }
     var mapThinTag: String { t("few data", "poucos dados") }
 
-    func mapMeanLine(_ amount: String, _ baseline: String) -> String {
-        t("Average \(amount) a month, against \(baseline).",
-          "Média de \(amount) por mês, contra \(baseline).")
+    func mapBaselineLine(_ baseline: String) -> String {
+        t("Monthly average for this sector, compared with \(baseline).",
+          "Média mensal deste setor, comparada com \(baseline).")
     }
     func mapCellSize(_ n: Int) -> String {
         t("Based on \(n) employees.", "Com base em \(n) trabalhadores.")

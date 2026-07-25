@@ -82,8 +82,10 @@ struct ProfilePickerSheet: View {
             Text(option.label)
                 .font(.system(size: 13, weight: isSelected ? .medium : .regular))
                 .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
+                .frame(maxWidth: .infinity, minHeight: Theme.chipHeight)
                 .padding(.horizontal, 8)
                 .background(
                     isSelected ? Theme.accent : Color.white.opacity(0.06),

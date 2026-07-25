@@ -587,8 +587,10 @@ struct OnboardingView: View {
                 .font(.system(size: 12.5, weight: isSelected ? .medium : .regular))
                 .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 11)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
+                .frame(maxWidth: .infinity, minHeight: Theme.chipHeight)
                 .padding(.horizontal, 8)
                 .background(
                     isSelected ? Theme.accent : Color.white.opacity(0.06),
@@ -609,8 +611,10 @@ struct OnboardingView: View {
             Text(option.label)
                 .font(.system(size: 13, weight: isSelected ? .medium : .regular))
                 .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.82)
+                .frame(maxWidth: .infinity, minHeight: Theme.chipHeight)
                 .padding(.horizontal, 8)
                 .background(
                     isSelected ? Theme.accent : Color.white.opacity(0.06),

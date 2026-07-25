@@ -30,30 +30,14 @@ struct ProfileView: View {
                     }
                     .padding(.top, 8)
 
-                    yourSeedCard
+                    progressCard
                     currentSalaryCard
                     nameCard
 
-                    VStack(alignment: .leading, spacing: 10) {
-                        SectionLabel(s.addMore)
-                        sectorRow
-                        ForEach(CompareDimension.all) { dim in
-                            dimensionRow(dim)
-                        }
-                    }
-
+                    demographicsSection
                     workSection
-                    .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
-
                     taxSection
-
-                    VStack(alignment: .leading, spacing: 10) {
-                        SectionLabel(s.appSection)
-                        languageCard
-                        InfoRow(label: s.premiumLabel, value: s.premiumValue)
-                        InfoRow(label: s.privacyLabel, value: s.privacyValue)
-                        InfoRow(label: s.sourcesLabel, value: s.sourcesValue)
-                    }
+                    appSection
 
                     Text(s.profileFooter)
                         .font(.system(size: 10))
@@ -80,9 +64,41 @@ struct ProfileView: View {
     /// The signals added in v0.9. None of them are compared against yet, and the
     /// footnote says so: an app that asks for something and then pretends it is
     /// being used has spent trust it will need later.
+    /// v0.9.3: the profile is grouped by what the question is ABOUT rather than by
+    /// which version added it. Demographics, then the job, then tax.
+    private var demographicsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(s.demographicsTitle)
+
+            ForEach(CompareDimension.all) { dim in
+                dimensionRow(dim)
+            }
+
+            signalRow(
+                icon: "person.2",
+                title: s.genderRowTitle,
+                value: store.gender?.label(pt: s.pt),
+                hint: s.genderAddHint
+            ) { activeSignalSheet = .gender }
+        }
+        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
+    }
+
+    private var appSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(s.appSection)
+            languageCard
+            InfoRow(label: s.premiumLabel, value: s.premiumValue)
+            InfoRow(label: s.privacyLabel, value: s.privacyValue)
+            InfoRow(label: s.sourcesLabel, value: s.sourcesValue)
+        }
+    }
+
     private var workSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(s.workSectionTitle)
+
+            sectorRow
 
             signalRow(
                 icon: "person.text.rectangle",
@@ -111,17 +127,6 @@ struct ProfileView: View {
                 value: variableValue,
                 hint: s.variableAddHint
             ) { activeSignalSheet = .variablePay }
-
-            signalRow(
-                icon: "person.2",
-                title: s.genderRowTitle,
-                value: store.gender?.label(pt: s.pt),
-                hint: s.genderAddHint
-            ) { activeSignalSheet = .gender }
-
-            if let years = store.careerYears {
-                InfoRow(label: s.careerRowTitle, value: s.yearsText(years))
-            }
 
             Text(s.collectedNotComparedNote)
                 .font(.system(size: 10))
@@ -198,6 +203,9 @@ struct ProfileView: View {
             SectionLabel(s.taxSection)
 
             VStack(spacing: 14) {
+                // v0.9.3: short labels and a fixed row height. "Casado, dois
+                // titulares" wrapped, which made this row taller than the
+                // dependants row underneath and the section look misaligned.
                 HStack {
                     Text(s.maritalLabel)
                         .font(.system(size: 14))
@@ -205,12 +213,15 @@ struct ProfileView: View {
                     Spacer()
                     Picker(s.maritalLabel, selection: $store.maritalSituation) {
                         ForEach(MaritalSituation.allCases) { m in
-                            Text(m.label(pt: s.pt)).tag(m)
+                            Text(m.shortLabel(pt: s.pt)).tag(m)
                         }
                     }
                     .pickerStyle(.menu)
                     .tint(Theme.accent)
+                    .lineLimit(1)
+                    .fixedSize()
                 }
+                .frame(height: Theme.fiscalRowHeight)
 
                 Divider().overlay(Theme.cardBorder)
 
@@ -240,6 +251,7 @@ struct ProfileView: View {
                         }
                     }
                 }
+                .frame(height: Theme.fiscalRowHeight)
             }
             .padding(14)
             .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
@@ -333,25 +345,40 @@ struct ProfileView: View {
     }
 
     /// The sprout's home: profile completeness rendered as growth.
-    private var yourSeedCard: some View {
-        HStack(spacing: 16) {
+    /// v0.9.3: the sprout stays, the seed vocabulary does not. The wording used
+    /// to say "a tua semente" and count "1 of 5", which was already wrong: v0.9
+    /// grew the profile from 4 signals to 10 while this card kept a hard-coded 5,
+    /// so a fully filled profile read "11 de 5". It now counts the real signals,
+    /// and turns green when there is nothing left to ask.
+    private var progressCard: some View {
+        let filled = store.profileFilledCount
+        let total = store.signalTotal
+        let done = filled >= total
+        return HStack(spacing: 16) {
             SproutView(stage: store.sproutStage, size: 64, sways: true)
             VStack(alignment: .leading, spacing: 2) {
-                Text(s.yourSeed)
+                Text(done ? s.profileDoneTitle : s.profileProgressTitle)
                     .font(.system(size: 13))
-                    .foregroundStyle(Theme.textSecondary)
-                Text(s.planted(1 + store.profileFilledCount, of: 5))
+                    .foregroundStyle(done ? Theme.accent : Theme.textSecondary)
+                Text(s.profileProgressCount(filled, total))
                     .font(.system(size: 19, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
-                Text(s.seedSub)
+                    .contentTransition(.numericText())
+                Text(done ? s.profileDoneSub : s.profileProgressSub)
                     .font(.system(size: 11.5))
-                    .foregroundStyle(Theme.textSecondary)
+                    .foregroundStyle(done ? Theme.accent : Theme.textSecondary)
                     .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
         }
         .padding(16)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        .background(done ? Theme.accentSoft : Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(done ? Theme.accentBorder : Color.clear, lineWidth: 1)
+        )
+        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: filled)
     }
 
     private var currentSalaryCard: some View {
