@@ -10,6 +10,9 @@ struct HomeView: View {
     @State private var showEditor = false
     @State private var showRaiseSeed = false
     @State private var showFutureSeed = false
+    // v0.9.4
+    @State private var showExplorer = false
+    @State private var askingSalaryChange = false
 
     /// v0.8: three ways to read the result. Two are monthly (the yearly pay spread
     /// over 12, or over the 14 real payments) and one is the yearly total.
@@ -71,6 +74,13 @@ struct HomeView: View {
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showRaiseSeed) { RaiseSimulatorView() }
             .sheet(isPresented: $showFutureSeed) { FutureSeedView() }
+            .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
+            .salaryChangeConfirmation(
+                isPresented: $askingSalaryChange,
+                s: s,
+                onChange: { showEditor = true },
+                onExplore: { showExplorer = true }
+            )
             .onAppear {
                 // Open on the lens that equals the user's real per-payment amount.
                 guard !pickedInitial else { return }
@@ -93,7 +103,7 @@ struct HomeView: View {
                 $0.label(s)
             }
             .frame(width: 188)
-            Button { showEditor = true } label: {
+            Button { askingSalaryChange = true } label: {
                 Image(systemName: "pencil.circle.fill")
                     .font(.system(size: 24))
                     .foregroundStyle(Theme.textSecondary)
@@ -157,7 +167,7 @@ struct HomeView: View {
     }
 
     private var updateSalaryButton: some View {
-        Button { showEditor = true } label: {
+        Button { askingSalaryChange = true } label: {
             HStack(spacing: 8) {
                 Image(systemName: "pencil")
                     .font(.system(size: 13))
@@ -309,15 +319,59 @@ struct HomeView: View {
                         .foregroundStyle(accent)
                 }
 
-                Text(s.annualNote)
-                    .font(.system(size: 10))
-                    .foregroundStyle(Theme.textFaint)
-                    .lineSpacing(2)
             }
+
+            // v0.9.4: the assumptions are shown in BOTH branches. They used to sit
+            // inside the else, so the moment real IRS came out at zero — which is
+            // exactly when the €1,000 credit cannot be used — the app stopped
+            // mentioning that it had assumed it at all.
+            settlementAssumptions
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    /// What the two numbers above take for granted, always spelled out.
+    @ViewBuilder
+    private var settlementAssumptions: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Divider().overlay(Theme.cardBorder).padding(.vertical, 2)
+
+            if b.jovemExemption > 0 {
+                assumptionLine(
+                    icon: "sparkles",
+                    text: s.annualJovemBoth(Int((b.jovemExemption * 100).rounded())),
+                    tint: Theme.accent
+                )
+            }
+
+            assumptionLine(icon: "receipt", text: creditText, tint: Theme.textFaint)
+            assumptionLine(icon: "info.circle", text: s.annualNote, tint: Theme.textFaint)
+        }
+    }
+
+    /// The €1,000 is capped at the IRS still owed, so it is often only partly used
+    /// and, on a zero-IRS year, not used at all. Say which of the three it is.
+    private var creditText: String {
+        guard let d = b.settlement else { return s.annualNote }
+        if d.generalCreditUnused { return s.annualCreditUnused(eur(d.generalCreditAssumed)) }
+        if d.generalCreditFullyUsed { return s.annualCreditFull(eur(d.generalCreditAssumed)) }
+        return s.annualCreditPartial(eur(d.generalCreditAssumed), eur(d.generalCreditApplied))
+    }
+
+    private func assumptionLine(icon: String, text: String, tint: Color) -> some View {
+        HStack(alignment: .top, spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 9))
+                .foregroundStyle(tint)
+                .frame(width: 12)
+            Text(text)
+                .font(.system(size: 10))
+                .foregroundStyle(tint == Theme.accent ? Theme.textSecondary : Theme.textFaint)
+                .lineSpacing(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private func settlementFigure(label: String, value: String) -> some View {
@@ -364,6 +418,9 @@ struct HomeView: View {
     private var nudges: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(s.whatIf)
+            // v0.9.4: trying a number is the most common "what if" of all, so it
+            // leads the section and is the only card that carries the accent.
+            explorerButton
             NudgeCard(
                 icon: "arrow.up.right.circle.fill",
                 title: s.raiseNudgeTitle,
@@ -374,6 +431,34 @@ struct HomeView: View {
                 title: s.ajudasNudgeTitle,
                 subtitle: s.ajudasNudgeSub
             ) { showFutureSeed = true }
+        }
+    }
+
+    private var explorerButton: some View {
+        Button { showExplorer = true } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "slider.horizontal.below.square.filled.and.square")
+                    .font(.system(size: 20))
+                    .foregroundStyle(Color(hex: 0x06281C))
+                    .frame(width: 28)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(s.explorerNudgeTitle)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color(hex: 0x06281C))
+                    Text(s.explorerNudgeSub)
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color(hex: 0x06281C).opacity(0.75))
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Color(hex: 0x06281C).opacity(0.6))
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.accent, in: RoundedRectangle(cornerRadius: 14))
         }
     }
 

@@ -166,8 +166,26 @@ struct Strings {
         t("You get back the \(amount) withheld during the year.", "Recebes de volta os \(amount) retidos durante o ano.")
     }
     var annualNote: String {
-        t("Estimate on the 2026 brackets, assuming about €1,000 of the usual deductions (health, education, invoices). Your real total can shift it.",
-          "Estimativa nos escalões de 2026, assumindo cerca de €1.000 das deduções habituais (saúde, educação, faturas). O teu total real pode mudar isto.")
+        t("Estimate on the 2026 brackets. Your real deductions can shift it.",
+          "Estimativa nos escalões de 2026. As tuas deduções reais podem mudar isto.")
+    }
+
+    // v0.9.4: the two assumptions behind the settlement, always stated.
+    func annualJovemBoth(_ pct: Int) -> String {
+        t("IRS Jovem (\(pct)% exempt) is already in both numbers: it lowers what's withheld every month and the real IRS at the end of the year.",
+          "O IRS Jovem (\(pct)% isento) já está nos dois números: baixa o que te retêm todos os meses e também o IRS real no fim do ano.")
+    }
+    func annualCreditFull(_ assumed: String) -> String {
+        t("Assumes \(assumed) of the usual deductions (health, education, invoices), and all of it is used here.",
+          "Assume \(assumed) das deduções habituais (saúde, educação, faturas), e aqui são usados por inteiro.")
+    }
+    func annualCreditPartial(_ assumed: String, _ applied: String) -> String {
+        t("Assumes \(assumed) of the usual deductions (health, education, invoices), but only \(applied) fits: a deduction never pushes your IRS below zero.",
+          "Assume \(assumed) das deduções habituais (saúde, educação, faturas), mas só \(applied) cabem: uma dedução nunca faz o IRS descer abaixo de zero.")
+    }
+    func annualCreditUnused(_ assumed: String) -> String {
+        t("Assumes \(assumed) of the usual deductions (health, education, invoices), but none of it is used here: there is no IRS left for it to reduce.",
+          "Assume \(assumed) das deduções habituais (saúde, educação, faturas), mas aqui não são usados: já não há IRS para reduzir.")
     }
 
     // v0.5 ajudas de custo, always shown apart from the salary
@@ -363,7 +381,7 @@ struct Strings {
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.9.3. Estimates only, not official tax or financial advice.", "SalarySeed v0.9.3. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    var profileFooter: String { t("SalarySeed v0.9.4. Estimates only, not official tax or financial advice.", "SalarySeed v0.9.4. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }
@@ -625,4 +643,48 @@ struct Strings {
           "Só continente, trabalhadores com contrato privado, outubro de 2024. São médias de toda a gente do setor, não da tua profissão.")
     }
     var mapGeoCredit: String { "Fronteiras: CAOP, Direção-Geral do Território" }
+
+    // MARK: v0.9.4 salary explorer
+
+    /// The fork: recording a real change, or trying a number on. Same wording
+    /// wherever the user taps to edit their salary.
+    var salaryChangeTitle: String { t("Has your salary actually changed?", "O teu salário mudou mesmo?") }
+    var salaryChangeMessage: String {
+        t("Changing it here replaces the number the whole app works from.",
+          "Mudar aqui substitui o número com que a app toda trabalha.")
+    }
+    var salaryChangeYes: String { t("Yes, update my salary", "Sim, atualizar o meu salário") }
+    var salaryChangeNo: String { t("No, I'm just trying a number", "Não, só estou a experimentar um valor") }
+    var cancelButton: String { t("Cancel", "Cancelar") }
+
+    var explorerNudgeTitle: String { t("Try another salary", "Experimenta outro salário") }
+    var explorerNudgeSub: String {
+        t("See where a different number would put you, without changing yours.",
+          "Vê onde é que outro valor te punha, sem mexer no teu.")
+    }
+    var explorerTitle: String { t("Try a salary", "Experimentar um salário") }
+    var explorerSub: String {
+        t("Uses your own tax situation. Nothing here changes your real salary.",
+          "Usa a tua situação fiscal. Nada aqui muda o teu salário a sério.")
+    }
+    var explorerEmpty: String { t("Type an amount to see where it lands.", "Escreve um valor para veres onde fica.") }
+    var explorerPercentileSuffix: String {
+        t("of people in Portugal earn less than this", "das pessoas em Portugal ganham menos do que isto")
+    }
+    var explorerNet: String { t("Net / month", "Líquido / mês") }
+    var explorerGross: String { t("Gross / month", "Bruto / mês") }
+    var explorerVsYours: String { t("vs your salary", "vs o teu salário") }
+    var explorerNoCohorts: String {
+        t("Add your sector, age or município in your profile and they show up here too.",
+          "Adiciona o setor, a idade ou o concelho no teu perfil e aparecem aqui também.")
+    }
+    func explorerPercentileShort(_ pct: Int) -> String {
+        t("top \(100 - pct)%", "top \(100 - pct)%")
+    }
+    var explorerNotSaved: String {
+        t("This is only a simulation. Your salary in the app has not moved.",
+          "Isto é só uma simulação. O teu salário na app não mexeu.")
+    }
+    var explorerPromote: String { t("Actually, make this my salary", "Afinal, passar a ser o meu salário") }
+    var explorerClose: String { t("Done exploring", "Já vi o que queria") }
 }

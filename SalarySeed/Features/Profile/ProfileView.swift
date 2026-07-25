@@ -13,6 +13,9 @@ struct ProfileView: View {
     @State private var activeSignalSheet: SignalSheet?
     // v0.9.1
     @State private var showConcelhoSheet = false
+    // v0.9.4
+    @State private var showExplorer = false
+    @State private var askingSalaryChange = false
 
     private var s: Strings { store.s }
 
@@ -49,6 +52,13 @@ struct ProfileView: View {
             .scrollDismissesKeyboard(.interactively)
             .background(Theme.background)
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
+            .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
+            .salaryChangeConfirmation(
+                isPresented: $askingSalaryChange,
+                s: s,
+                onChange: { showEditor = true },
+                onExplore: { showExplorer = true }
+            )
             .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
             .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
             .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
@@ -382,7 +392,7 @@ struct ProfileView: View {
     }
 
     private var currentSalaryCard: some View {
-        Button { showEditor = true } label: {
+        Button { askingSalaryChange = true } label: {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(s.yourSalary)

@@ -65,6 +65,12 @@ struct SalaryBreakdown {
     var annualIRSSettled: Double = 0
     /// IRS actually withheld across the year (monthly withholding × months).
     var annualIRSWithheld: Double = 0
+    /// v0.9.4: the assumptions behind those two numbers, so the UI can state them
+    /// instead of leaving the user to guess. Both figures above already include
+    /// IRS Jovem: it lowers the monthly withholding AND the annual settlement.
+    var settlement: TaxEngine.AnnualSettlement?
+    /// The IRS Jovem exemption fraction used (0 = not on it).
+    var jovemExemption: Double = 0
 
     var employerCostMonthly: Double { grossMonthly + employerSSMonthly }
     var grossYearly: Double { grossMonthly * months }
@@ -259,6 +265,38 @@ enum TaxEngine {
                               marital: MaritalSituation,
                               dependents: Int,
                               jovemExemption: Double) -> Double {
+        annualDetail(grossMonthly: grossMonthly, months: months, marital: marital,
+                     dependents: dependents, jovemExemption: jovemExemption).due
+    }
+
+    /// v0.9.4: the same calculation, but returning its parts rather than only the
+    /// answer. The €1,000 general-expense credit is an assumption the app makes on
+    /// the user's behalf, and it is capped at whatever IRS is still owed, so it is
+    /// often only partly used and sometimes not used at all. The UI has to be able
+    /// to say which, and it could not while this function threw the detail away.
+    struct AnnualSettlement {
+        /// IRS on the non-exempt base, before any credits.
+        let coleta: Double
+        /// Dedução à coleta actually applied for dependants.
+        let dependentCreditApplied: Double
+        /// The €1,000 the app assumes.
+        let generalCreditAssumed: Double
+        /// How much of that €1,000 the IRS owed was big enough to absorb.
+        let generalCreditApplied: Double
+        /// Income exempted by IRS Jovem over the year.
+        let jovemExemptYear: Double
+        /// Real IRS for the year, after everything.
+        let due: Double
+
+        var generalCreditFullyUsed: Bool { generalCreditApplied >= generalCreditAssumed - 0.5 }
+        var generalCreditUnused: Bool { generalCreditApplied < 0.5 }
+    }
+
+    static func annualDetail(grossMonthly: Double,
+                             months: Double,
+                             marital: MaritalSituation,
+                             dependents: Int,
+                             jovemExemption: Double) -> AnnualSettlement {
         let grossYear = grossMonthly * months
         let fullBase = max(0, grossYear - specificDeductionA)
         let exemptYear = min(max(0, jovemExemption) * grossYear, jovemAnnualCap)
@@ -270,12 +308,20 @@ enum TaxEngine {
 
         let coleta = avgRate * nonExemptBase
         // Dedução à coleta per dependant comes off first, never below zero.
-        let afterDependents = max(0, coleta - Double(dependents) * dependentCredit)
+        let depApplied = min(coleta, Double(dependents) * dependentCredit)
+        let afterDependents = max(0, coleta - depApplied)
         // The general-expense credit (health, education, invoices) only helps if there
         // is IRS left to reduce: you deduct the smaller of €1,000 and what you still owe,
         // never more. So it never turns into an extra refund on its own.
         let generalApplied = min(generalExpenseCredit, afterDependents)
-        return afterDependents - generalApplied
+        return AnnualSettlement(
+            coleta: coleta,
+            dependentCreditApplied: depApplied,
+            generalCreditAssumed: generalExpenseCredit,
+            generalCreditApplied: generalApplied,
+            jovemExemptYear: exemptYear,
+            due: afterDependents - generalApplied
+        )
     }
 
     // MARK: Breakdown
@@ -293,8 +339,8 @@ enum TaxEngine {
                              jovemExemption: jovemExemption, months: months)
         let net = gross - ss - irs
 
-        let settled = annualSettled(grossMonthly: gross, months: months, marital: marital,
-                                    dependents: deps, jovemExemption: jovemExemption)
+        let detail = annualDetail(grossMonthly: gross, months: months, marital: marital,
+                                  dependents: deps, jovemExemption: jovemExemption)
         let withheld = irs * months
 
         return SalaryBreakdown(
@@ -305,8 +351,10 @@ enum TaxEngine {
             employerSSMonthly: gross * employerSSRate,
             months: months,
             ajudasMonthly: max(0, ajudasMonthly),
-            annualIRSSettled: settled,
-            annualIRSWithheld: withheld
+            annualIRSSettled: detail.due,
+            annualIRSWithheld: withheld,
+            settlement: detail,
+            jovemExemption: max(0, jovemExemption)
         )
     }
 
