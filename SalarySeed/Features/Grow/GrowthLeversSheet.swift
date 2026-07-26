@@ -21,9 +21,6 @@ struct GrowthLeversSheet: View {
     let ctx: GrowthEngine.Context
     @Binding var scenario: GrowthEngine.Scenario
 
-    @State private var expectedText: String = ""
-    @FocusState private var expectedFocused: Bool
-
     private var s: Strings { store.s }
 
     var body: some View {
@@ -49,11 +46,6 @@ struct GrowthLeversSheet: View {
         }
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
-        .onAppear {
-            if let expected = scenario.expectedMoveGross, expected > 0 {
-                expectedText = String(Int(expected.rounded()))
-            }
-        }
     }
 
     private var header: some View {
@@ -111,64 +103,78 @@ struct GrowthLeversSheet: View {
         }
     }
 
-    /// The number that decides the whole stay-versus-move comparison, asked in
-    /// euros because that is how an offer arrives, with the percentage it
-    /// represents and the percentage it has to beat shown underneath.
+    /// The number that decides the whole stay-versus-move comparison.
+    ///
+    /// v0.11.1 made it a PERCENTAGE. It used to be a euro figure, which only ever
+    /// described the first move: with a ten-year horizon and a change every three
+    /// years there are three moves, and one absolute number cannot say what
+    /// happens at the second and third. A percentage applies identically to every
+    /// move, and it annualises, so it can be set directly beside what staying is
+    /// worth per year and compared without arithmetic in the reader's head.
+    ///
+    /// A slider rather than a field: this is a small bounded number, and a
+    /// keyboard plus decimal-comma parsing bought nothing.
     @ViewBuilder
     private var expectedBlock: some View {
         if scenario.switchEvery > 0 {
             VStack(alignment: .leading, spacing: 8) {
                 SectionLabel(s.growLeverExpected)
-                HStack(spacing: 6) {
-                    Text("€")
-                        .font(.system(size: 22, weight: .light))
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(String(format: "%+.0f%%", scenario.movePremium * 100))
+                        .font(.system(size: 30, weight: .medium))
+                        .foregroundStyle(scenario.movePremium > 0 ? Theme.accent : Theme.textSecondary)
+                        .contentTransition(.numericText())
+                    Text(s.growPerMoveSuffix(scenario.switchEvery))
+                        .font(.system(size: 12))
                         .foregroundStyle(Theme.textSecondary)
-                    TextField(String(Int(ctx.grossToday.rounded())), text: $expectedText)
-                        .font(.system(size: 26, weight: .medium))
-                        .foregroundStyle(Theme.textPrimary)
-                        .keyboardType(.decimalPad)
-                        .focused($expectedFocused)
-                        .onChange(of: expectedText) { _, _ in commitExpected() }
-                    Text(s.growPerMonthGross)
-                        .font(.system(size: 11))
-                        .foregroundStyle(Theme.textFaint)
                 }
-                Rectangle().fill(Theme.cardBorder).frame(height: 1)
+                Slider(value: $scenario.movePremium, in: 0...0.6, step: 0.01).tint(Theme.accent)
                 expectedFootnotes
             }
         }
     }
 
+    /// The whole point of the percentage: both rates, side by side, built the
+    /// same way, so the comparison needs no arithmetic.
     private var expectedFootnotes: some View {
-        let breakEven = GrowthEngine.breakEvenPremium(
-            scenario.sector ?? ctx.sector,
-            tenureYears: ctx.startTenure + Double(max(scenario.switchEvery, 1))
-        )
-        let gain = GrowthEngine.statedGain(ctx: ctx, scenario: scenario)
-        return VStack(alignment: .leading, spacing: 4) {
-            Text(s.growBreakEvenHint(pctString(breakEven), years: Int(ctx.startTenure) + scenario.switchEvery))
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textSecondary)
+        // Both rates come from the paths, over the same horizon, so the verdict
+        // underneath them cannot contradict the chart the user just looked at.
+        let rates = GrowthEngine.rates(ctx: ctx, scenario: scenario)
+        let staying = rates.staying
+        let moving = rates.moving ?? staying
+        let beats = moving > staying
+        return VStack(alignment: .leading, spacing: 5) {
+            rateRow(label: s.growRateMoving, value: moving, tint: Theme.accent)
+            rateRow(label: s.growRateStaying, value: staying, tint: Theme.textSecondary)
+            // v0.11.1: shown in BOTH branches. The verdict when the premium is
+            // zero is not "nothing to say", it is "this move costs you", and that
+            // has to be as loud as the flattering case.
+            Text(beats
+                 ? s.growMoveBeats(pct(moving - staying))
+                 : s.growMoveLoses(pct(staying - moving)))
+                .font(.system(size: 11.5))
+                .foregroundStyle(beats ? Theme.accent : Theme.danger)
                 .fixedSize(horizontal: false, vertical: true)
-            // v0.10: shown in BOTH branches. The assumption the model makes when
-            // the field is empty is not "nothing", it is "you match your salary",
-            // and that has to be as visible as a number the user typed.
-            Text(gain == nil ? s.growExpectedEmpty : s.growExpectedImplied(pctString(gain ?? 0)))
-                .font(.system(size: 11))
+            Text(s.growPremiumNote(scenario.horizon))
+                .font(.system(size: 10.5))
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    private func commitExpected() {
-        let cleaned = expectedText
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: "€", with: "")
-            .replacingOccurrences(of: ".", with: "")
-            .replacingOccurrences(of: ",", with: ".")
-        let value = Double(cleaned) ?? 0
-        scenario.expectedMoveGross = value > 0 ? value : nil
+    private func rateRow(label: String, value: Double, tint: Color) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 11.5))
+                .foregroundStyle(Theme.textSecondary)
+            Spacer(minLength: 8)
+            Text(String(format: "%+.1f%%", value * 100))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(tint)
+        }
     }
+
+    private func pct(_ value: Double) -> String { String(format: "%.1f", abs(value) * 100) }
 
     // MARK: Sector
 
@@ -304,7 +310,4 @@ struct GrowthLeversSheet: View {
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 12))
     }
 
-    private func pctString(_ value: Double) -> String {
-        String(format: "%+.1f%%", value * 100)
-    }
 }

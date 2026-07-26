@@ -66,6 +66,9 @@ struct EuropeScopeView: View {
             unitPicker
             sectionLine
             EuropeGrid(readings: readings, selected: $selected)
+            Text(s.euroTapHint)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textFaint)
             EuroLegend(s: s)
             focusCard
             rankLine
@@ -166,7 +169,12 @@ struct EuropeScopeView: View {
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         } else if focus.hasData {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 8) {
+                // v0.11.1: the two figures the percentage is made of, side by
+                // side, so the comparison can be checked rather than trusted.
+                // Both come from the same Eurostat table, which is the only
+                // reason they are allowed to sit next to each other at all.
+                comparisonRow(focus)
                 if let moved = focus.yourSalary {
                     Text(s.euroYourSalaryLine(eur(moved), purchasingPower: purchasingPower))
                         .font(.system(size: 12.5))
@@ -184,6 +192,46 @@ struct EuropeScopeView: View {
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    /// That country's figure and Portugal's, both from the European survey, with
+    /// the difference spelled out in words underneath the percentage above.
+    @ViewBuilder
+    private func comparisonRow(_ focus: EuroReading) -> some View {
+        let portugal = readings.first(where: \.isPortugal)
+        if let mine = focus.mean, let pt = portugal?.mean {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 10) {
+                    euroFigure(focus.country.label(pt: s.pt), eur(mine), Theme.textPrimary)
+                    Rectangle().fill(Color.white.opacity(0.08)).frame(width: 1, height: 30)
+                    euroFigure(s.euroPortugalShort, eur(pt), Theme.textSecondary)
+                }
+                if let pct = focus.pct {
+                    Text(s.euroDirectChange(focus.country.label(pt: s.pt),
+                                            String(format: "%.0f%%", abs(pct)),
+                                            eur(abs(mine - pt)),
+                                            higher: pct >= 0))
+                        .font(.system(size: 12))
+                        .foregroundStyle(Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+    }
+
+    private func euroFigure(_ label: String, _ value: String, _ tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(1)
+            Text(value)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(tint)
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder

@@ -26,8 +26,9 @@ import Foundation
 /// a mover onto the <1 mean and let them climb back. It is wrong. The <1 band is
 /// full of labour-market entrants (first jobs, no experience), so an experienced
 /// person changing employer does not land there, and using it made moving look
-/// far worse than it is. Instead the user states the salary they would expect to
-/// negotiate, and the <1 mean appears on screen as a reference figure only.
+/// far worse than it is. Instead the user states the raise they would negotiate
+/// (v0.11.1: as a percentage, applied at every move), the path re-anchors on the
+/// salary that produces, and the <1 mean appears on screen as a reference only.
 enum GrowthEngine {
 
     // MARK: Bands
@@ -60,9 +61,9 @@ enum GrowthEngine {
         return m[bandIndex(tenureYears: tenureYears)] / m[0]
     }
 
-    /// What walking away after `tenureYears` gives up: the tenure step, as a
-    /// raise the new job has to beat before the move is worth anything at all.
-    /// This is the single most useful number on the screen.
+    /// What walking away after `tenureYears` gives up: the whole tenure step
+    /// accumulated since year zero, because leaving resets tenure to zero and
+    /// forfeits all of it, not just the last year's increment.
     static func breakEvenPremium(_ sector: Sector, tenureYears: Double) -> Double {
         tenureStep(sector, tenureYears: tenureYears) - 1
     }
@@ -131,10 +132,18 @@ enum GrowthEngine {
         var district: District? = nil
         /// Years between employer changes. 0 = never change.
         var switchEvery: Int = 0
-        /// The gross per paid month they would expect to negotiate at a move,
-        /// stated in today's money. nil = they have not said, so the model
-        /// assumes they match their current salary and nothing more.
-        var expectedMoveGross: Double? = nil
+        /// The raise taken at EACH change of employer, as a share of the salary
+        /// being earned right before that change.
+        ///
+        /// v0.11.1 replaced an absolute euro target with this. A euro figure
+        /// only ever described the FIRST move, and the moment the horizon
+        /// contained two or three moves it stopped being clear what it meant. A
+        /// percentage applies identically to every move, and it annualises, so
+        /// it can be set beside what staying is worth and compared directly.
+        ///
+        /// Zero is the deliberate default: a move with no raise shows exactly
+        /// what leaving costs on its own, which is the thing worth seeing first.
+        var movePremium: Double = 0
         /// Escalões and the IRS Jovem cap rising with prices instead of staying
         /// frozen at their 2026 values.
         var bracketsIndexed: Bool = false
@@ -189,6 +198,19 @@ enum GrowthEngine {
         func point(year: Int) -> YearPoint? {
             points.first { $0.year == year }
         }
+
+        /// The compounded annual rate this path actually delivers, start to end.
+        /// v0.11.1: everything the screen calls "per year" is computed this way,
+        /// from the drawn path, so a rate can never disagree with the chart it
+        /// sits under. An earlier draft derived the stayer's rate from the tenure
+        /// step alone, which quoted 2.7% a year while the same screen drew a path
+        /// growing at 1.2%.
+        func annualRate(horizon: Int) -> Double {
+            guard horizon > 0,
+                  let start = first?.gross, start > 0,
+                  let end = last?.gross, end > 0 else { return 0 }
+            return pow(end / start, 1 / Double(horizon)) - 1
+        }
     }
 
     /// Both paths plus the numbers the screen leads with.
@@ -202,9 +224,11 @@ enum GrowthEngine {
         let move: Track?
         /// The raise a move has to beat, at the tenure the first move happens.
         let breakEven: Double
-        /// The raise the user's expected salary actually represents, over what
-        /// staying would have paid at that moment.
-        let statedGain: Double?
+        /// The two headline rates, both read off the paths that get drawn:
+        /// what staying compounds to per year with every lever off, and what the
+        /// modelled scenario compounds to per year. nil when no move is set.
+        let stayAnnual: Double
+        let moveAnnual: Double?
         /// First year the move path is worth more cumulatively than staying.
         let crossoverYear: Int?
         /// The <1 band mean for the sector, shown as a reference and never used
@@ -295,10 +319,24 @@ enum GrowthEngine {
 
     /// Changing employer every `switchEvery` years.
     ///
-    /// At a move the path is re-anchored, not reset: the user's stated expected
-    /// salary sets the level, tenure goes back to zero, and the new employer's
-    /// tenure shape applies from there. Later moves repeat the same relative
-    /// gain the first one achieved.
+    /// At a move the path is re-anchored, not reset: the stated raise is applied
+    /// to the salary they were actually earning, and tenure goes back to zero.
+    ///
+    /// v0.11.1 THEN FREEZES THE MOVER'S LADDER, and this is the most important
+    /// line in the file. Letting a mover re-climb the tenure curve from zero
+    /// after every move produced a result that was arithmetically true and
+    /// obviously false: in IT, changing employer every three years with a raise
+    /// of EXACTLY ZERO came out €4,733 ahead over twelve years. The curve is
+    /// concave, so its early steps are steep and its late ones flat, and a
+    /// frequent mover simply harvested the steep part again and again.
+    ///
+    /// The mistake was treating Quadro 104 as a law of pay. It is a table about
+    /// STAYING: every step in it is earned by not leaving, and it says nothing
+    /// about what an experienced person is paid on arrival. So the conservative
+    /// reading is the honest one. A mover's pay changes when they negotiate and
+    /// at no other time, which makes a zero-raise move cost exactly the tenure
+    /// step, and makes the two annual rates the screen shows an exact and
+    /// honest comparison. The screen states this rather than burying it.
     static func moveTrack(ctx: Context, scenario: Scenario) -> Track? {
         let cadence = scenario.switchEvery
         guard cadence > 0, cadence <= scenario.horizon else { return nil }
@@ -306,9 +344,12 @@ enum GrowthEngine {
         let ratio = regionRatio(sector: sector, from: ctx.homeDistrict, to: scenario.district)
         guard let m = means(sector), m[0] > 0 else { return nil }
 
-        let gain = statedGain(ctx: ctx, scenario: scenario) ?? 0
+        let premium = scenario.movePremium
         var anchor = ctx.anchor
         var tenure = ctx.startTenure
+        var hasMoved = false
+        var previousGross = gross(anchor: anchor, sector: sector, tenure: tenure,
+                                  regionRatio: ratio, growthFactor: 1)
         var points: [YearPoint] = []
 
         for y in 0...scenario.horizon {
@@ -316,43 +357,38 @@ enum GrowthEngine {
             var moved = false
             if y > 0 {
                 if y % cadence == 0 {
-                    // What one more year of staying would have paid, which is the
-                    // thing the new offer is being compared against.
-                    let staying = gross(anchor: anchor, sector: sector, tenure: tenure + 1,
-                                        regionRatio: ratio, growthFactor: growth)
-                    let target = staying * (1 + gain)
+                    // v0.11.1: the raise is measured against what they were
+                    // ACTUALLY earning the year before, not against what staying
+                    // one more year would have paid. "I move and get 20%" is a
+                    // statement about the salary in their hand.
+                    let target = previousGross * (1 + premium) * (1 + scenario.payGrowth)
                     tenure = 0
                     anchor = target / (m[0] * ratio * growth)
                     moved = true
-                } else {
+                    hasMoved = true
+                } else if !hasMoved {
+                    // Still at the employer they started with, so still climbing.
                     tenure += 1
                 }
+                // AFTER the first move the ladder stops. See the note below.
             }
             let g = gross(anchor: anchor, sector: sector, tenure: tenure,
                           regionRatio: ratio, growthFactor: growth)
+            previousGross = g
             points.append(point(year: y, tenure: tenure, grossMonthly: g, moved: moved,
                                 ctx: ctx, scenario: scenario))
         }
         return Track(points: points)
     }
 
-    /// The raise the user's expected salary represents over what staying one more
-    /// year would have paid, at the moment of the first move. nil when they have
-    /// not stated one, in which case the model assumes they match their salary.
-    static func statedGain(ctx: Context, scenario: Scenario) -> Double? {
-        guard let expected = scenario.expectedMoveGross, expected > 0 else { return nil }
-        let cadence = scenario.switchEvery
-        guard cadence > 0 else { return nil }
-        let sector = scenario.sector ?? ctx.sector
-        let ratio = regionRatio(sector: sector, from: ctx.homeDistrict, to: scenario.district)
-        let growth = pow(1 + scenario.payGrowth, Double(cadence))
-        let staying = gross(anchor: ctx.anchor, sector: sector,
-                            tenure: ctx.startTenure + Double(cadence),
-                            regionRatio: ratio, growthFactor: growth)
-        guard staying > 0 else { return nil }
-        // The user states the number in today's money, so it grows with the rest
-        // of the chart before the two are compared.
-        return (expected * growth) / staying - 1
+    /// The two rates the levers sheet puts side by side, both measured over the
+    /// whole horizon from the paths themselves rather than from the inputs, so
+    /// the verdict underneath them always agrees with the chart.
+    static func rates(ctx: Context, scenario: Scenario) -> (staying: Double, moving: Double?) {
+        let horizon = scenario.horizon
+        let staying = baselineTrack(ctx: ctx, scenario: scenario).annualRate(horizon: horizon)
+        let moving = moveTrack(ctx: ctx, scenario: scenario)?.annualRate(horizon: horizon)
+        return (staying, moving)
     }
 
     /// First year in which moving has paid more in total than staying.
@@ -401,7 +437,8 @@ enum GrowthEngine {
             stay: stay,
             move: move,
             breakEven: breakEvenPremium(sector, tenureYears: firstMoveTenure),
-            statedGain: statedGain(ctx: ctx, scenario: scenario),
+            stayAnnual: stay.annualRate(horizon: scenario.horizon),
+            moveAnnual: move?.annualRate(horizon: scenario.horizon),
             crossoverYear: move.flatMap { crossover(stay: stay, move: $0) },
             entrantMean: means(sector)?.first,
             dipInSector: hasDip(sector)
@@ -459,7 +496,7 @@ enum GrowthEngine {
         // 4. changing employer
         if scenario.switchEvery > 0 {
             base.switchEvery = scenario.switchEvery
-            base.expectedMoveGross = scenario.expectedMoveGross
+            base.movePremium = scenario.movePremium
             step("moving", to: moveTrack(ctx: ctx, scenario: base)?.last?.gross ?? running)
         }
 

@@ -334,27 +334,40 @@ struct GrowView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    /// The raise a new job has to beat before the move has bought anything at
-    /// all. The one number on this screen read straight off the published table
-    /// with no modelling on top, which is why it keeps its own card even though
-    /// it is no longer the first thing on the screen.
+    /// What staying is worth, per year.
+    ///
+    /// v0.11.1 reframed this. It used to read "a new job has to beat 14.4% if you
+    /// leave after 6 years", which is a real number stated in a form nobody can
+    /// act on: a percentage with no time attached is not comparable to a raise,
+    /// to inflation, or to an offer. The headline is now the compounded annual
+    /// rate, and the total it comes from is support underneath it.
+    ///
+    /// In the ten sectors whose bands fall, the rate is negative. That case gets
+    /// its own sentence rather than a minus sign left to speak for itself.
     private func breakEvenCard(ctx: GrowthEngine.Context, result: GrowthEngine.Result) -> some View {
         let years = Int(ctx.startTenure) + max(store.growScenario.switchEvery, 1)
+        let positive = result.stayAnnual > 0.0005
         return VStack(alignment: .leading, spacing: 6) {
             Text(s.growBreakEvenTitle)
                 .font(.system(size: 12))
                 .foregroundStyle(Theme.textSecondary)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(String(format: "%.1f%%", result.breakEven * 100))
+                Text(String(format: "%+.1f%%", result.stayAnnual * 100))
                     .font(.system(size: 32, weight: .medium))
-                    .foregroundStyle(Theme.accent)
+                    .foregroundStyle(positive ? Theme.accent : Theme.danger)
                     .contentTransition(.numericText())
-                Text(s.growBreakEvenSuffix(years))
+                Text(s.growPerYearOfTenure)
                     .font(.system(size: 13))
                     .foregroundStyle(Theme.textSecondary)
             }
-            Text(s.growBreakEvenBody(ctx.sector.label(pt: s.pt)))
-                .font(.system(size: 11))
+            Text(positive
+                 ? s.growBreakEvenBody(String(format: "%+.1f%%", result.breakEven * 100), years: years)
+                 : s.growBreakEvenFlat(ctx.sector.label(pt: s.pt)))
+                .font(.system(size: 11.5))
+                .foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(s.growBreakEvenNote)
+                .font(.system(size: 10.5))
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -428,7 +441,11 @@ struct GrowView: View {
     private var activeLeversLine: String {
         let sc = store.growScenario
         var parts: [String] = []
-        if sc.switchEvery > 0 { parts.append(s.growCadenceEvery(sc.switchEvery)) }
+        if sc.switchEvery > 0 {
+            parts.append(sc.movePremium > 0
+                         ? s.growCadenceEveryAt(sc.switchEvery, String(format: "%+.0f%%", sc.movePremium * 100))
+                         : s.growCadenceEvery(sc.switchEvery))
+        }
         if let sector = sc.sector, sector != store.sector { parts.append(sector.label(pt: s.pt)) }
         if let district = sc.district, district != store.district { parts.append(district.label) }
         if sc.payGrowth > 0 { parts.append(String(format: "%+.1f%%/%@", sc.payGrowth * 100, s.growPerYearShort)) }
@@ -519,14 +536,12 @@ struct GrowView: View {
             if result.dipInSector {
                 line(s.growAssumptionDip)
             }
-            // Rendering the chart caught this one. In a sector whose pay does not
-            // rise with tenure, a mover re-enters at the first-year level every
-            // time and re-climbs the only rising part of the curve, while the
-            // stayer decays. Over twenty years that compounds into a very large
-            // gap. It follows from the assumption stated just above rather than
-            // from anything GEP measured about movers, so it is said out loud.
-            if result.dipInSector && result.move != nil {
-                line(s.growAssumptionDipMoving)
+            // v0.11.1: the mover's ladder is frozen after the first move. That
+            // is a modelling choice with a real effect on the answer, so it is
+            // stated whenever a move is being modelled, not only when it happens
+            // to flatter the result.
+            if result.move != nil {
+                line(s.growAssumptionMoverFrozen)
             }
             if store.growScenario.district != nil {
                 line(s.growAssumptionRegion)

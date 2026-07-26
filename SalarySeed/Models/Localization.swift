@@ -705,13 +705,18 @@ struct Strings {
     var growEmptyButton: String { t("Answer them", "Responder") }
 
     var growBreakEvenTitle: String { t("A new job has to beat", "Um emprego novo tem de bater") }
-    func growBreakEvenSuffix(_ years: Int) -> String {
-        t("if you leave after \(years) \(years == 1 ? "year" : "years")",
-          "se saíres aos \(years) \(years == 1 ? "ano" : "anos")")
+    var growPerYearOfTenure: String { t("a year, if you stay", "por ano, se ficares") }
+    func growBreakEvenBody(_ total: String, years: Int) -> String {
+        t("That is what time at one employer is worth in your sector. Over \(years) years the tenure step adds up to \(total), and you hand all of it back the day you leave, so a new job has to beat that yearly rate just to keep you level.",
+          "É isso que o tempo na mesma empresa vale no teu setor. Ao fim de \(years) anos o degrau da antiguidade soma \(total), e devolves tudo no dia em que sais, por isso um emprego novo tem de bater essa taxa anual só para ficares na mesma.")
     }
-    func growBreakEvenBody(_ sector: String) -> String {
-        t("That is the pay step people at that tenure have in \(sector.lowercased()), and you give it up the day you leave. Anything less than this and the move costs you money.",
-          "É esse o degrau de quem tem essa antiguidade em \(sector.lowercased()), e perde-lo no dia em que sais. Menos do que isto e mudar fica-te caro.")
+    func growBreakEvenFlat(_ sector: String) -> String {
+        t("In \(sector.lowercased()) pay does not climb with time at one employer, so staying is not buying you anything and leaving costs you nothing.",
+          "Em \(sector.lowercased()) o salário não sobe com o tempo na mesma empresa, por isso ficar não te está a comprar nada e sair não te custa nada.")
+    }
+    var growBreakEvenNote: String {
+        t("Leaving resets your time at the company to zero, so the whole step goes, not just the last year of it.",
+          "Sair põe o teu tempo na empresa a zero, por isso vai o degrau todo, não só o último ano dele.")
     }
 
     // v0.10.1: the chart plots one quantity, gross, so the metric picker went.
@@ -789,18 +794,25 @@ struct Strings {
     }
 
     var growLeverExpected: String { t("What you would negotiate", "O que ias negociar") }
-    var growPerMonthGross: String { t("gross / month", "bruto / mês") }
-    func growBreakEvenHint(_ pct: String, years: Int) -> String {
-        t("At \(years) years, leaving gives up \(pct). Beat that and the move is worth something.",
-          "Aos \(years) anos, sair abdica de \(pct). Passa disso e a mudança vale alguma coisa.")
+    func growPerMoveSuffix(_ years: Int) -> String {
+        t("at every change, one every \(years) years", "em cada mudança, uma de \(years) em \(years) anos")
     }
-    func growExpectedImplied(_ pct: String) -> String {
-        t("That is \(pct) against what staying would have paid you that year.",
-          "Isso é \(pct) em relação ao que ficar te pagava nesse ano.")
+    var growRateMoving: String { t("Changing job is worth, per year", "Mudar de emprego vale, por ano") }
+    var growRateStaying: String { t("Staying is worth, per year", "Ficar vale, por ano") }
+    func growMoveBeats(_ points: String) -> String {
+        t("That beats staying by \(points) points a year.",
+          "Isso bate ficar em \(points) pontos por ano.")
     }
-    var growExpectedEmpty: String {
-        t("Empty means the model assumes you match your salary and nothing more, so the chart shows what leaving costs on its own.",
-          "Vazio quer dizer que o modelo assume que igualas o teu salário e mais nada, por isso o gráfico mostra o que sair custa por si só.")
+    func growMoveLoses(_ points: String) -> String {
+        t("That is \(points) points a year short of what staying is worth, so these moves cost you.",
+          "Isso fica \(points) pontos por ano abaixo do que ficar vale, por isso estas mudanças saem-te caras.")
+    }
+    func growPremiumNote(_ years: Int) -> String {
+        t("The same raise is taken at every change, measured against what you were earning the year before. Both rates above are what each path actually compounds to over \(years) years, so they always match the chart.",
+          "O mesmo aumento é levado em cada mudança, medido contra o que ganhavas no ano anterior. As duas taxas acima são o que cada percurso rende de facto ao longo de \(years) anos, por isso batem sempre certo com o gráfico.")
+    }
+    func growCadenceEveryAt(_ years: Int, _ premium: String) -> String {
+        t("\(premium) every \(years) yrs", "\(premium) de \(years) em \(years) anos")
     }
 
     var growLeverSector: String { t("Sector", "Setor") }
@@ -877,9 +889,9 @@ struct Strings {
         t("In this sector pay does not rise across every tenure band. The dip you can see is what the survey found, and it is drawn rather than smoothed away.",
           "Neste setor o salário não sobe de escalão para escalão em todos eles. A descida que se vê é o que o inquérito encontrou, e está desenhada em vez de alisada.")
     }
-    var growAssumptionDipMoving: String {
-        t("Because pay in this sector does not climb with tenure, every move puts you back on the only part of the curve that rises, while staying drifts down. Over a long horizon that gap grows fast. It comes out of the assumption above, not out of anything the survey measured about people who change job.",
-          "Como neste setor o salário não sobe com a antiguidade, cada mudança volta a pôr-te na única parte da curva que sobe, enquanto ficar vai descendo. Num horizonte longo essa diferença cresce depressa. Vem da suposição acima, não de algo que o inquérito tenha medido sobre quem muda de emprego.")
+    var growAssumptionMoverFrozen: String {
+        t("After your first change of employer, your pay only moves when you negotiate. The survey measures what time at ONE company is worth, and says nothing about what someone experienced is paid on arrival, so the model does not hand a mover a tenure raise it never measured.",
+          "Depois da tua primeira mudança de empresa, o teu salário só mexe quando negoceias. O inquérito mede o que vale o tempo numa SÓ empresa, e não diz nada sobre quanto se paga a alguém com experiência que acaba de chegar, por isso o modelo não dá a quem muda um aumento de antiguidade que nunca mediu.")
     }
     var growAssumptionRegion: String {
         t("The district figure comes from a table that has no tenure in it, so it moves the whole path by one ratio and cannot say whether tenure pays differently there.",
@@ -916,6 +928,20 @@ struct Strings {
           "O Eurostat junta estes todos, por isso este número cobre-os a todos: \(sectors).")
     }
 
+    var euroTapHint: String {
+        t("Tap any country to compare it with Portugal.", "Toca num país para o comparares com Portugal.")
+    }
+    var euroPortugalShort: String { t("Portugal", "Portugal") }
+    /// The magnitude arrives WITHOUT a sign, because "more" and "less" already
+    /// carry it. "+127% more" reads as a mistake.
+    func euroDirectChange(_ country: String, _ pct: String, _ amount: String, higher: Bool) -> String {
+        if higher {
+            return t("\(country) pays \(pct) more than Portugal in this activity, a difference of \(amount) a month.",
+                     "\(country) paga mais \(pct) do que Portugal nesta atividade, uma diferença de \(amount) por mês.")
+        }
+        return t("\(country) pays \(pct) less than Portugal in this activity, a difference of \(amount) a month.",
+                 "\(country) paga menos \(pct) do que Portugal nesta atividade, uma diferença de \(amount) por mês.")
+    }
     var euroReferenceTag: String { t("reference", "referência") }
     var euroPortugalBody: String {
         t("Every percentage on this screen is measured against Portugal, so Portugal itself sits at zero.",
