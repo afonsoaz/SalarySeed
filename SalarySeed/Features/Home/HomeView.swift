@@ -1,8 +1,11 @@
 import SwiftUI
 
-/// netSeed, the dashboard. Hero numbers, breakdown, percentile teaser, "what if" nudges.
-/// v0.2: greeting, living-sprout brand mark, count-up + leaf unfurl, growthSeed teaser.
+/// netSeed, the dashboard. Hero numbers, breakdown, annual settlement, "what if".
+/// v0.2: greeting, living-sprout brand mark, count-up + leaf unfurl.
 /// v0.3: all copy comes from the string table (EN + PT).
+/// v0.10.1: the percentile teaser and the pointer to Grow both came off. Home
+/// answers one question, what your salary means right now, and hands the other
+/// questions to the tabs that own them instead of previewing them badly.
 struct HomeView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var period: ResultPeriod = .m14
@@ -55,7 +58,6 @@ struct HomeView: View {
                     BreakdownBar(breakdown: b)
                     detailsSection
                     annualSettlementCard
-                    percentileCard
                     nudges
                     disclaimer
                 }
@@ -386,32 +388,10 @@ struct HomeView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var percentileCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(s.standTitle)
-                .font(.system(size: 13))
-                .foregroundStyle(Theme.textSecondary)
-            // One flowing sentence so it wraps naturally (no fixed inter-word gaps).
-            (
-                Text(s.earnMorePre + " ").foregroundColor(Theme.textPrimary)
-                + Text(String(format: "%.0f%%", store.percentile)).foregroundColor(Theme.accent)
-                + Text(" " + s.earnMorePost).foregroundColor(Theme.textPrimary)
-            )
-            .font(.system(size: 20, weight: .medium))
-            .fixedSize(horizontal: false, vertical: true)
-            Text(s.ineNote)
-                .font(.system(size: 10))
-                .foregroundStyle(Theme.textFaint)
-            if b.ajudasMonthly > 0 {
-                Text(s.ajudasExcludedNote)
-                    .font(.system(size: 10))
-                    .foregroundStyle(Theme.danger.opacity(0.85))
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-    }
+    // v0.10.1: the national percentile card is gone from Home. It was a
+    // one-line echo of a whole tab: compareSeed does this properly, with the
+    // cohorts, the caveats and the distribution behind it. Two screens saying
+    // the same thing meant one of them was always the worse version.
 
     private var nudges: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -419,17 +399,9 @@ struct HomeView: View {
             // v0.9.4: trying a number is the most common "what if" of all, so it
             // leads the section and is the only card that carries the accent.
             explorerButton
-            // v0.10: raiseSeed is gone as a screen. "A €X raise costs your
-            // employer €Y" was always a fact about one point on a path, and it
-            // is now the scrubbed year on Grow, which answers the same question
-            // at any moment rather than only at today plus a slider.
-            NudgeCard(
-                icon: "chart.line.uptrend.xyaxis.circle.fill",
-                title: s.growNudgeTitle,
-                subtitle: s.growNudgeSub
-            ) {
-                withAnimation(.easeInOut(duration: 0.25)) { store.selectedTab = 1 }
-            }
+            // v0.10.1: no card pointing at Grow. The tab bar already points at
+            // Grow, and it is tinted to say so, so a card doing the same job here
+            // was a third thing on one screen asking to be tapped.
             NudgeCard(
                 icon: "hourglass.circle.fill",
                 title: s.ajudasNudgeTitle,

@@ -193,6 +193,11 @@ enum GrowthEngine {
 
     /// Both paths plus the numbers the screen leads with.
     struct Result {
+        /// Every lever off: the user's own sector and district, no moves, no
+        /// economy-wide growth. This is what "if you stay" means, and it has to
+        /// be its own track rather than `stay` because `stay` already carries the
+        /// sector and district levers.
+        let baseline: Track
         let stay: Track
         let move: Track?
         /// The raise a move has to beat, at the tenure the first move happens.
@@ -207,8 +212,15 @@ enum GrowthEngine {
         let entrantMean: Double?
         let dipInSector: Bool
 
+        /// The line the screen's headline number comes from: the move path when
+        /// the user is modelling a move, the stay path otherwise.
+        var headline: Track { move ?? stay }
+
+        /// v0.10.1: gross, not net, like everything else on the projection. GEP
+        /// publishes a gross figure, so a cumulative built on net would be a
+        /// second model stacked on the first one and compared against itself.
         var cumulativeDelta: Double? {
-            move.map { $0.cumulativeNet - stay.cumulativeNet }
+            move.map { $0.cumulativeGross - stay.cumulativeGross }
         }
     }
 
@@ -349,11 +361,33 @@ enum GrowthEngine {
         var moveTotal = 0.0
         for y in 1...max(1, stay.points.count - 1) {
             guard let sp = stay.point(year: y), let mp = move.point(year: y) else { break }
-            stayTotal += sp.net
-            moveTotal += mp.net
+            stayTotal += sp.gross
+            moveTotal += mp.gross
             if moveTotal > stayTotal { return y }
         }
         return nil
+    }
+
+    /// The path with every pay-side lever off. Same horizon and same tax
+    /// treatment, so the only difference against `stay` is the levers themselves.
+    static func baselineTrack(ctx: Context, scenario: Scenario) -> Track {
+        var base = Scenario()
+        base.horizon = scenario.horizon
+        base.inflation = scenario.inflation
+        base.bracketsIndexed = scenario.bracketsIndexed
+        return stayTrack(ctx: ctx, scenario: base)
+    }
+
+    /// True when a lever that can move the pay line is set. The today's-money
+    /// toggle and bracket indexation are deliberately excluded: they change the
+    /// unit or the tax, not the salary, so they must not make the screen claim
+    /// the user has changed something about their situation.
+    static func changesPay(ctx: Context, scenario: Scenario) -> Bool {
+        if scenario.switchEvery > 0 { return true }
+        if let sector = scenario.sector, sector != ctx.sector { return true }
+        if let district = scenario.district, district != ctx.homeDistrict { return true }
+        if scenario.payGrowth != 0 { return true }
+        return false
     }
 
     static func result(ctx: Context, scenario: Scenario) -> Result? {
@@ -363,6 +397,7 @@ enum GrowthEngine {
         let sector = scenario.sector ?? ctx.sector
         let firstMoveTenure = ctx.startTenure + Double(max(scenario.switchEvery, 1))
         return Result(
+            baseline: baselineTrack(ctx: ctx, scenario: scenario),
             stay: stay,
             move: move,
             breakEven: breakEvenPremium(sector, tenureYears: firstMoveTenure),

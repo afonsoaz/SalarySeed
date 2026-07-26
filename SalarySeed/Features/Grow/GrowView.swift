@@ -13,6 +13,14 @@ import SwiftUI
 /// shallow staircase, not a hockey stick, and the screen is built around that
 /// rather than around hiding it. What moves the line is changing something.
 ///
+/// v0.10.1 PUTS THE ANSWER FIRST. The screen used to open on the break-even
+/// premium, which is the sharpest number here but not the one people arrive
+/// with. They arrive with "what will I be earning". So the first card is now
+/// today's salary next to the same salary at the end of the horizon, and, the
+/// moment any lever is set, the same figure again with those changes applied.
+/// Everything is gross: GEP publishes ganho, and putting a net line on the
+/// projection stacked a second model on top of the first one.
+///
 /// GROW WRITES NOTHING. It is an exploring surface in the v0.9.4 sense: the
 /// scenario lives in memory for the session and never reaches UserDefaults. The
 /// single deliberate way to change the real salary is the year-0 card, which
@@ -20,7 +28,6 @@ import SwiftUI
 struct GrowView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var scrubYear = 0
-    @State private var metric: GrowMetric = .net
     @State private var showLevers = false
     @State private var showSectorTenure = false
     @State private var showEditor = false
@@ -92,11 +99,12 @@ struct GrowView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 header(ctx: ctx)
-                breakEvenCard(ctx: ctx, result: result)
+                projectionCard(ctx: ctx, result: result)
                 chartBlock(result: result)
-                scrubCard(ctx: ctx, result: result)
-                cumulativeCard(result: result)
                 leversRow
+                scrubCard(ctx: ctx, result: result)
+                breakEvenCard(ctx: ctx, result: result)
+                cumulativeCard(result: result)
                 waterfallCard(ctx: ctx)
                 assumptions(ctx: ctx, result: result)
             }
@@ -121,42 +129,100 @@ struct GrowView: View {
         .padding(.top, 12)
     }
 
-    /// The hero. Not a projection: the raise a new job has to beat before the
-    /// move has bought anything at all. It is the one number here that is read
-    /// straight off the published table with no modelling on top.
-    private func breakEvenCard(ctx: GrowthEngine.Context, result: GrowthEngine.Result) -> some View {
-        let years = Int(ctx.startTenure) + max(store.growScenario.switchEvery, 1)
-        return VStack(alignment: .leading, spacing: 6) {
-            Text(s.growBreakEvenTitle)
-                .font(.system(size: 12))
-                .foregroundStyle(Theme.textSecondary)
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(String(format: "%.1f%%", result.breakEven * 100))
-                    .font(.system(size: 38, weight: .medium))
-                    .foregroundStyle(Theme.accent)
-                    .contentTransition(.numericText())
-                Text(s.growBreakEvenSuffix(years))
-                    .font(.system(size: 13))
-                    .foregroundStyle(Theme.textSecondary)
+    // MARK: The answer, first
+
+    /// Today's gross beside the same figure at the end of the horizon, and, when
+    /// a lever is set, that figure again with the changes applied.
+    ///
+    /// "If you stay" comes from `result.baseline`, not `result.stay`. The stay
+    /// path already carries the sector and district levers, so using it would
+    /// have quietly folded a change into the number labelled "if nothing
+    /// changes" and made the comparison beneath it meaningless.
+    private func projectionCard(ctx: GrowthEngine.Context, result: GrowthEngine.Result) -> some View {
+        let horizon = store.growScenario.horizon
+        let f = moneyScale(horizon)
+        let today = ctx.grossToday
+        let stayEnd = (result.baseline.last?.gross ?? today) * f
+        let changed = GrowthEngine.changesPay(ctx: ctx, scenario: store.growScenario)
+        let scenarioEnd = (result.headline.last?.gross ?? today) * f
+        return VStack(alignment: .leading, spacing: 12) {
+            // Bottom-aligned, not centred: the two labels are different lengths
+            // ("Today" against "In 10 years, staying put"), so centring would
+            // leave the two figures sitting at different heights.
+            HStack(alignment: .bottom, spacing: 12) {
+                projectionFigure(label: s.growToday, value: eur(today),
+                                 tint: Theme.textPrimary, big: false)
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Theme.textFaint)
+                    .padding(.bottom, 8)
+                projectionFigure(label: s.growInYearsStaying(horizon), value: eur(stayEnd),
+                                 tint: Theme.textPrimary, big: true)
             }
-            Text(s.growBreakEvenBody(ctx.sector.label(pt: s.pt)))
-                .font(.system(size: 11))
+            deltaLine(from: today, to: stayEnd, tint: Theme.textSecondary)
+            if changed {
+                Divider().overlay(Theme.cardBorder)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(s.growWithYourChanges)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Theme.accent)
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Text(eur(scenarioEnd))
+                            .font(.system(size: 32, weight: .medium))
+                            .foregroundStyle(Theme.accent)
+                            .contentTransition(.numericText())
+                            .minimumScaleFactor(0.7)
+                            .lineLimit(1)
+                        Text(s.growVsStaying(signedEur(scenarioEnd - stayEnd)))
+                            .font(.system(size: 12))
+                            .foregroundStyle(scenarioEnd >= stayEnd ? Theme.accent : Theme.danger)
+                    }
+                    deltaLine(from: today, to: scenarioEnd, tint: Theme.textFaint)
+                }
+            }
+            Text(s.growProjectionUnit(store.growScenario.inTodaysMoney))
+                .font(.system(size: 10))
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accentBorder))
+        .padding(16)
+        .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Theme.accentBorder))
     }
+
+    private func projectionFigure(label: String, value: String, tint: Color, big: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textSecondary)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(value)
+                .font(.system(size: big ? 34 : 22, weight: .medium))
+                .foregroundStyle(tint)
+                .contentTransition(.numericText())
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func deltaLine(from: Double, to: Double, tint: Color) -> some View {
+        let pct = from > 0 ? (to - from) / from * 100 : 0
+        return Text(s.growVsToday(signedEur(to - from), String(format: "%+.1f%%", pct)))
+            .font(.system(size: 11))
+            .foregroundStyle(tint)
+    }
+
+    // MARK: Chart
 
     private func chartBlock(result: GrowthEngine.Result) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            metricRow
+            unitRow
             GrowthChart(
                 stay: result.stay.points,
                 move: result.move?.points,
-                metric: metric,
                 scale: moneyScale,
                 scrubYear: $scrubYear
             )
@@ -169,10 +235,13 @@ struct GrowView: View {
         }
     }
 
-    private var metricRow: some View {
+    /// v0.10.1: what was a three-way metric picker is now a label and one
+    /// toggle. There is only one quantity on this chart, so the only choice left
+    /// is which euros it is drawn in.
+    private var unitRow: some View {
         HStack(spacing: 8) {
-            SegmentedPicker(options: GrowMetric.allCases, selection: $metric) { $0.label(s) }
-                .frame(maxWidth: .infinity)
+            SectionLabel(s.growChartTitle)
+            Spacer(minLength: 0)
             Button {
                 withAnimation(.easeOut(duration: 0.15)) {
                     store.growScenario.inTodaysMoney.toggle()
@@ -181,13 +250,11 @@ struct GrowView: View {
                 Text(store.growScenario.inTodaysMoney ? s.growReal : s.growNominal)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(store.growScenario.inTodaysMoney ? Color(hex: 0x06281C) : Theme.textSecondary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 9)
+                    .padding(.horizontal, 11)
+                    .padding(.vertical, 8)
                     .background(store.growScenario.inTodaysMoney ? Theme.accent : Color.white.opacity(0.06),
-                                in: RoundedRectangle(cornerRadius: 11))
+                                in: RoundedRectangle(cornerRadius: 10))
             }
-            .disabled(metric == .percentile)
-            .opacity(metric == .percentile ? 0.4 : 1)
         }
     }
 
@@ -206,7 +273,9 @@ struct GrowView: View {
 
     /// The scrubbed year. raiseSeed used to be a separate screen answering "what
     /// does a raise cost my employer"; that is this card, at whatever point on
-    /// the path the user is holding.
+    /// the path the user is holding. It is also the one place net appears on this
+    /// screen, because inspecting a single point is exactly where the gross to
+    /// net conversion earns its place.
     private func scrubCard(ctx: GrowthEngine.Context, result: GrowthEngine.Result) -> some View {
         let stay = result.stay.point(year: scrubYear)
         let move = result.move?.point(year: scrubYear)
@@ -223,16 +292,16 @@ struct GrowView: View {
                 }
             }
             HStack(spacing: 10) {
-                figure(s.growScrubNet, eur((shown?.net ?? 0) * f))
-                divider
                 figure(s.growScrubGross, eur((shown?.gross ?? 0) * f))
+                divider
+                figure(s.growScrubNet, eur((shown?.net ?? 0) * f))
                 divider
                 figure(s.growScrubEmployer, eur((shown?.employerCost ?? 0) * f))
             }
-            if let move, let stay, abs(move.net - stay.net) > 0.5 {
-                Text(s.growScrubVsStay(eur((move.net - stay.net) * f)))
+            if let move, let stay, abs(move.gross - stay.gross) > 0.5 {
+                Text(s.growScrubVsStay(signedEur((move.gross - stay.gross) * f)))
                     .font(.system(size: 11))
-                    .foregroundStyle(move.net >= stay.net ? Theme.accent : Theme.danger)
+                    .foregroundStyle(move.gross >= stay.gross ? Theme.accent : Theme.danger)
             }
             if scrubYear == 0 {
                 Button { askingSalaryChange = true } label: {
@@ -265,8 +334,37 @@ struct GrowView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    /// The raise a new job has to beat before the move has bought anything at
+    /// all. The one number on this screen read straight off the published table
+    /// with no modelling on top, which is why it keeps its own card even though
+    /// it is no longer the first thing on the screen.
+    private func breakEvenCard(ctx: GrowthEngine.Context, result: GrowthEngine.Result) -> some View {
+        let years = Int(ctx.startTenure) + max(store.growScenario.switchEvery, 1)
+        return VStack(alignment: .leading, spacing: 6) {
+            Text(s.growBreakEvenTitle)
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.textSecondary)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(String(format: "%.1f%%", result.breakEven * 100))
+                    .font(.system(size: 32, weight: .medium))
+                    .foregroundStyle(Theme.accent)
+                    .contentTransition(.numericText())
+                Text(s.growBreakEvenSuffix(years))
+                    .font(.system(size: 13))
+                    .foregroundStyle(Theme.textSecondary)
+            }
+            Text(s.growBreakEvenBody(ctx.sector.label(pt: s.pt)))
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+    }
+
     /// Monthly deltas look ignorable and are not. The cumulative figure is the
-    /// one worth leading with, so it gets its own card.
+    /// one worth showing, so it gets its own card.
     @ViewBuilder
     private func cumulativeCard(result: GrowthEngine.Result) -> some View {
         if let move = result.move, let delta = result.cumulativeDelta {
@@ -285,9 +383,9 @@ struct GrowView: View {
                         .foregroundStyle(Theme.textSecondary)
                 }
                 HStack(spacing: 10) {
-                    figure(s.growLegendStay, eur(result.stay.cumulativeNet * months))
+                    figure(s.growLegendStay, eur(result.stay.cumulativeGross * months))
                     divider
-                    figure(s.growLegendMove, eur(move.cumulativeNet * months))
+                    figure(s.growLegendMove, eur(move.cumulativeGross * months))
                 }
                 Text(result.crossoverYear.map { s.growCrossover($0) } ?? s.growNoCrossover(horizon))
                     .font(.system(size: 11))
@@ -398,6 +496,7 @@ struct GrowView: View {
             SectionLabel(s.growAssumptionsTitle)
             line(s.growAssumptionCrossSection)
             line(s.growAssumptionAnchor)
+            line(s.growAssumptionGross)
             conditionalAssumptions(result: result)
             line(store.growScenario.bracketsIndexed ? s.growAssumptionBracketsOn : s.growAssumptionBracketsOff)
             line(s.growAssumptionNothingSaved)
@@ -480,8 +579,8 @@ struct GrowView: View {
 
     // MARK: Helpers
 
-    /// Deflator for money, so the chart, the scrubbed figures and the cumulative
-    /// total all switch units together instead of drifting apart.
+    /// Deflator for money, so the chart, the scrubbed figures and the headline
+    /// projection all switch units together instead of drifting apart.
     private func moneyScale(_ year: Int) -> Double {
         guard store.growScenario.inTodaysMoney else { return 1 }
         return 1 / pow(1 + store.growScenario.inflation, Double(year))

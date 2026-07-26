@@ -140,9 +140,9 @@ struct Strings {
     var legendEmployerSS: String { t("Employer SS", "SS da empresa") }
     var shareOfCost: String { t("Share of total cost to your company", "Parte do custo total para a tua empresa") }
 
-    var theDetails: String { t("The details", "Em detalhe") }
+    var theDetails: String { t("Details", "Detalhe") }
     func perPeriod(yearly: Bool) -> String { t(yearly ? "per year" : "per month", yearly ? "por ano" : "por mês") }
-    var cardYourSS: String { t("Social Security (you)", "Segurança Social (tu)") }
+    var cardYourSS: String { t("Social Security (employee)", "Segurança Social (trabalhador)") }
     var cardIRS: String { t("IRS withheld", "IRS retido") }
 
     // v0.5 detail trees
@@ -205,12 +205,11 @@ struct Strings {
           "Ajudas de custo não incluídas: as comparações usam só o salário bruto.")
     }
 
-    var standTitle: String { t("How you compare in Portugal", "Como te comparas em Portugal") }
-    var earnMorePre: String { t("You earn more than", "Ganhas mais do que") }
-    var earnMorePost: String { t("of workers", "dos trabalhadores") }
-    var ineNote: String { t("Fontes: GEP-MTSSS e INE · 2024. See more in compareSeed.", "Fontes: GEP-MTSSS e INE · 2024. Vê mais no compareSeed.") }
 
     var whatIf: String { t("What if…", "E se…") }
+    // v0.10.1: the Home percentile card and the Grow nudge card are gone, and
+    // their copy went with them rather than sitting here unreferenced. The
+    // percentile has a whole tab; Grow has a tinted tab item.
     var raiseNudgeTitle: String { t("Simulate a raise", "Simula um aumento") }
     var raiseNudgeSub: String { t("What would a €100 net raise cost your employer?", "Quanto custaria à empresa dar-te mais €100 líquidos?") }
     var ajudasNudgeTitle: String { t("Paid partly in ajudas de custo?", "Recebes parte em ajudas de custo?") }
@@ -691,11 +690,6 @@ struct Strings {
 
     // MARK: v0.10 Grow
 
-    var growNudgeTitle: String { t("Stay or move?", "Ficar ou mudar?") }
-    var growNudgeSub: String {
-        t("What your pay does over the next years, and what changing job would do to it.",
-          "O que o teu salário faz nos próximos anos, e o que mudar de emprego lhe fazia.")
-    }
 
     var growTitle: String { t("Grow", "Crescer") }
     func growSub(_ sector: String, years: Int) -> String {
@@ -720,11 +714,28 @@ struct Strings {
           "É esse o degrau de quem tem essa antiguidade em \(sector.lowercased()), e perde-lo no dia em que sais. Menos do que isto e mudar fica-te caro.")
     }
 
-    var growMetricNet: String { t("Net", "Líquido") }
-    var growMetricGross: String { t("Gross", "Bruto") }
-    var growMetricPercentile: String { t("Position", "Posição") }
+    // v0.10.1: the chart plots one quantity, gross, so the metric picker went.
+    var growChartTitle: String { t("Gross per month", "Bruto por mês") }
     var growNominal: String { t("In euros", "Em euros") }
     var growReal: String { t("Today's money", "Dinheiro de hoje") }
+
+    func growInYearsStaying(_ years: Int) -> String {
+        t("In \(years) years, staying put", "Daqui a \(years) anos, se ficares")
+    }
+    func growVsToday(_ amount: String, _ pct: String) -> String {
+        t("\(amount) a month against today (\(pct))", "\(amount) por mês em relação a hoje (\(pct))")
+    }
+    var growWithYourChanges: String { t("With your changes", "Com as tuas mudanças") }
+    func growVsStaying(_ amount: String) -> String {
+        t("\(amount) against staying put", "\(amount) em relação a ficar")
+    }
+    func growProjectionUnit(_ todaysMoney: Bool) -> String {
+        if todaysMoney {
+            return t("Gross per paid month, in today's money.", "Bruto por mês pago, em dinheiro de hoje.")
+        }
+        return t("Gross per paid month. GEP publishes gross pay, so that is what the whole projection is made of.",
+                 "Bruto por mês pago. O GEP publica o ganho bruto, e é disso que a projeção toda é feita.")
+    }
 
     var growLegendStay: String { t("Staying", "Ficar") }
     var growLegendMove: String { t("Changing job", "Mudar de emprego") }
@@ -853,6 +864,10 @@ struct Strings {
     var growAssumptionAnchor: String {
         t("Your path starts on your real salary and keeps your distance from the average. That assumes the shape of the tenure steps is the same for everyone in your sector and only the level differs.",
           "O teu percurso começa no teu salário a sério e mantém a tua distância à média. Isso assume que a forma dos degraus da antiguidade é igual para toda a gente do teu setor e que só o nível é que muda.")
+    }
+    var growAssumptionGross: String {
+        t("Everything on the path is gross, because that is what GEP publishes. Net appears only when you hold a single year, where it is worked out with your own tax situation.",
+          "Tudo no percurso é bruto, porque é isso que o GEP publica. O líquido só aparece quando seguras um ano, e aí é calculado com a tua situação fiscal.")
     }
     func growAssumptionEntrant(_ amount: String) -> String {
         t("First-year people in this sector average \(amount) a month. That is here as a reference only: it is full of people entering the labour market, so it is not where an experienced person lands after a move, and the model never puts you there.",

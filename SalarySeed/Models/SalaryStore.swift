@@ -114,9 +114,11 @@ final class SalaryStore: ObservableObject {
     /// which is the whole reason it lives here instead of inside the view.
     @Published var growScenario = GrowthEngine.Scenario()
 
-    /// Which tab is showing. Held here so one screen can send the user to
-    /// another one, instead of each screen owning a private copy that then
-    /// disagrees with the tab bar.
+    /// Which tab is showing. The paged TabView and the custom bar both bind to
+    /// this, so the selection has one source of truth rather than a private copy
+    /// in the view that the bar can disagree with. It also leaves the door open
+    /// for one screen to send the user to another; nothing does that today,
+    /// since v0.10.1 took away the Home card that used to jump to Grow.
     @Published var selectedTab: Int = 0
 
     private let defaults = UserDefaults.standard

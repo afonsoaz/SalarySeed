@@ -1,32 +1,5 @@
 import SwiftUI
 
-/// What the chart is plotting. Euros and percentile are two different questions
-/// and share no axis, so they are a toggle rather than a second line: your euros
-/// can rise for twenty years while your position among everyone else does not
-/// move at all, and that is worth being able to see on its own.
-enum GrowMetric: String, CaseIterable, Identifiable {
-    case net, gross, percentile
-    var id: String { rawValue }
-
-    func label(_ s: Strings) -> String {
-        switch self {
-        case .net: return s.growMetricNet
-        case .gross: return s.growMetricGross
-        case .percentile: return s.growMetricPercentile
-        }
-    }
-
-    func value(_ p: GrowthEngine.YearPoint) -> Double {
-        switch self {
-        case .net: return p.net
-        case .gross: return p.gross
-        case .percentile: return p.percentile
-        }
-    }
-
-    var isMoney: Bool { self != .percentile }
-}
-
 /// v0.10: the two paths, drawn as what the data actually is.
 ///
 /// STEPS, NOT A CURVE. Quadro 104 publishes six tenure bands, so pay in this
@@ -34,12 +7,19 @@ enum GrowMetric: String, CaseIterable, Identifiable {
 /// line would invent nineteen values GEP never measured and would quietly hide
 /// that ten of the twenty-four sectors go DOWN between some pair of bands. The
 /// staircase is the honest shape.
+///
+/// v0.10.1: GROSS ONLY. The chart used to switch between net, gross and a
+/// "position" percentile line. Two of those were wrong to offer. GEP publishes
+/// ganho, a gross figure, so gross is the one quantity the projection is
+/// actually made of; net is a second model layered on top and belongs on a
+/// single inspected point rather than on the whole line. The percentile line
+/// answered a question nobody had asked, under a word ("position") that
+/// explained nothing.
 struct GrowthChart: View {
     let stay: [GrowthEngine.YearPoint]
     let move: [GrowthEngine.YearPoint]?
-    let metric: GrowMetric
-    /// Applied to money before drawing, so the today's-money toggle changes the
-    /// chart and the scrubbed figures together. Percentile is already real.
+    /// Applied before drawing, so the today's-money toggle moves the chart and
+    /// the figures under it together instead of letting them drift apart.
     let scale: (Int) -> Double
     @Binding var scrubYear: Int
 
@@ -86,8 +66,7 @@ struct GrowthChart: View {
     private var horizon: Int { max(1, (stay.last?.year ?? 1)) }
 
     private func scaled(_ p: GrowthEngine.YearPoint) -> Double {
-        let raw = metric.value(p)
-        return metric.isMoney ? raw * scale(p.year) : raw
+        p.gross * scale(p.year)
     }
 
     private var valueRange: (lo: Double, hi: Double) {
@@ -202,8 +181,8 @@ struct GrowthChart: View {
     }
 }
 
-/// The two-line key under the chart. Colour is never the only channel: each
-/// entry is also named.
+/// The key under the chart. Colour is never the only channel: each entry is
+/// also named.
 struct GrowthLegend: View {
     let s: Strings
     let showMove: Bool
