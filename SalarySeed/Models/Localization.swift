@@ -897,6 +897,107 @@ struct Strings {
         t("The 2026 escalões and the IRS Jovem ceiling are held frozen, so any pay growth is taxed a little harder every year.",
           "Os escalões de 2026 e o tecto do IRS Jovem estão congelados, por isso qualquer subida de salário é tributada um pouco mais cada ano.")
     }
+    // MARK: v0.11 mapSeed, the European half
+
+    var mapScopePortugal: String { t("Portugal", "Portugal") }
+    var mapScopeEurope: String { t("Europe", "Europa") }
+    var euroTitle: String { t("Your sector across the EU", "O teu setor pela UE") }
+    var euroDash: String { "–" }
+
+    var euroUnitEuros: String { t("In euros", "Em euros") }
+    var euroUnitPower: String { t("What it buys", "O que compra") }
+
+    func euroSectionLine(_ section: String) -> String {
+        t("Compared as \"\(section)\", the closest activity Eurostat publishes.",
+          "Comparado como \"\(section)\", a atividade mais próxima que o Eurostat publica.")
+    }
+    func euroCollapsed(_ sectors: String) -> String {
+        t("Eurostat groups these together, so this number covers all of them: \(sectors).",
+          "O Eurostat junta estes todos, por isso este número cobre-os a todos: \(sectors).")
+    }
+
+    var euroReferenceTag: String { t("reference", "referência") }
+    var euroPortugalBody: String {
+        t("Every percentage on this screen is measured against Portugal, so Portugal itself sits at zero.",
+          "Todas as percentagens deste ecrã são medidas contra Portugal, por isso Portugal fica a zero.")
+    }
+    func euroYourSalaryLine(_ amount: String, purchasingPower: Bool) -> String {
+        if purchasingPower {
+            return t("Apply that gap to your salary and you get \(amount) a month of what money buys here.",
+                     "Aplica essa diferença ao teu salário e dá \(amount) por mês do que o dinheiro compra cá.")
+        }
+        return t("Apply that gap to your salary and you get \(amount) a month.",
+                 "Aplica essa diferença ao teu salário e dá \(amount) por mês.")
+    }
+    var euroNotAJob: String {
+        t("This is the average across a whole activity, not a job. The same number covers a first-year assistant and a department head.",
+          "Isto é a média de uma atividade inteira, não de uma função. O mesmo número cobre um assistente no primeiro ano e um diretor de departamento.")
+    }
+    func euroNoDataBody(_ country: String) -> String {
+        t("Eurostat publishes no figure for this activity in \(country). Usually that means there is almost nothing of it there to measure.",
+          "O Eurostat não publica valor para esta atividade em \(country). Normalmente é porque quase não existe lá nada para medir.")
+    }
+    /// English needs 1st / 2nd / 3rd / 21st, not a blanket "th". Portuguese takes
+    /// "º" for every number, so only one side of this needs the rule.
+    func ordinal(_ n: Int) -> String {
+        guard !pt else { return "\(n).º" }
+        let suffix: String
+        switch (n % 100, n % 10) {
+        case (11, _), (12, _), (13, _): suffix = "th"
+        case (_, 1): suffix = "st"
+        case (_, 2): suffix = "nd"
+        case (_, 3): suffix = "rd"
+        default: suffix = "th"
+        }
+        return "\(n)\(suffix)"
+    }
+
+    func euroRank(_ place: Int, of total: Int, purchasingPower: Bool) -> String {
+        let nth = ordinal(place)
+        if purchasingPower {
+            return t("For what the money buys, Portugal is \(nth) of \(total) in this activity.",
+                     "Pelo que o dinheiro compra, Portugal é o \(nth) de \(total) nesta atividade.")
+        }
+        return t("In euros, Portugal is \(nth) of \(total) in this activity.",
+                 "Em euros, Portugal é o \(nth) de \(total) nesta atividade.")
+    }
+
+    var euroAllCountries: String { t("Every country", "Todos os países") }
+
+    var euroLegendBelow: String { t("below Portugal", "abaixo de Portugal") }
+    var euroLegendSame: String { t("about the same", "quase igual") }
+    var euroLegendAbove: String { t("above Portugal", "acima de Portugal") }
+    var euroLegendNoData: String { t("no figure published", "sem valor publicado") }
+
+    var euroPickSector: String { t("Which sector?", "Que setor?") }
+    var euroPickSectorBody: String {
+        t("The comparison is per activity, so it needs to know yours first.",
+          "A comparação é por atividade, por isso precisa de saber a tua primeiro.")
+    }
+    var euroPickSectorButton: String { t("Pick my sector", "Escolher o meu setor") }
+    var euroNoSection: String { t("No European comparison here", "Sem comparação europeia aqui") }
+    func euroNoSectionBody(_ sector: String) -> String {
+        t("The European survey does not cover \(sector.lowercased()), so there is nothing to compare against. Agriculture sits outside the survey entirely, and public administration has no published Portuguese figure, which leaves no starting point.",
+          "O inquérito europeu não cobre \(sector.lowercased()), por isso não há com o que comparar. A agricultura fica fora do inquérito, e a administração pública não tem valor publicado para Portugal, o que deixa a comparação sem ponto de partida.")
+    }
+
+    var euroFootnoteMethod: String {
+        t("The percentages come entirely from the European survey, one country divided by Portugal. Your own salary is then moved by that ratio. The Portuguese and European figures are never added together or placed side by side, because they are different surveys of different people in different years.",
+          "As percentagens vêm todas do inquérito europeu, um país a dividir por Portugal. O teu salário é depois movido por esse rácio. Os valores portugueses e europeus nunca são somados nem postos lado a lado, porque são inquéritos diferentes, de pessoas diferentes, em anos diferentes.")
+    }
+    var euroFootnoteVintage: String {
+        t("The European survey is from 2022 and runs every four years, so this half of the map is two years older than the Portuguese half.",
+          "O inquérito europeu é de 2022 e acontece de quatro em quatro anos, por isso esta metade do mapa é dois anos mais antiga do que a metade portuguesa.")
+    }
+    var euroFootnoteScope: String {
+        t("Employees in companies with 10 or more people. Gross pay, before tax and before Social Security.",
+          "Trabalhadores por conta de outrem em empresas com 10 ou mais pessoas. Valor bruto, antes de impostos e de Segurança Social.")
+    }
+    var euroFootnoteGaps: String {
+        t("Cyprus and Malta have no figure for mining or for electricity and gas. Length of service is in the source but is not on this screen yet.",
+          "Chipre e Malta não têm valor para as indústrias extractivas nem para a eletricidade e gás. A antiguidade existe na fonte mas ainda não está neste ecrã.")
+    }
+
     var growAssumptionNothingSaved: String {
         t("Nothing on this screen is saved. Your salary and your profile are untouched.",
           "Nada deste ecrã fica guardado. O teu salário e o teu perfil ficam intactos.")

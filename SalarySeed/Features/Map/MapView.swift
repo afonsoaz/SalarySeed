@@ -1,17 +1,28 @@
 import SwiftUI
 
-/// v0.9.2 mapSeed: what your sector pays across the 18 mainland districts.
+/// mapSeed: what your sector pays somewhere else.
 ///
-/// Data is GEP Quadro 110 (ganho médio by CAE × distrito) with Quadro 61 for the
-/// worker counts. See DistrictDataset for why tenure is not in here, and why
-/// adding it would not change a single colour on this map.
+/// v0.9.2 built the Portuguese half: GEP Quadro 110 (ganho médio by CAE ×
+/// distrito) with Quadro 61 for the worker counts. See DistrictDataset for why
+/// tenure is not in here, and why adding it would not change a single colour.
+///
+/// v0.11 adds the European half from Eurostat SES 2022. The two halves share a
+/// screen, a sector and a colour ramp, and share NOTHING else: they are separate
+/// surveys of separate populations in separate years, so no figure from one is
+/// ever placed beside a figure from the other. What crosses is a ratio computed
+/// inside Eurostat and applied to the user's own salary. See EuroComparison.
 struct MapView: View {
     @EnvironmentObject private var store: SalaryStore
 
+    @State private var scope: MapScope = .portugal
     @State private var baseline: MapBaseline = .national
     @State private var selected: District?
     @State private var showSectorSheet = false
     @State private var showConcelhoSheet = false
+
+    // v0.11
+    @State private var selectedCountry: Country?
+    @State private var purchasingPower = false
 
     private var s: Strings { store.s }
 
@@ -43,12 +54,9 @@ struct MapView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 18) {
                     header
+                    scopePicker
                     sectorRow
-                    baselinePicker
-                    mapBlock
-                    focusCard
-                    districtList
-                    footnotes
+                    scopeContent
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
@@ -66,11 +74,56 @@ struct MapView: View {
             Text("mapSeed")
                 .font(.system(size: 12))
                 .foregroundStyle(Theme.accent)
-            Text(s.mapTitle)
+            Text(scope == .portugal ? s.mapTitle : s.euroTitle)
                 .font(.system(size: 22, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
         }
         .padding(.top, 8)
+    }
+
+    /// Portugal or Europe. The sector picker sits below it because it applies to
+    /// both, and moving it would make the two halves feel like two screens.
+    private var scopePicker: some View {
+        HStack(spacing: 8) {
+            ForEach(MapScope.allCases) { option in
+                let isOn = scope == option
+                Button {
+                    withAnimation(.easeOut(duration: 0.15)) { scope = option }
+                } label: {
+                    Text(option.label(s))
+                        .font(.system(size: 13, weight: isOn ? .medium : .regular))
+                        .foregroundStyle(isOn ? Color(hex: 0x06281C) : Theme.textPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(isOn ? Theme.accent : Color.white.opacity(0.05),
+                                    in: RoundedRectangle(cornerRadius: 11))
+                        .overlay(RoundedRectangle(cornerRadius: 11)
+                            .stroke(isOn ? Theme.accent : Theme.cardBorder, lineWidth: 1))
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var scopeContent: some View {
+        switch scope {
+        case .portugal: portugalScope
+        case .europe: EuropeScopeView(sector: store.sector,
+                                      yourGross: store.breakdown.grossMonthly,
+                                      purchasingPower: $purchasingPower,
+                                      selected: $selectedCountry,
+                                      onPickSector: { showSectorSheet = true })
+        }
+    }
+
+    private var portugalScope: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            baselinePicker
+            mapBlock
+            focusCard
+            districtList
+            footnotes
+        }
     }
 
     /// Which sector the map is showing. Tapping it opens the same sheet
