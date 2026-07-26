@@ -8,7 +8,6 @@ struct HomeView: View {
     @State private var period: ResultPeriod = .m14
     @State private var pickedInitial = false
     @State private var showEditor = false
-    @State private var showRaiseSeed = false
     @State private var showFutureSeed = false
     // v0.9.4
     @State private var showExplorer = false
@@ -72,7 +71,6 @@ struct HomeView: View {
             }
             .background(Theme.background)
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
-            .sheet(isPresented: $showRaiseSeed) { RaiseSimulatorView() }
             .sheet(isPresented: $showFutureSeed) { FutureSeedView() }
             .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
             .salaryChangeConfirmation(
@@ -421,11 +419,17 @@ struct HomeView: View {
             // v0.9.4: trying a number is the most common "what if" of all, so it
             // leads the section and is the only card that carries the accent.
             explorerButton
+            // v0.10: raiseSeed is gone as a screen. "A €X raise costs your
+            // employer €Y" was always a fact about one point on a path, and it
+            // is now the scrubbed year on Grow, which answers the same question
+            // at any moment rather than only at today plus a slider.
             NudgeCard(
-                icon: "arrow.up.right.circle.fill",
-                title: s.raiseNudgeTitle,
-                subtitle: s.raiseNudgeSub
-            ) { showRaiseSeed = true }
+                icon: "chart.line.uptrend.xyaxis.circle.fill",
+                title: s.growNudgeTitle,
+                subtitle: s.growNudgeSub
+            ) {
+                withAnimation(.easeInOut(duration: 0.25)) { store.selectedTab = 1 }
+            }
             NudgeCard(
                 icon: "hourglass.circle.fill",
                 title: s.ajudasNudgeTitle,

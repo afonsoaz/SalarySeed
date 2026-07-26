@@ -105,6 +105,20 @@ final class SalaryStore: ObservableObject {
     // v0.3: language. Follows the device by default, can be changed in the profile tab.
     @Published var language: AppLanguage { didSet { save() } }
 
+    // MARK: v0.10 session state (deliberately not persisted)
+
+    /// The Grow scenario. It has NO `didSet { save() }` and is absent from
+    /// `save()` on purpose. Grow explores rather than records, in the v0.9.4
+    /// sense, and a hypothetical that survived a relaunch would start behaving
+    /// like a stored fact about the user. It does survive swiping between tabs,
+    /// which is the whole reason it lives here instead of inside the view.
+    @Published var growScenario = GrowthEngine.Scenario()
+
+    /// Which tab is showing. Held here so one screen can send the user to
+    /// another one, instead of each screen owning a private copy that then
+    /// disagrees with the tab bar.
+    @Published var selectedTab: Int = 0
+
     private let defaults = UserDefaults.standard
 
     init() {

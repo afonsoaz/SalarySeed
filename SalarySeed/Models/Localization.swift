@@ -43,6 +43,7 @@ struct Strings {
     // MARK: Tabs
 
     var tabHome: String { t("Home", "Início") }
+    var tabGrow: String { t("Grow", "Crescer") }
     var tabCompare: String { t("Compare", "Comparar") }
     var tabMap: String { t("Map", "Mapa") }
     var tabProfile: String { t("Profile", "Perfil") }
@@ -687,4 +688,202 @@ struct Strings {
     }
     var explorerPromote: String { t("Actually, make this my salary", "Afinal, passar a ser o meu salário") }
     var explorerClose: String { t("Done exploring", "Já vi o que queria") }
+
+    // MARK: v0.10 Grow
+
+    var growNudgeTitle: String { t("Stay or move?", "Ficar ou mudar?") }
+    var growNudgeSub: String {
+        t("What your pay does over the next years, and what changing job would do to it.",
+          "O que o teu salário faz nos próximos anos, e o que mudar de emprego lhe fazia.")
+    }
+
+    var growTitle: String { t("Grow", "Crescer") }
+    func growSub(_ sector: String, years: Int) -> String {
+        t("\(sector), \(years) \(years == 1 ? "year" : "years") at your employer.",
+          "\(sector), \(years) \(years == 1 ? "ano" : "anos") na empresa.")
+    }
+
+    var growEmptyTitle: String { t("Two answers away", "Faltam duas respostas") }
+    var growEmptySub: String {
+        t("Your sector and how long you have been at your employer. Both come from the same table this screen is built on, so without them there is nothing honest to draw.",
+          "O teu setor e há quanto tempo estás na empresa. Os dois vêm da mesma tabela em que este ecrã assenta, por isso sem eles não há nada de honesto para desenhar.")
+    }
+    var growEmptyButton: String { t("Answer them", "Responder") }
+
+    var growBreakEvenTitle: String { t("A new job has to beat", "Um emprego novo tem de bater") }
+    func growBreakEvenSuffix(_ years: Int) -> String {
+        t("if you leave after \(years) \(years == 1 ? "year" : "years")",
+          "se saíres aos \(years) \(years == 1 ? "ano" : "anos")")
+    }
+    func growBreakEvenBody(_ sector: String) -> String {
+        t("That is the pay step people at that tenure have in \(sector.lowercased()), and you give it up the day you leave. Anything less than this and the move costs you money.",
+          "É esse o degrau de quem tem essa antiguidade em \(sector.lowercased()), e perde-lo no dia em que sais. Menos do que isto e mudar fica-te caro.")
+    }
+
+    var growMetricNet: String { t("Net", "Líquido") }
+    var growMetricGross: String { t("Gross", "Bruto") }
+    var growMetricPercentile: String { t("Position", "Posição") }
+    var growNominal: String { t("In euros", "Em euros") }
+    var growReal: String { t("Today's money", "Dinheiro de hoje") }
+
+    var growLegendStay: String { t("Staying", "Ficar") }
+    var growLegendMove: String { t("Changing job", "Mudar de emprego") }
+
+    var growToday: String { t("Today", "Hoje") }
+    func growYears(_ n: Int) -> String {
+        t("\(n) \(n == 1 ? "year" : "years")", "\(n) \(n == 1 ? "ano" : "anos")")
+    }
+    func growTenureAt(_ n: Int) -> String {
+        t("\(n) \(n == 1 ? "year" : "years") at that employer", "\(n) \(n == 1 ? "ano" : "anos") nessa empresa")
+    }
+
+    var growScrubNet: String { t("Net / month", "Líquido / mês") }
+    var growScrubGross: String { t("Gross / month", "Bruto / mês") }
+    var growScrubEmployer: String { t("Costs the employer", "Custa à empresa") }
+    func growScrubVsStay(_ amount: String) -> String {
+        t("\(amount) a month against staying put.", "\(amount) por mês em relação a ficar.")
+    }
+    var growEditToday: String { t("Change the starting salary", "Mudar o salário de partida") }
+
+    func growCumulativeTitle(_ years: Int) -> String {
+        t("Over \(years) years, in total", "Ao fim de \(years) anos, no total")
+    }
+    var growCumulativeAhead: String { t("ahead by changing job", "a mais por mudares de emprego") }
+    var growCumulativeBehind: String { t("behind by changing job", "a menos por mudares de emprego") }
+    func growCrossover(_ year: Int) -> String {
+        t("Changing job pulls ahead in total in year \(year).",
+          "Mudar de emprego passa à frente no total no ano \(year).")
+    }
+    func growNoCrossover(_ years: Int) -> String {
+        t("Changing job never pulls ahead in total inside \(years) years.",
+          "Mudar de emprego nunca passa à frente no total dentro de \(years) anos.")
+    }
+
+    var growLeversButton: String { t("Change something", "Mudar alguma coisa") }
+    var growLeversNone: String { t("Right now this is just you, staying where you are.", "Neste momento és só tu, a ficar onde estás.") }
+    var growLeversTitle: String { t("Change something", "Mudar alguma coisa") }
+    var growLeversSub: String {
+        t("Nothing you do here is saved. Your real salary and profile stay exactly as they are.",
+          "Nada do que fizeres aqui fica guardado. O teu salário e o teu perfil ficam na mesma.")
+    }
+    var growLeversDone: String { t("See the path", "Ver o percurso") }
+
+    var growLeverHorizon: String { t("How far ahead", "Até quando") }
+    var growLeverCadence: String { t("Changing employer", "Mudar de empresa") }
+    var growCadenceNever: String { t("Never", "Nunca") }
+    func growCadenceEvery(_ years: Int) -> String { t("Every \(years) yrs", "De \(years) em \(years) anos") }
+    var growCadenceNote: String {
+        t("After a move the model gives you the sector's own tenure shape from year zero. That is generous for anyone moving very often, which is why moving yearly is not offered.",
+          "Depois de uma mudança o modelo dá-te a forma da antiguidade do próprio setor a partir do ano zero. Isso é generoso para quem muda muitas vezes, por isso mudar todos os anos não aparece aqui.")
+    }
+
+    var growLeverExpected: String { t("What you would negotiate", "O que ias negociar") }
+    var growPerMonthGross: String { t("gross / month", "bruto / mês") }
+    func growBreakEvenHint(_ pct: String, years: Int) -> String {
+        t("At \(years) years, leaving gives up \(pct). Beat that and the move is worth something.",
+          "Aos \(years) anos, sair abdica de \(pct). Passa disso e a mudança vale alguma coisa.")
+    }
+    func growExpectedImplied(_ pct: String) -> String {
+        t("That is \(pct) against what staying would have paid you that year.",
+          "Isso é \(pct) em relação ao que ficar te pagava nesse ano.")
+    }
+    var growExpectedEmpty: String {
+        t("Empty means the model assumes you match your salary and nothing more, so the chart shows what leaving costs on its own.",
+          "Vazio quer dizer que o modelo assume que igualas o teu salário e mais nada, por isso o gráfico mostra o que sair custa por si só.")
+    }
+
+    var growLeverSector: String { t("Sector", "Setor") }
+    var growSameAsNow: String { t("Same as now", "O mesmo de agora") }
+    var growSectorNote: String {
+        t("Changing sector keeps your standing: the model puts you at the same distance from the average there as you are from the average here.",
+          "Mudar de setor mantém a tua posição: o modelo põe-te à mesma distância da média de lá que estás da média daqui.")
+    }
+    var growLeverDistrict: String { t("District", "Distrito") }
+    var growNoDistrict: String { t("Not set", "Por definir") }
+    var growRegionNote: String {
+        t("The district table is not crossed with tenure, so a district can only shift the whole path up or down. It cannot bend it.",
+          "A tabela dos distritos não cruza com a antiguidade, por isso um distrito só consegue subir ou descer o percurso todo. Não o consegue dobrar.")
+    }
+
+    var growLeverFiscal: String { t("Tax and prices", "Impostos e preços") }
+    var growBracketsTitle: String { t("Escalões follow prices", "Escalões acompanham os preços") }
+    var growBracketsShort: String { t("indexed escalões", "escalões indexados") }
+    var growBracketsHint: String {
+        t("Off means the 2026 escalões stay frozen while pay rises, so a bigger slice of it is taxed each year.",
+          "Desligado quer dizer que os escalões de 2026 ficam congelados enquanto o salário sobe, por isso uma fatia maior é tributada todos os anos.")
+    }
+    var growPayGrowth: String { t("Pay growth across the economy", "Subida geral dos salários") }
+    var growPayGrowthHint: String {
+        t("Zero by default, on purpose: at zero every euro on this screen is in today's money and the path shows the tenure effect and nothing else.",
+          "Zero por omissão, de propósito: a zero todos os euros deste ecrã são dinheiro de hoje e o percurso mostra só o efeito da antiguidade.")
+    }
+    var growInflation: String { t("Inflation", "Inflação") }
+    var growInflationHint: String {
+        t("Used for the today's-money view and, when it is on, for the escalões.",
+          "Serve para a vista em dinheiro de hoje e, quando está ligado, para os escalões.")
+    }
+    var growPerYearShort: String { t("yr", "ano") }
+
+    func growWaterfallTitle(_ years: Int) -> String {
+        t("Where the \(years) years came from", "De onde vêm os \(years) anos")
+    }
+    var growWaterfallStart: String { t("Today", "Hoje") }
+    func growWaterfallLabel(_ id: String) -> String {
+        switch id {
+        case "tenure": return t("Tenure", "Antiguidade")
+        case "sector": return t("New sector", "Setor novo")
+        case "region": return t("New district", "Distrito novo")
+        case "moving": return t("Changing job", "Mudar de emprego")
+        case "growth": return t("Pay growth", "Subida geral")
+        case "tax": return t("Tax and SS", "Impostos e SS")
+        case "inflation": return t("Inflation", "Inflação")
+        default: return id
+        }
+    }
+    var growWaterfallNote: String {
+        t("The pay-side steps are all multipliers, so the order they are applied in cannot change the total. Tax is not a multiplier and inflation is a change of unit, so those two always come last, in that order.",
+          "Os passos do lado do salário são todos multiplicadores, por isso a ordem em que se aplicam não muda o total. O imposto não é multiplicador e a inflação é uma mudança de unidade, por isso esses dois vêm sempre no fim, por essa ordem.")
+    }
+
+    var growAssumptionsTitle: String { t("What this takes for granted", "O que isto dá como certo") }
+    var growAssumptionCrossSection: String {
+        t("This is a photograph of October 2024, not a career. The people in the 20+ tenure band are not the people in the first-year band twenty years later: they are the ones who stayed, in a different mix of jobs. So every point answers what people at that tenure earn today, never what you will earn then.",
+          "Isto é uma fotografia de outubro de 2024, não uma carreira. Quem está no escalão dos 20+ anos não é quem está no primeiro ano vinte anos depois: são os que ficaram, noutra mistura de funções. Por isso cada ponto responde ao que ganha hoje quem tem essa antiguidade, nunca ao que tu vais ganhar.")
+    }
+    var growAssumptionAnchor: String {
+        t("Your path starts on your real salary and keeps your distance from the average. That assumes the shape of the tenure steps is the same for everyone in your sector and only the level differs.",
+          "O teu percurso começa no teu salário a sério e mantém a tua distância à média. Isso assume que a forma dos degraus da antiguidade é igual para toda a gente do teu setor e que só o nível é que muda.")
+    }
+    func growAssumptionEntrant(_ amount: String) -> String {
+        t("First-year people in this sector average \(amount) a month. That is here as a reference only: it is full of people entering the labour market, so it is not where an experienced person lands after a move, and the model never puts you there.",
+          "Quem está no primeiro ano neste setor ganha em média \(amount) por mês. Está aqui só como referência: é um escalão cheio de gente a entrar no mercado de trabalho, por isso não é onde alguém com experiência cai depois de mudar, e o modelo nunca te põe lá.")
+    }
+    var growAssumptionDip: String {
+        t("In this sector pay does not rise across every tenure band. The dip you can see is what the survey found, and it is drawn rather than smoothed away.",
+          "Neste setor o salário não sobe de escalão para escalão em todos eles. A descida que se vê é o que o inquérito encontrou, e está desenhada em vez de alisada.")
+    }
+    var growAssumptionDipMoving: String {
+        t("Because pay in this sector does not climb with tenure, every move puts you back on the only part of the curve that rises, while staying drifts down. Over a long horizon that gap grows fast. It comes out of the assumption above, not out of anything the survey measured about people who change job.",
+          "Como neste setor o salário não sobe com a antiguidade, cada mudança volta a pôr-te na única parte da curva que sobe, enquanto ficar vai descendo. Num horizonte longo essa diferença cresce depressa. Vem da suposição acima, não de algo que o inquérito tenha medido sobre quem muda de emprego.")
+    }
+    var growAssumptionRegion: String {
+        t("The district figure comes from a table that has no tenure in it, so it moves the whole path by one ratio and cannot say whether tenure pays differently there.",
+          "O valor do distrito vem de uma tabela sem antiguidade, por isso mexe no percurso todo por um só rácio e não consegue dizer se a antiguidade paga de forma diferente lá.")
+    }
+    var growAssumptionJovem: String {
+        t("Your IRS Jovem step-down is applied year by year, which is why the net line can fall in a year the gross line rises. The app knows your percentage but not which benefit year produced it, so it assumes the first year of that step, which is the most generous reading.",
+          "A descida do teu IRS Jovem é aplicada ano a ano, e é por isso que a linha do líquido pode cair num ano em que a do bruto sobe. A app sabe a tua percentagem mas não sabe que ano do benefício a produziu, por isso assume o primeiro ano desse degrau, que é a leitura mais generosa.")
+    }
+    var growAssumptionBracketsOn: String {
+        t("The escalões and the IRS Jovem ceiling are being grown with prices, so bracket creep is switched off.",
+          "Os escalões e o tecto do IRS Jovem estão a subir com os preços, por isso não há subida de escalão por inflação.")
+    }
+    var growAssumptionBracketsOff: String {
+        t("The 2026 escalões and the IRS Jovem ceiling are held frozen, so any pay growth is taxed a little harder every year.",
+          "Os escalões de 2026 e o tecto do IRS Jovem estão congelados, por isso qualquer subida de salário é tributada um pouco mais cada ano.")
+    }
+    var growAssumptionNothingSaved: String {
+        t("Nothing on this screen is saved. Your salary and your profile are untouched.",
+          "Nada deste ecrã fica guardado. O teu salário e o teu perfil ficam intactos.")
+    }
 }

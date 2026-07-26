@@ -3,25 +3,35 @@ import SwiftUI
 /// The main screens. v0.8.2: a paged TabView so the user can swipe horizontally,
 /// with a custom bottom bar that also lets them tap to jump. safeAreaInset
 /// reserves the bar's space so each screen's scroll content never hides behind it.
-/// v0.9.2 adds mapSeed as the fourth tab, between Compare and Profile.
+/// v0.9.2 added mapSeed as a fourth tab.
+///
+/// v0.10 adds Grow and REORDERS the five. The grouping is "you" and then
+/// "everyone else": Home is you now, Grow is you over time, Compare is other
+/// people now, the map is other people by place, and the profile is the inputs
+/// behind all of it. Grow sitting next to Home also means the two screens that
+/// answer questions about the user's own salary are one swipe apart.
+///
+/// The selection lives on the store rather than in this view so that one screen
+/// can hand the user to another (Home's "what if" section sends people to Grow)
+/// without two sources of truth for which tab is showing.
 struct RootTabView: View {
     @EnvironmentObject private var store: SalaryStore
-    @State private var tab = 0
 
     private var s: Strings { store.s }
 
     var body: some View {
-        TabView(selection: $tab) {
+        TabView(selection: $store.selectedTab) {
             HomeView().tag(0)
-            CompareView().tag(1)
-            MapView().tag(2)
-            ProfileView().tag(3)
+            GrowView().tag(1)
+            CompareView().tag(2)
+            MapView().tag(3)
+            ProfileView().tag(4)
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .ignoresSafeArea(.keyboard)
         .background(Theme.background.ignoresSafeArea())
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            CustomTabBar(selection: $tab, s: s)
+            CustomTabBar(selection: $store.selectedTab, s: s)
         }
     }
 }
@@ -31,8 +41,11 @@ private struct CustomTabBar: View {
     let s: Strings
 
     private var items: [(icon: String, title: String)] {
-        [("house.fill", s.tabHome), ("chart.bar.fill", s.tabCompare),
-         ("map.fill", s.tabMap), ("person.fill", s.tabProfile)]
+        [("house.fill", s.tabHome),
+         ("chart.line.uptrend.xyaxis", s.tabGrow),
+         ("chart.bar.fill", s.tabCompare),
+         ("map.fill", s.tabMap),
+         ("person.fill", s.tabProfile)]
     }
 
     var body: some View {
@@ -60,7 +73,11 @@ private struct CustomTabBar: View {
                 Image(systemName: items[i].icon)
                     .font(.system(size: 19))
                 Text(items[i].title)
-                    .font(.system(size: 10, weight: .medium))
+                    // v0.10: five tabs instead of four, so the label gets one
+                    // point less and is allowed to shrink rather than truncate.
+                    .font(.system(size: 9.5, weight: .medium))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
             }
             .foregroundStyle(selected ? Theme.accent : Theme.textSecondary)
             .frame(maxWidth: .infinity)
