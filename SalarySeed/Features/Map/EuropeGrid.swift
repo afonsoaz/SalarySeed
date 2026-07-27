@@ -9,60 +9,97 @@ import SwiftUI
 /// amount of screen. A tile cartogram also needs no boundary data, no projection,
 /// and no decision about overseas territories.
 ///
-/// Positions come from `Country.tile`. They are approximate on purpose: the grid
-/// is a memory aid for finding a country, not a claim about geography.
+/// v0.11.2 REBUILT THE LAYOUT, and the reason matters. The first version placed
+/// every tile with `.offset()` inside a `ZStack` wrapped in a `GeometryReader`.
+/// It LOOKED right and was almost entirely untappable: a ZStack sizes itself to
+/// its largest child, so the stack was one tile big, every tile was then pushed
+/// outside those bounds, and SwiftUI does not deliver taps to a view rendered
+/// outside its container's frame. Only the tile nearest the origin responded.
+///
+/// Rows of `HStack`s have no such trap. Every tile occupies real layout space, so
+/// hit testing is correct by construction rather than by care, and the empty
+/// positions are `Color.clear` of the same size. It is also less code.
 struct EuropeGrid: View {
     let readings: [EuroReading]
+    /// Only needed so the voice-over label is in the user's language. A tile
+    /// shows a two-letter code, which is not something to read aloud.
+    let pt: Bool
     @Binding var selected: Country?
 
     private var byCountry: [Country: EuroReading] {
         Dictionary(readings.map { ($0.country, $0) }, uniquingKeysWith: { a, _ in a })
     }
 
+    /// Row index to the countries in it, keyed by column so gaps stay gaps.
+    private var layout: [[Country?]] {
+        var grid = Array(repeating: Array(repeating: Country?.none, count: Country.gridColumns),
+                         count: Country.gridRows)
+        for country in Country.allCases {
+            let tile = country.tile
+            guard tile.row < Country.gridRows, tile.col < Country.gridColumns else { continue }
+            grid[tile.row][tile.col] = country
+        }
+        return grid
+    }
+
     var body: some View {
-        GeometryReader { geo in
-            let cols = CGFloat(Country.gridColumns)
-            let rows = CGFloat(Country.gridRows)
-            let gap: CGFloat = 4
-            let side = min((geo.size.width - gap * (cols - 1)) / cols,
-                           (geo.size.height - gap * (rows - 1)) / rows)
-            let originX = (geo.size.width - (side * cols + gap * (cols - 1))) / 2
-            ZStack(alignment: .topLeading) {
-                ForEach(Country.allCases) { country in
-                    tile(country, side: side, gap: gap, originX: originX)
+        VStack(spacing: 4) {
+            ForEach(Array(layout.enumerated()), id: \.offset) { _, row in
+                HStack(spacing: 4) {
+                    ForEach(Array(row.enumerated()), id: \.offset) { _, country in
+                        cell(country)
+                    }
                 }
             }
         }
-        .aspectRatio(gridAspect, contentMode: .fit)
     }
 
-    /// Width over height of the whole grid, so the caller can hand it any width
-    /// and get a shape that fits its tiles exactly.
-    private var gridAspect: CGFloat {
-        CGFloat(Country.gridColumns) / CGFloat(Country.gridRows)
+    /// Every cell is `Color.clear` made square by `aspectRatio`, with the content
+    /// laid over it. That is the deterministic idiom: `Color` is fully flexible,
+    /// so the HStack hands each of the six an equal share of the width, and the
+    /// aspect ratio then fixes the height to match. Putting `aspectRatio` on the
+    /// shape itself and a flexible frame around it leaves the size ambiguous in
+    /// a way that depends on which modifier runs first.
+    @ViewBuilder
+    private func cell(_ country: Country?) -> some View {
+        if let country {
+            squareCell { tile(country) }
+        } else {
+            // Holds the column open so the grid keeps its shape. Explicitly not
+            // hit-testable, so a tap on empty sea does nothing rather than
+            // landing on whichever neighbour happens to be nearest.
+            squareCell { Color.clear }
+                .allowsHitTesting(false)
+        }
     }
 
-    private func tile(_ country: Country, side: CGFloat, gap: CGFloat, originX: CGFloat) -> some View {
+    private func squareCell<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .overlay(content())
+    }
+
+    private func tile(_ country: Country) -> some View {
         let reading = byCountry[country]
-        let pos = country.tile
         let isSelected = selected == country
-        return RoundedRectangle(cornerRadius: 6)
-            .fill(fill(reading))
-            .overlay(border(country: country, selected: isSelected))
-            .overlay(
-                Text(country.code)
-                    .font(.system(size: min(13, side * 0.32), weight: country == .portugal ? .bold : .medium))
-                    .foregroundStyle(label(reading))
-            )
-            .frame(width: side, height: side)
-            .offset(x: originX + CGFloat(pos.col) * (side + gap),
-                    y: CGFloat(pos.row) * (side + gap))
-            .contentShape(RoundedRectangle(cornerRadius: 6))
-            .onTapGesture {
-                withAnimation(.easeOut(duration: 0.15)) {
-                    selected = isSelected ? nil : country
-                }
+        return Button {
+            withAnimation(.easeOut(duration: 0.15)) {
+                selected = isSelected ? nil : country
             }
+        } label: {
+            RoundedRectangle(cornerRadius: 6)
+                .fill(fill(reading))
+                .overlay(border(country: country, selected: isSelected))
+                .overlay(
+                    Text(country.code)
+                        .font(.system(size: 12, weight: country == .portugal ? .bold : .medium))
+                        .minimumScaleFactor(0.7)
+                        .foregroundStyle(label(reading))
+                )
+                .contentShape(RoundedRectangle(cornerRadius: 6))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(country.label(pt: pt))
     }
 
     private func fill(_ reading: EuroReading?) -> Color {
@@ -73,12 +110,13 @@ struct EuropeGrid: View {
     /// Portugal is outlined rather than coloured differently, because it is the
     /// reference and always sits in the neutral bucket by construction. A country
     /// with no cell gets a dashed outline, which has to look different from
-    /// "close to Portugal" rather than merely fainter.
+    /// "close to Portugal" rather than merely fainter. The selected tile takes a
+    /// heavier ring, which wins over both.
     @ViewBuilder
-    private func border(country: Country, selected: Bool) -> some View {
+    private func border(country: Country, selected isSelected: Bool) -> some View {
         let shape = RoundedRectangle(cornerRadius: 6)
-        if selected {
-            shape.stroke(Theme.textPrimary, lineWidth: 2)
+        if isSelected {
+            shape.stroke(Theme.textPrimary, lineWidth: 2.5)
         } else if country == .portugal {
             shape.stroke(Theme.textPrimary, lineWidth: 1.5)
         } else if byCountry[country]?.hasData != true {

@@ -65,7 +65,7 @@ struct EuropeScopeView: View {
         VStack(alignment: .leading, spacing: 16) {
             unitPicker
             sectionLine
-            EuropeGrid(readings: readings, selected: $selected)
+            EuropeGrid(readings: readings, pt: s.pt, selected: $selected)
             Text(s.euroTapHint)
                 .font(.system(size: 10))
                 .foregroundStyle(Theme.textFaint)
