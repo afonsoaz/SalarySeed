@@ -93,8 +93,13 @@ struct EnrichmentCard: View {
                 }
             }
         case .jobTitle, .variablePay:
+            // v0.12: the button says what pressing it DOES. It used to carry the
+            // destination sheet's title, which meant the card asked "What do you
+            // actually do?" and then offered a button reading "What do you do?",
+            // so the only tappable thing on the card looked like a restatement of
+            // the question rather than the way to answer it.
             Button { onOpenSheet(signal) } label: {
-                Text(signal == .jobTitle ? s.jobSheetTitle : s.variableSheetTitle)
+                Text(s.enrichOpenLabel(signal.rawValue))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundStyle(Color(hex: 0x06281C))
                     .frame(maxWidth: .infinity)

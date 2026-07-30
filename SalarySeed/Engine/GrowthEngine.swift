@@ -381,6 +381,35 @@ enum GrowthEngine {
         return Track(points: points)
     }
 
+    /// One change of employer, read off the drawn path: what the salary was the
+    /// year before, what it becomes, and the difference in euros a month.
+    struct MoveStep: Identifiable {
+        let year: Int
+        let from: Double
+        let to: Double
+        var uplift: Double { to - from }
+        var id: Int { year }
+    }
+
+    /// Every change of employer inside the horizon, in euros.
+    ///
+    /// v0.12: the levers sheet sets a percentage, because that is the only thing
+    /// that can apply identically to a move in year 3 and a move in year 9, but
+    /// nobody negotiates in percentages, and "+20%" does not tell you what you
+    /// would be asking for. So the percentage stays as the input and the euro
+    /// amount it produces at each change is what gets shown.
+    ///
+    /// The figures come from the path itself rather than from `premium × salary`,
+    /// so that when economy-wide pay growth is also switched on, the number
+    /// matches the step actually drawn on the chart instead of a component of it.
+    static func moveSteps(ctx: Context, scenario: Scenario) -> [MoveStep] {
+        guard let track = moveTrack(ctx: ctx, scenario: scenario) else { return [] }
+        return track.points.compactMap { p in
+            guard p.moved, let previous = track.point(year: p.year - 1) else { return nil }
+            return MoveStep(year: p.year, from: previous.gross, to: p.gross)
+        }
+    }
+
     /// The two rates the levers sheet puts side by side, both measured over the
     /// whole horizon from the paths themselves rather than from the inputs, so
     /// the verdict underneath them always agrees with the chart.

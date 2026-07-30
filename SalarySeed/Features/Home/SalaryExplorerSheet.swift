@@ -113,15 +113,9 @@ struct SalaryExplorerSheet: View {
     }
 
     private var headerBlock: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(s.explorerTitle)
-                .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(Theme.textPrimary)
-            Text(s.explorerSub)
-                .font(.system(size: 12))
-                .foregroundStyle(Theme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
-        }
+        Text(s.explorerTitle)
+            .font(.system(size: 20, weight: .medium))
+            .foregroundStyle(Theme.textPrimary)
     }
 
     private var inputBlock: some View {
@@ -172,13 +166,17 @@ struct SalaryExplorerSheet: View {
         let pct = PercentileEngine.percentile(grossMonthly: breakdown.grossMonthly)
         return VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text("\(Int(pct.rounded()))")
+                // v0.12: the % sign belongs on the number, not lost between it
+                // and the sentence. Without it the card read "62 of people in
+                // Portugal earn less than this".
+                Text("\(Int(pct.rounded()))%")
                     .font(.system(size: 40, weight: .semibold))
                     .foregroundStyle(Theme.accent)
                     .contentTransition(.numericText())
                 Text(s.explorerPercentileSuffix)
                     .font(.system(size: 13))
                     .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             HStack(spacing: 10) {
@@ -255,38 +253,48 @@ struct SalaryExplorerSheet: View {
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 11))
     }
 
-    /// The one deliberate way out of exploring and into changing the real number.
+    /// The exit, v0.12: two buttons of the same size, both starting with "Ok", so
+    /// leaving and keeping is as easy to find as leaving and changing.
+    ///
+    /// It used to be one accent button to promote the number plus a small text
+    /// link to close, with a line of small print above explaining that nothing had
+    /// been saved. The buttons now say that themselves, which is why the note is
+    /// gone: a label the user reads at the moment of deciding beats a caveat they
+    /// read before there was anything to decide.
     private var promoteBlock: some View {
-        VStack(spacing: 10) {
-            Text(s.explorerNotSaved)
-                .font(.system(size: 10.5))
-                .foregroundStyle(Theme.textFaint)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Button {
+        HStack(spacing: 10) {
+            exitButton(title: s.explorerKeep, primary: false) {
+                dismissKeyboard()
+                dismiss()
+            }
+            exitButton(title: s.explorerChange, primary: true) {
                 store.kind = kind
                 store.amount = typed
                 store.inputYearly = false
                 dismissKeyboard()
                 dismiss()
-            } label: {
-                Text(s.explorerPromote)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color(hex: 0x06281C))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: 15))
             }
+        }
+    }
 
-            Button {
-                dismissKeyboard()
-                dismiss()
-            } label: {
-                Text(s.explorerClose)
-                    .font(.system(size: 13))
-                    .foregroundStyle(Theme.textSecondary)
-            }
+    /// Equal width by construction: both take `maxWidth: .infinity` inside the
+    /// same HStack, so neither can grow with the length of its own translation.
+    private func exitButton(title: String, primary: Bool,
+                            action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(primary ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
+                .frame(maxWidth: .infinity, minHeight: 22)
+                .padding(.vertical, 13)
+                .padding(.horizontal, 6)
+                .background(primary ? Theme.accent : Color.white.opacity(0.06),
+                            in: RoundedRectangle(cornerRadius: 15))
+                .overlay(RoundedRectangle(cornerRadius: 15)
+                    .stroke(primary ? Theme.accent : Theme.cardBorder, lineWidth: 1))
         }
     }
 }

@@ -43,7 +43,10 @@ struct OnboardingView: View {
     @State private var tenureYearsSel: Int = 3
 
     private var s: Strings { store.s }
-    private let totalSteps = 9
+    /// v0.12: nine questions and then the consent screen, which is asked last on
+    /// purpose. Consent has to be specific about what is being shared, and until
+    /// the answers exist there is nothing specific to point at.
+    private let totalSteps = 10
 
     var body: some View {
         ZStack {
@@ -65,7 +68,8 @@ struct OnboardingView: View {
                 case 5: profileStep(dimensionID: "age")
                 case 6: concelhoStep
                 case 7: profileStep(dimensionID: "education")
-                default: sectorStep
+                case 8: sectorStep
+                default: consentStep
                 }
             }
             .padding(24)
@@ -89,8 +93,12 @@ struct OnboardingView: View {
         withAnimation { step += 1 }
     }
 
-    private func finish() {
+    /// Writes everything and opens the app. `consent` is the answer given on the
+    /// last screen, and it is a required argument rather than a defaulted one so
+    /// that no future caller can finish onboarding without deciding what it is.
+    private func finish(consent: Bool) {
         dismissKeyboard()
+        store.dataSharingConsent = consent
         store.name = trimmedName
         let raw = salaryValue ?? 1500
         store.schedule = entryMode.schedule
@@ -210,27 +218,14 @@ struct OnboardingView: View {
                 .foregroundStyle(Theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            // gross/net
-            Text(s.grossOrNet)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(Theme.textSecondary)
-                .padding(.top, 24)
-            SegmentedPicker(options: AmountKind.allCases, selection: $kind) { $0.label(pt: s.pt) }
-                .padding(.top, 8)
-
-            // 12x / 14x / yearly
-            Text(s.howYouGetPaid)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(Theme.textSecondary)
-                .padding(.top, 18)
-            SegmentedPicker(options: SalaryEntryMode.allCases, selection: $entryMode) { $0.label(pt: s.pt) }
-                .padding(.top, 8)
-            Text(s.entryModeHint)
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textFaint)
-                .padding(.top, 6)
-
-            // the amount, kept low so the keyboard never hides the toggles above it
+            // v0.12: the amount comes FIRST and the two pickers sit under it with
+            // no labels and no hint. The question above already says what the
+            // number is, and the segments say what they are: "Bruto / Líquido"
+            // and "12x / 14x / Anual" need no sentence introducing them. The old
+            // order put the field last so the keyboard could not cover the
+            // toggles; that trade is not needed, because the field is now near
+            // the top of the screen and the keyboard rises from the bottom, so
+            // everything above the OK button stays visible while typing.
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("€")
                     .font(.system(size: 28))
@@ -247,7 +242,15 @@ struct OnboardingView: View {
             .overlay(alignment: .bottom) {
                 Rectangle().fill(Theme.accent).frame(height: 2)
             }
-            .padding(.top, 26)
+            .padding(.top, 28)
+
+            // gross/net
+            SegmentedPicker(options: AmountKind.allCases, selection: $kind) { $0.label(pt: s.pt) }
+                .padding(.top, 22)
+
+            // 12x / 14x / yearly
+            SegmentedPicker(options: SalaryEntryMode.allCases, selection: $entryMode) { $0.label(pt: s.pt) }
+                .padding(.top, 10)
 
             if salaryValue == nil {
                 Text(s.salaryNeeded)
@@ -425,8 +428,7 @@ struct OnboardingView: View {
     // MARK: Steps 5 to 8, the profile, one question at a time
 
     private func profileStep(dimensionID id: String) -> some View {
-        let isLast = step == totalSteps - 1
-        return VStack(alignment: .leading, spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 36)
             Text(s.dimSheetTitle(id))
                 .font(.system(size: 26, weight: .medium))
@@ -454,12 +456,10 @@ struct OnboardingView: View {
 
             Spacer(minLength: 4)
             // Selecting a chip only highlights it. OK confirms; Skip moves on.
-            PrimaryButton(title: s.okButton) {
-                if isLast { finish() } else { advance() }
-            }
+            PrimaryButton(title: s.okButton) { advance() }
             bigSkipButton(s.skipQuestion) {
                 setSelection(id, nil)
-                if isLast { finish() } else { advance() }
+                advance()
             }
         }
     }
@@ -497,13 +497,9 @@ struct OnboardingView: View {
             Text(s.concelhoQuestion)
                 .font(.system(size: 26, weight: .medium))
                 .foregroundStyle(Theme.textPrimary)
-            Text(s.concelhoWhy)
-                .font(.system(size: 13))
-                .foregroundStyle(Theme.textSecondary)
-                .padding(.top, 8)
 
             ConcelhoPickerList(selectedID: $concelhoSel, onPick: nil, s: s)
-                .padding(.top, 16)
+                .padding(.top, 20)
 
             if let picked = ConcelhoCatalog.concelho(concelhoSel) {
                 Text(s.concelhoDerived(picked.region.label))
@@ -521,7 +517,7 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 8, sector + tenure (last step)
+    // MARK: Step 8, sector + tenure (last question)
 
     private var sectorStep: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -570,11 +566,81 @@ struct OnboardingView: View {
             }
 
             Spacer(minLength: 4)
-            PrimaryButton(title: s.okButton) { finish() }
+            PrimaryButton(title: s.okButton) { advance() }
             bigSkipButton(s.skipQuestion) {
                 sectorSel = nil
-                finish()
+                advance()
             }
+        }
+    }
+
+    // MARK: Step 9, the consent screen (v0.12)
+
+    /// Asked once, at the end, when there is something concrete to consent to.
+    ///
+    /// WHAT MAKES IT VALID rather than decorative. Consent has to be freely given,
+    /// specific, informed and as easy to refuse as to give, so this screen does
+    /// four things deliberately. Both buttons are full width and equally reachable,
+    /// and neither is styled as a mistake. The screen states what is shared, what
+    /// is not, and what it is used for, in that order, before either button. It
+    /// says the app works exactly the same either way, which is true and is what
+    /// makes the choice free rather than a toll gate. And it says the answer can
+    /// be changed later, with the place named, because consent that cannot be
+    /// withdrawn is not consent.
+    ///
+    /// WHAT IT DOES NOT DO is pretend. Nothing is uploaded today: there is no
+    /// account and no network call in the app. The wording is future tense on
+    /// purpose, and the flag it writes is the thing any later pooling has to check.
+    private var consentStep: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Spacer().frame(height: 26)
+            HStack {
+                Spacer()
+                SproutView(stage: 4, size: 72, animatesIn: true, sways: true)
+                Spacer()
+            }
+            Text(s.consentTitle)
+                .font(.system(size: 26, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 22)
+            Text(s.consentBody)
+                .font(.system(size: 13.5))
+                .foregroundStyle(Theme.textSecondary)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 10)
+
+            VStack(alignment: .leading, spacing: 7) {
+                consentPoint(icon: "checkmark.circle", text: s.consentPointShared)
+                consentPoint(icon: "xmark.circle", text: s.consentPointNotShared)
+                consentPoint(icon: "arrow.uturn.backward.circle", text: s.consentPointWithdraw)
+            }
+            .padding(.top, 16)
+
+            Spacer(minLength: 12)
+            PrimaryButton(title: s.consentAccept) { finish(consent: true) }
+            bigSkipButton(s.consentDecline) { finish(consent: false) }
+            Text(s.consentEitherWay)
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.textFaint)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 10)
+        }
+    }
+
+    private func consentPoint(icon: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.accent)
+                .frame(width: 16)
+            Text(text)
+                .font(.system(size: 12))
+                .foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

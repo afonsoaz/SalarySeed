@@ -87,9 +87,13 @@ struct CompareView: View {
     @ViewBuilder
     private var partTimeCaveat: some View {
         if store.workSchedule == .partTime {
+            // v0.12: red, not faint. This is not a footnote, it is the reason
+            // every percentile on the screen reads lower than it should, and a
+            // caveat that changes how you read the whole page cannot be the
+            // quietest text on it.
             Text(s.partTimeNote)
-                .font(.system(size: 10.5))
-                .foregroundStyle(Theme.textFaint)
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.danger)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }

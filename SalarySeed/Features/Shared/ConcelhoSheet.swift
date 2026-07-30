@@ -242,15 +242,9 @@ struct ConcelhoSheet: View {
     private var header: some View {
         HStack(spacing: 10) {
             SproutView(stage: store.sproutStage(withExtra: store.concelhoID == nil ? 1 : 0), size: 26)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(s.concelhoSheetTitle)
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                Text(s.concelhoWhy)
-                    .font(.system(size: 10))
-                    .foregroundStyle(Theme.textFaint)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            Text(s.concelhoSheetTitle)
+                .font(.system(size: 17, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
         }
     }
 }

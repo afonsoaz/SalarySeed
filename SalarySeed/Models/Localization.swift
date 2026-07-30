@@ -58,25 +58,15 @@ struct Strings {
     var welcomeButton: String { t("Let's grow", "Vamos a isso") }
     var welcomeSkip: String { t("Skip for now", "Agora não") }
 
-    var salaryTitle: String { t("How much do\nyou make?", "Quanto é que\ntu ganhas?") }
-    var salarySub: String { t("Just the monthly number. That's it.", "Só o valor mensal. Mais nada.") }
-    func salarySubNamed(_ name: String) -> String { t("Nice to meet you, \(name). Just the monthly number.", "Prazer, \(name). Só o valor mensal.") }
     /// v0.8.2 combined salary step: greet by name and ask simply.
     func salaryQuestion(_ name: String?) -> String {
         if let name, !name.isEmpty { return t("\(name), how much do you make?", "\(name), quanto ganhas?") }
         return t("How much do you make?", "Quanto ganhas?")
     }
-    var howYouGetPaid: String { t("How do you get paid?", "Como recebes?") }
-    var entryModeHint: String { t("12x or 14x = payments a year. Yearly = the whole-year total.", "12x ou 14x = pagamentos por ano. Anual = o total do ano.") }
     var perMonthSuffix: String { t("/mo", "/mês") }
-    var continueButton: String { t("Continue", "Continuar") }
     var okButton: String { t("OK", "OK") }
 
-    var grossOrNet: String { t("Is that gross or net?", "Esse valor é bruto ou líquido?") }
-    var howManyMonths: String { t("Paid over how many months?", "Recebes em quantos meses?") }
     var monthsHint: String { t("14 is the norm: holiday and Christmas pay come separately. With 12, those subsidies are split across every month (duodécimos).", "14 é o normal: os subsídios de férias e Natal vêm à parte. Com 12, esses subsídios vêm repartidos por todos os meses (duodécimos).") }
-    var fiveSeconds: String { t("This takes 5 seconds. Your number stays on your phone.", "Demora 5 segundos. O número fica no teu telemóvel.") }
-    var revealButton: String { t("Show my breakdown", "Mostrar as minhas contas") }
     var salaryNeeded: String { t("The salary is the one thing we need.", "O salário é a única coisa de que precisamos.") }
 
     // v0.5 onboarding: ajudas step + one-by-one profile questions
@@ -103,10 +93,6 @@ struct Strings {
         return t("Hey there", "Olá")
     }
     var greetSub: String { t("here's what your salary really means.", "isto é o que o teu salário significa na prática.") }
-    var monthly: String { t("Monthly", "Mensal") }
-    var yearly: String { t("Yearly", "Anual") }
-    func grossLabel(yearly: Bool) -> String { t("Gross / \(yearly ? "year" : "month")", "Bruto / \(yearly ? "ano" : "mês")") }
-    func netLabel(yearly: Bool) -> String { t("Net / \(yearly ? "year" : "month")", "Líquido / \(yearly ? "ano" : "mês")") }
     // v0.8: three-way result view (monthly ÷12, monthly ÷14, annual)
     var grossWord: String { t("Gross", "Bruto") }
     var netWord: String { t("Net", "Líquido") }
@@ -210,8 +196,6 @@ struct Strings {
     // v0.10.1: the Home percentile card and the Grow nudge card are gone, and
     // their copy went with them rather than sitting here unreferenced. The
     // percentile has a whole tab; Grow has a tinted tab item.
-    var raiseNudgeTitle: String { t("Simulate a raise", "Simula um aumento") }
-    var raiseNudgeSub: String { t("What would a €100 net raise cost your employer?", "Quanto custaria à empresa dar-te mais €100 líquidos?") }
     var ajudasNudgeTitle: String { t("Paid partly in ajudas de custo?", "Recebes parte em ajudas de custo?") }
     var ajudasNudgeSub: String { t("See what it's costing your pension.", "Vê quanto isso custa à tua reforma.") }
     var homeDisclaimer: String { t("Estimates based on 2026 tax tables for mainland Portugal (Continente). Not official tax advice.", "Estimativas com base nas tabelas fiscais de 2026 para o Continente. Não é aconselhamento fiscal oficial.") }
@@ -224,19 +208,11 @@ struct Strings {
     var grossVsGross: String { t("Gross vs gross · GEP-MTSSS e INE · 2024 · estimate", "Bruto vs bruto · GEP-MTSSS e INE · 2024 · estimativa") }
     var natDistribution: String { t("National distribution", "Distribuição nacional") }
     // v0.7 interactive distribution
-    var dragToExplore: String { t("Drag to explore", "Arrasta para explorar") }
     var releaseToReset: String { t("Release to reset", "Larga para voltar") }
-    func atLevel(_ amount: String) -> String { t("\(amount) / mo", "\(amount) / mês") }
-    func bandShare(_ share: String, _ range: String) -> String {
-        t("\(share) of workers earn \(range)", "\(share) dos trabalhadores ganham \(range)")
-    }
-    func bandUnder(_ hi: String) -> String { t("under \(hi)", "menos de \(hi)") }
-    func bandOver(_ lo: String) -> String { t("over \(lo)", "mais de \(lo)") }
     // v0.8: percentile explorer (drag a percentile, see the salary there)
     var exploreByPercentile: String { t("Explore by percentile", "Explora por percentil") }
     var exploreHint: String { t("Drag the handle. Let go to return to you.", "Arrasta o cursor. Larga para voltar a ti.") }
     func percentileEarns(_ p: String) -> String { t("The \(p) percentile earns", "O percentil \(p) ganha") }
-    var aboutPerMonth: String { t("about / month", "cerca de / mês") }
     func ordinalPercentile(_ n: Int) -> String {
         if pt { return "\(n)º" }
         let suffix: String
@@ -256,9 +232,6 @@ struct Strings {
     var lowestEarners: String { t("Lowest", "Mais baixos") }
     var highestEarners: String { t("Highest", "Mais altos") }
     var peopleLikeYou: String { t("People like you", "Pessoas como tu") }
-    var earnLess: String { t("earn less", "ganham menos") }
-    var medianWord: String { t("median", "mediana") }
-    var earnMore: String { t("earn more", "ganham mais") }
     func medianCaption(median: String, diff: Double, diffText: String) -> String {
         if abs(diff) < 40 { return t("Median: \(median) gross. You're right at the median.", "Mediana: \(median) brutos. Estás mesmo na mediana.") }
         if diff > 0 { return t("Median: \(median) gross. You're \(diffText) above.", "Mediana: \(median) brutos. Estás \(diffText) acima.") }
@@ -266,8 +239,6 @@ struct Strings {
     }
     var thinChip: String { t("Rough estimate, small sample", "Estimativa aproximada, amostra pequena") }
     var edgeChip: String { t("Few data points at this level", "Poucos dados neste nível") }
-    var offerTitle: String { t("Compare job offers", "Compara propostas de emprego") }
-    var offerUnlock: String { "Premium · offerSeed" }
     var addPill: String { t("+ Add", "+ Adicionar") }
     var compareSourceNote: String { t("Group medians from official data: GEP-MTSSS, Quadros de Pessoal, Oct 2024, and INE, Estrutura dos Ganhos 2022. Employees only. Estimates, not official advice.", "Medianas dos grupos com base em dados oficiais: GEP-MTSSS, Quadros de Pessoal, out. 2024, e INE, Estrutura dos Ganhos 2022. Só trabalhadores por conta de outrem. Estimativas, não aconselhamento oficial.") }
 
@@ -330,12 +301,9 @@ struct Strings {
     var sectorSheetTitle: String { t("Which sector do you work in?", "Em que setor trabalhas?") }
     var sectorQuestion: String { t("Which sector do\nyou work in?", "Em que setor\ntrabalhas?") }
     var sectorNote: String { t("Economic activity (GEP CAE)", "Atividade económica (CAE, GEP)") }
-    var sectorAdd: String { t("Add your sector", "Adiciona o teu setor") }
     var sectorAddHint: String { t("Compare with your sector and time at the company", "Compara com o teu setor e antiguidade na empresa") }
     var sectorKicker: String { t("Sector + time at the company", "Setor + antiguidade na empresa") }
-    var tenureLabel: String { t("Years at this employer", "Anos nesta empresa") }
     var tenureQuestion: String { t("How many years at your current employer?", "Há quantos anos estás na empresa onde trabalhas?") }
-    var tenureHint: String { t("Time at your current employer, not your whole career. That is how the official tables count it.", "Tempo na empresa onde estás agora, não a carreira toda. É assim que as tabelas oficiais contam.") }
     var tenureAddHint: String { t("Add your years to sharpen it", "Adiciona os anos para afinar") }
     func yearsText(_ n: Int) -> String {
         if n >= 40 { return t("40+ years", "40+ anos") }
@@ -459,15 +427,6 @@ struct Strings {
 
     // MARK: raiseSeed
 
-    var raiseTitle: String { t("Simulate a raise", "Simula um aumento") }
-    var ifYouWant: String { t("If you want", "Se quiseres") }
-    var netPerMonth: String { t("net / month", "líquidos / mês") }
-    var costsEmployer: String { t("What it really costs your employer", "O que custa mesmo à empresa") }
-    var extraPerMonth: String { t("Extra per month", "Extra por mês") }
-    func extraPerYear(_ months: Int) -> String { t("Extra per year (\(months) months)", "Extra por ano (\(months) meses)") }
-    var newGross: String { t("Your new gross / month", "O teu novo bruto / mês") }
-    func raiseInfo(_ ratio: String) -> String { t("Every €1 extra in your pocket costs your employer about €\(ratio). Taxes and Social Security grow with it.", "Cada €1 extra no teu bolso custa à empresa cerca de €\(ratio). Impostos e Segurança Social crescem juntos.") }
-    var raiseDisclaimer: String { t("Estimate using 2026 tax tables. Confirm before using it for real.", "Estimativa com as tabelas fiscais de 2026. Confirma antes de usares a sério.") }
 
     // MARK: futureSeed
 
@@ -492,7 +451,6 @@ struct Strings {
     func enrichProgress(_ done: Int, _ total: Int) -> String {
         t("\(done) of \(total) answered", "\(done) de \(total) respondidas")
     }
-    var enrichAllDone: String { t("You've answered everything. Nice.", "Já respondeste a tudo. Boa.") }
 
     func enrichQuestion(_ id: String) -> String {
         switch id {
@@ -502,6 +460,17 @@ struct Strings {
         case "variablePay": return t("Any bonus on top of your salary?", "Recebes prémios além do salário?")
         case "gender": return t("One optional question", "Uma pergunta opcional")
         default: return ""
+        }
+    }
+
+    /// v0.12: what the green button DOES, for the two signals that open a sheet.
+    /// It used to carry the destination's title, so the job card asked "What do
+    /// you actually do?" and offered a button reading "What do you do?".
+    func enrichOpenLabel(_ id: String) -> String {
+        switch id {
+        case "jobTitle": return t("Select job", "Escolher profissão")
+        case "variablePay": return t("Add bonus", "Adicionar prémios")
+        default: return t("Answer", "Responder")
         }
     }
 
@@ -557,7 +526,6 @@ struct Strings {
         t("Not compared yet. Portugal's published tables stop at broad groups, so this one is being gathered first.",
           "Ainda não é comparada. As tabelas publicadas em Portugal ficam-se por grupos largos, por isso esta está primeiro a ser reunida.")
     }
-    var jobBrowseAll: String { t("Browse all", "Ver todas") }
 
     // Variable pay
     var variableRowTitle: String { t("Bonus and commission", "Prémios e comissões") }
@@ -593,12 +561,10 @@ struct Strings {
     var concelhoQuestion: String { t("Which município\ndo you work in?", "Em que concelho\ntrabalhas?") }
     var concelhoSearchPlaceholder: String { t("Search your município", "Procura o teu concelho") }
     var concelhoNoResults: String { t("Nothing matched. Try a shorter word.", "Nada encontrado. Tenta uma palavra mais curta.") }
-    /// Said before the question, not after. Districts and regions do not line up,
-    /// so the município is the only answer that gets the region right.
-    var concelhoWhy: String {
-        t("Districts and statistical regions don't line up, so we ask for the município and work the region out from it. Mainland only for now.",
-          "Os distritos e as regiões estatísticas não coincidem, por isso perguntamos o concelho e daí tiramos a região. Só continente, para já.")
-    }
+    // v0.12 removed the paragraph explaining why the app asks for the município
+    // rather than the district. Nobody decides whether to answer on the strength
+    // of how NUTS boundaries work, and the derived region shown right under the
+    // picker already makes the point in three words.
     func concelhoDerived(_ region: String) -> String {
         t("Your region: \(region)", "A tua região: \(region)")
     }
@@ -663,10 +629,6 @@ struct Strings {
           "Vê onde é que outro valor te punha, sem mexer no teu.")
     }
     var explorerTitle: String { t("Try a salary", "Experimentar um salário") }
-    var explorerSub: String {
-        t("Uses your own tax situation. Nothing here changes your real salary.",
-          "Usa a tua situação fiscal. Nada aqui muda o teu salário a sério.")
-    }
     var explorerEmpty: String { t("Type an amount to see where it lands.", "Escreve um valor para veres onde fica.") }
     var explorerPercentileSuffix: String {
         t("of people in Portugal earn less than this", "das pessoas em Portugal ganham menos do que isto")
@@ -681,12 +643,10 @@ struct Strings {
     func explorerPercentileShort(_ pct: Int) -> String {
         t("top \(100 - pct)%", "top \(100 - pct)%")
     }
-    var explorerNotSaved: String {
-        t("This is only a simulation. Your salary in the app has not moved.",
-          "Isto é só uma simulação. O teu salário na app não mexeu.")
-    }
-    var explorerPromote: String { t("Actually, make this my salary", "Afinal, passar a ser o meu salário") }
-    var explorerClose: String { t("Done exploring", "Já vi o que queria") }
+    // v0.12: the two ways out, both starting with "Ok" and both saying what they
+    // do to the stored salary, so neither is the button you press by accident.
+    var explorerKeep: String { t("Ok, keep my salary", "Ok, manter salário atual") }
+    var explorerChange: String { t("Ok, change my salary", "Ok, alterar salário") }
 
     // MARK: v0.10 Grow
 
@@ -775,9 +735,9 @@ struct Strings {
           "Mudar de emprego nunca passa à frente no total dentro de \(years) anos.")
     }
 
-    var growLeversButton: String { t("Change something", "Mudar alguma coisa") }
+    var growLeversButton: String { t("Change parameters", "Alterar parâmetros") }
     var growLeversNone: String { t("Right now this is just you, staying where you are.", "Neste momento és só tu, a ficar onde estás.") }
-    var growLeversTitle: String { t("Change something", "Mudar alguma coisa") }
+    var growLeversTitle: String { t("Change parameters", "Alterar parâmetros") }
     var growLeversSub: String {
         t("Nothing you do here is saved. Your real salary and profile stay exactly as they are.",
           "Nada do que fizeres aqui fica guardado. O teu salário e o teu perfil ficam na mesma.")
@@ -794,9 +754,16 @@ struct Strings {
     }
 
     var growLeverExpected: String { t("What you would negotiate", "O que ias negociar") }
-    func growPerMoveSuffix(_ years: Int) -> String {
-        t("at every change, one every \(years) years", "em cada mudança, uma de \(years) em \(years) anos")
+    /// v0.12: this now follows a euro amount, so it says WHICH change that amount
+    /// belongs to. Deliberately short, and without the year in it: the list right
+    /// underneath gives every change its own year and its own figure, and a long
+    /// suffix beside a 30pt number wraps to three lines on a small phone.
+    var growPerMoveSuffix: String {
+        t("a month, at the first change", "por mês, na primeira mudança")
     }
+    /// One change of employer: the salary before it and the salary after it.
+    func growStepArrow(_ from: String, _ to: String) -> String { "\(from) → \(to)" }
+    var growMoreTitle: String { t("Change more", "Alterar mais") }
     var growRateMoving: String { t("Changing job is worth, per year", "Mudar de emprego vale, por ano") }
     var growRateStaying: String { t("Staying is worth, per year", "Ficar vale, por ano") }
     func growMoveBeats(_ points: String) -> String {
@@ -916,8 +883,13 @@ struct Strings {
     var euroTitle: String { t("Your sector across the EU", "O teu setor pela UE") }
     var euroDash: String { "–" }
 
-    var euroUnitEuros: String { t("In euros", "Em euros") }
-    var euroUnitPower: String { t("What it buys", "O que compra") }
+    var euroUnitEuros: String { t("Absolute salary (€)", "Salário absoluto (€)") }
+    var euroUnitPower: String { t("PPP salary (€)", "Salário PPP (€)") }
+    /// Shown only under the PPP chip, because it is the only one that needs it.
+    var euroPppExplainer: String {
+        t("PPP means purchasing power parity: each salary is adjusted for what things cost in that country, so €2,000 in Lisbon and €2,000 in Dublin buy the same amount. Use it to compare living standards, and the absolute figure to compare what lands in the bank.",
+          "PPP quer dizer paridade de poder de compra: cada salário é ajustado ao que as coisas custam nesse país, por isso 2.000 € em Lisboa e 2.000 € em Dublin compram o mesmo. Usa isto para comparar nível de vida, e o valor absoluto para comparar o que entra na conta.")
+    }
 
     func euroSectionLine(_ section: String) -> String {
         t("Compared as \"\(section)\", the closest activity Eurostat publishes.",
@@ -1027,5 +999,45 @@ struct Strings {
     var growAssumptionNothingSaved: String {
         t("Nothing on this screen is saved. Your salary and your profile are untouched.",
           "Nada deste ecrã fica guardado. O teu salário e o teu perfil ficam intactos.")
+    }
+
+    // MARK: v0.12 consent
+    //
+    // Written to be true first and inviting second, in that order. Every claim
+    // here is one the app can actually keep: no name, no email, no device id,
+    // aggregate only, withdrawable in the profile, and the app works the same
+    // either way. The reason to say yes is stated as what it produces, which is
+    // the comparison itself getting better, rather than as a favour to us.
+
+    var consentTitle: String {
+        t("Want your numbers to count?", "Queres que os teus números contem?")
+    }
+    var consentBody: String {
+        t("The official tables are a photograph of 2024 and they stop at broad sectors. What is missing is what people actually earn, by job, now. If you agree, your answers join everyone else's and are only ever shown as totals and averages, never on their own.",
+          "As tabelas oficiais são uma fotografia de 2024 e ficam-se por setores largos. O que falta é o que as pessoas ganham mesmo, por profissão, agora. Se concordares, as tuas respostas juntam-se às das outras pessoas e só aparecem em totais e médias, nunca sozinhas.")
+    }
+    var consentPointShared: String {
+        t("Shared: your salary and the profile answers you gave, as anonymous data in a pool.",
+          "Partilhado: o teu salário e as respostas do perfil, como dados anónimos num conjunto.")
+    }
+    var consentPointNotShared: String {
+        t("Not shared: your name, your email, your contacts, anything that identifies you or your phone.",
+          "Não partilhado: o teu nome, o teu email, os teus contactos, nada que te identifique a ti ou ao telemóvel.")
+    }
+    var consentPointWithdraw: String {
+        t("You can change your mind whenever you want, in the profile tab.",
+          "Podes mudar de ideias quando quiseres, no separador do perfil.")
+    }
+    var consentAccept: String { t("Ok, I agree", "Ok, eu concordo") }
+    var consentDecline: String { t("No, thanks", "Não, obrigado") }
+    var consentEitherWay: String {
+        t("The app works exactly the same either way.",
+          "A app funciona exatamente na mesma de qualquer das formas.")
+    }
+
+    var consentRowTitle: String { t("Share my data anonymously", "Partilhar os meus dados anonimamente") }
+    var consentRowHint: String {
+        t("Your salary and profile answers join the pool, shown only as totals and averages. Never your name, your email or anything that identifies you. Off is fine, nothing in the app changes.",
+          "O teu salário e as respostas do perfil juntam-se ao conjunto, mostrados só em totais e médias. Nunca o teu nome, o teu email ou o que quer que te identifique. Desligado não faz mal, nada muda na app.")
     }
 }

@@ -1,4 +1,4 @@
-# SalarySeed — v0.11.2
+# SalarySeed — v0.12
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
@@ -19,7 +19,7 @@ No dependencies, no backend, no account, no network calls. Everything is on-devi
 | **Compare** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region. |
 | **Map** | Where it would sit differently. A Portuguese district choropleth, and a 27-tile grid of the European Union. |
 | **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. |
-| **Profile** | The inputs behind all of it, each with what it unlocks. |
+| **Profile** | The inputs behind all of it, each with what it unlocks, and the data-sharing consent. |
 
 ## Data
 
@@ -60,6 +60,9 @@ These are not aspirations. Each one is enforced somewhere, and most were learned
 - **Say what the data cannot do, on the screen.** Thin cells carry a caveat. Sector is not job title. The district table has no tenure dimension, so it can shift a path and cannot bend it.
 - **State every assumption, unconditionally.** If the app assumes the €1,000 credit or an IRS Jovem exemption, it says so in every branch, including the ones where the assumption turns out not to apply.
 - **Recording is not exploring.** Changing your stored salary and trying a hypothetical are separate acts with separate UI. Grow's whole scenario lives in memory and never reaches `UserDefaults`.
+- **Explain the answer, not the question.** A note that clarifies a figure or an unclear ask earns its place. A paragraph justifying why the app asks for something does not, and v0.12 deleted several.
+- **Set the input people can reason about, show the one they act on.** The job-move lever is a percentage, because only a percentage means the same at a move in year 3 and a move in year 9. What it displays is the euro raise at each change, because that is what gets negotiated.
+- **A consent flag has three states.** Never asked, asked and declined, asked and agreed. Collapsing the first two into one `Bool` turns a refusal into a fresh install and makes the app ask again forever.
 - **Never draw a shape the data does not have.** Six published tenure bands means a staircase, not a smooth curve, and the ten sectors whose pay falls between some bands are drawn falling.
 - **Never mix survey levels; only ratios cross.** GEP and Eurostat measure different populations in different years, so a Portuguese salary is never placed beside a Eurostat mean. The European uplift is computed entirely inside Eurostat and then applied to your own salary.
 - **Show the quantity the source publishes.** GEP publishes gross ganho, so the whole projection is gross. Net appears only where a single point is inspected.
@@ -80,8 +83,11 @@ Much of this app was built where no Swift toolchain was available, so correctnes
 8. Check that explanatory notes sit outside the branch they explain.
 9. Check generated English ordinals and plurals.
 10. Check that a rate shown as text agrees with the path drawn beside it.
+11. Check the store's symbol surface: every `store.x` and `Engine.x` referenced from a view exists on the type. This is the check that catches a rename halfway done.
 
 ## Version history
+
+**v0.12** — A polish pass with one new screen. The onboarding salary step asks for the amount first and drops the labels over its own segments. The consent screen: at the end of onboarding, in plain language, with equally weighted buttons and a matching toggle in the profile. Grow's levers became "Change parameters", the job-move raise is shown in euros at every change rather than as a percentage, and tax and prices moved behind "Change more". The European map names its units "Salário absoluto (€)" and "Salário PPP (€)", explaining PPP only where PPP is selected. Plus the missing `%` in the salary explorer, two equal exit buttons in place of one accent button and a text link, a red part-time caveat, a green button that says what it does, and 36 orphaned strings deleted.
 
 **v0.11.2** — Fixed country selection on the European grid, which was almost entirely untappable: tiles were placed with `.offset()` inside a `ZStack`, so they rendered outside their container's bounds and SwiftUI refused the taps. Rebuilt as rows, where hit testing is correct by construction. Full-codebase sweep for undefined symbols, duplicate declarations, non-exhaustive switches, unstable `ForEach` ids and unsafe indexing, plus a 5,184-scenario edge battery on the growth engine. This README rewritten from v0.5.
 
@@ -99,7 +105,7 @@ Much of this app was built where no Swift toolchain was available, so correctnes
 
 ## Not done yet
 
-Açores and Madeira (the publication covers Continente). Tenure on the European map, where coverage is already measured. The pension model, which is still a placeholder and should fold into Grow's timeline. Self-employed mode. Variable pay in the tax engine. A real app icon. No premium or IAP yet, and no full accessibility pass.
+Açores and Madeira (the publication covers Continente). Tenure on the European map, where coverage is already measured. The pension model, which is still a placeholder and should fold into Grow's timeline. Self-employed mode. Variable pay in the tax engine. A real app icon. No premium or IAP yet, and no full accessibility pass. And the pooling itself: v0.12 asks for consent and records the answer, but there is no backend and no network call anywhere in the app, so nothing is uploaded from anyone, consenting or not.
 
 ## Honest limits
 

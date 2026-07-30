@@ -79,10 +79,24 @@ struct EuropeScopeView: View {
 
     // MARK: Controls
 
+    /// v0.12: the two chips are named for what they contain, "Salário absoluto (€)"
+    /// and "Salário PPP (€)", instead of the friendlier "In euros" and "What it
+    /// buys". PPP is the term on every source that publishes this, so hiding it
+    /// behind a paraphrase left people unable to look up what they were reading.
+    /// The paraphrase becomes the explanation, and it appears only under the PPP
+    /// chip, because that is the only one that needs it.
     private var unitPicker: some View {
-        HStack(spacing: 8) {
-            unitChip(on: !purchasingPower, label: s.euroUnitEuros) { purchasingPower = false }
-            unitChip(on: purchasingPower, label: s.euroUnitPower) { purchasingPower = true }
+        VStack(alignment: .leading, spacing: 7) {
+            HStack(spacing: 8) {
+                unitChip(on: !purchasingPower, label: s.euroUnitEuros) { purchasingPower = false }
+                unitChip(on: purchasingPower, label: s.euroUnitPower) { purchasingPower = true }
+            }
+            if purchasingPower {
+                Text(s.euroPppExplainer)
+                    .font(.system(size: 10.5))
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 

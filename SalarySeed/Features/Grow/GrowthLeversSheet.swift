@@ -21,6 +21,13 @@ struct GrowthLeversSheet: View {
     let ctx: GrowthEngine.Context
     @Binding var scenario: GrowthEngine.Scenario
 
+    /// v0.12: tax and prices start folded away. Almost nobody opens this sheet to
+    /// change the escalões, and three sliders nobody asked for sitting between
+    /// the district picker and the Done button made the whole thing look like
+    /// work. Collapsed, never hidden: the settings still exist and still apply,
+    /// they just do not have to be scrolled past to reach Done.
+    @State private var showMore = false
+
     private var s: Strings { store.s }
 
     var body: some View {
@@ -36,7 +43,7 @@ struct GrowthLeversSheet: View {
                     expectedBlock
                     sectorBlock
                     districtBlock
-                    fiscalBlock
+                    moreBlock
                     doneButton
                 }
                 .padding(.horizontal, 20)
@@ -114,24 +121,73 @@ struct GrowthLeversSheet: View {
     ///
     /// A slider rather than a field: this is a small bounded number, and a
     /// keyboard plus decimal-comma parsing bought nothing.
+    ///
+    /// v0.12 CHANGED WHAT IS SHOWN, not what is set. The slider still moves a
+    /// percentage, because a percentage is the only thing that can mean the same
+    /// at a move in year 3 and a move in year 9. But "+20%" is not what anyone
+    /// walks into a room and asks for, so the big number is now the euro increase
+    /// the percentage produces at the first change, and every later change is
+    /// listed underneath with its own amount. They differ, and they should: the
+    /// same percentage on a bigger salary is more money.
     @ViewBuilder
     private var expectedBlock: some View {
         if scenario.switchEvery > 0 {
+            let steps = GrowthEngine.moveSteps(ctx: ctx, scenario: scenario)
             VStack(alignment: .leading, spacing: 8) {
                 SectionLabel(s.growLeverExpected)
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
-                    Text(String(format: "%+.0f%%", scenario.movePremium * 100))
+                    Text(signedEur(steps.first?.uplift ?? 0))
                         .font(.system(size: 30, weight: .medium))
                         .foregroundStyle(scenario.movePremium > 0 ? Theme.accent : Theme.textSecondary)
                         .contentTransition(.numericText())
-                    Text(s.growPerMoveSuffix(scenario.switchEvery))
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(1)
+                    Text(s.growPerMoveSuffix)
                         .font(.system(size: 12))
                         .foregroundStyle(Theme.textSecondary)
                 }
                 Slider(value: $scenario.movePremium, in: 0...0.6, step: 0.01).tint(Theme.accent)
+                stepList(steps)
                 expectedFootnotes
             }
         }
+    }
+
+    /// Each change of employer, with the salary before it, the salary after it,
+    /// and the raise in between. Shown even for a single move, because the
+    /// headline above says the amount and this says which year it happens in.
+    @ViewBuilder
+    private func stepList(_ steps: [GrowthEngine.MoveStep]) -> some View {
+        if !steps.isEmpty {
+            VStack(alignment: .leading, spacing: 5) {
+                ForEach(steps) { step in
+                    HStack(spacing: 6) {
+                        Text(s.growYears(step.year))
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.textFaint)
+                            .frame(width: 62, alignment: .leading)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                        Text(s.growStepArrow(eur(step.from), eur(step.to)))
+                            .font(.system(size: 11.5))
+                            .foregroundStyle(Theme.textSecondary)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                        Spacer(minLength: 6)
+                        Text(signedEur(step.uplift))
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(step.uplift >= 0 ? Theme.accent : Theme.danger)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                }
+            }
+            .padding(.top, 2)
+        }
+    }
+
+    private func signedEur(_ value: Double) -> String {
+        (value >= 0 ? "+" : "-") + eur(abs(value))
     }
 
     /// The whole point of the percentage: both rates, side by side, built the
@@ -218,11 +274,49 @@ struct GrowthLeversSheet: View {
         }
     }
 
-    // MARK: Tax and prices
+    // MARK: Tax and prices, behind one tap
+
+    /// The disclosure. The chevron and the count of what is inside are both on
+    /// the row, so a folded section cannot read as an empty one.
+    private var moreBlock: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Button {
+                withAnimation(.easeOut(duration: 0.18)) { showMore.toggle() }
+            } label: {
+                HStack(spacing: 8) {
+                    Text(s.growMoreTitle)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(s.growLeverFiscal)
+                        .font(.system(size: 11))
+                        .foregroundStyle(Theme.textFaint)
+                        .lineLimit(1)
+                    Spacer(minLength: 6)
+                    Image(systemName: showMore ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 13)
+                .background(Theme.card, in: RoundedRectangle(cornerRadius: 12))
+            }
+            if showMore {
+                fiscalBlock
+            }
+        }
+        // A lever that is already set must never be the one hidden. If the user
+        // turned any of these on earlier in the session, the section opens with
+        // the sheet rather than making them find it again.
+        .onAppear {
+            if scenario.bracketsIndexed || scenario.payGrowth != 0
+                || scenario.inflation != GrowthEngine.Scenario().inflation {
+                showMore = true
+            }
+        }
+    }
 
     private var fiscalBlock: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionLabel(s.growLeverFiscal)
             Toggle(isOn: $scenario.bracketsIndexed) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.growBracketsTitle)

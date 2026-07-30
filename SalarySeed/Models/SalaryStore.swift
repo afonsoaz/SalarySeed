@@ -42,11 +42,15 @@ enum EmploymentType: String, CaseIterable, Identifiable {
 
 /// Single source of truth for the user's inputs. Persisted in UserDefaults (local-first).
 ///
-/// v0.9 note on scope: everything here still lives only on this phone. The new
-/// signals are collected, not uploaded. App Privacy stays "Data Not Collected"
-/// until there is an account, a consent flow and a backend, which is a separate
-/// decision. The reason they are collected now anyway is that a job title or a
-/// contract type cannot be asked about retroactively.
+/// v0.9 note on scope: everything here still lives only on this phone. The
+/// signals are collected, not uploaded. The reason they are collected anyway is
+/// that a job title or a contract type cannot be asked about retroactively.
+///
+/// v0.12 added the consent flow, which is the first of the three things pooling
+/// needs. The other two, an account and a backend, do not exist, so App Privacy
+/// stays "Data Not Collected" and nothing leaves the phone whatever the flag
+/// says. Asking first and building second is the right order: consent obtained
+/// after the fact is not consent.
 final class SalaryStore: ObservableObject {
     @Published var amount: Double { didSet { save() } }
     @Published var kind: AmountKind { didSet { save() } }
@@ -105,6 +109,21 @@ final class SalaryStore: ObservableObject {
     // v0.3: language. Follows the device by default, can be changed in the profile tab.
     @Published var language: AppLanguage { didSet { save() } }
 
+    // MARK: v0.12 consent
+
+    /// Whether the user agreed to their answers being pooled anonymously.
+    ///
+    /// THREE STATES, AND THE THIRD ONE MATTERS. `nil` is "never asked", `false`
+    /// is "asked and declined", `true` is "asked and agreed". Collapsing nil and
+    /// false into one Bool would make a decline indistinguishable from a fresh
+    /// install, so the app would ask again on every launch, which is nagging, and
+    /// nagging is one of the things that makes consent not freely given.
+    ///
+    /// Nothing leaves the phone today whatever this says: there is no backend and
+    /// no network call anywhere in the app. The flag records a decision so that
+    /// pooling can only ever start from a yes, never from a default.
+    @Published var dataSharingConsent: Bool? { didSet { save() } }
+
     // MARK: v0.10 session state (deliberately not persisted)
 
     /// The Grow scenario. It has NO `didSet { save() }` and is absent from
@@ -153,6 +172,10 @@ final class SalaryStore: ObservableObject {
         gender = Gender(rawValue: defaults.string(forKey: "profile.gender") ?? "")
         variableAnnual = defaults.object(forKey: "profile.variableAnnual") as? Double
         language = AppLanguage(rawValue: defaults.string(forKey: "language") ?? "") ?? .auto
+        // `object(forKey:)` rather than `bool(forKey:)`: a missing key has to come
+        // back as nil, and `bool(forKey:)` turns it into false, which is a
+        // recorded refusal. See the note on the property.
+        dataSharingConsent = defaults.object(forKey: "consent.dataSharing") as? Bool
     }
 
     private func save() {
@@ -180,6 +203,8 @@ final class SalaryStore: ObservableObject {
         setInt(weeklyHours, forKey: "profile.weeklyHours")
         if let variableAnnual { defaults.set(variableAnnual, forKey: "profile.variableAnnual") }
         else { defaults.removeObject(forKey: "profile.variableAnnual") }
+        if let dataSharingConsent { defaults.set(dataSharingConsent, forKey: "consent.dataSharing") }
+        else { defaults.removeObject(forKey: "consent.dataSharing") }
     }
 
     private func setOptional(_ value: String?, forKey key: String) {

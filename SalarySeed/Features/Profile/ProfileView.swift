@@ -98,10 +98,38 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(s.appSection)
             languageCard
+            consentCard
             InfoRow(label: s.premiumLabel, value: s.premiumValue)
             InfoRow(label: s.privacyLabel, value: s.privacyValue)
             InfoRow(label: s.sourcesLabel, value: s.sourcesValue)
         }
+    }
+
+    /// v0.12: the consent given at the end of onboarding, changeable here.
+    ///
+    /// This card is not a nicety, it is what makes the onboarding screen's
+    /// consent valid: an answer that cannot be taken back afterwards is not a
+    /// free choice. The toggle carries the same wording as the screen that first
+    /// asked, so the two cannot drift into describing different things.
+    private var consentCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Toggle(isOn: Binding(
+                get: { store.dataSharingConsent == true },
+                set: { store.dataSharingConsent = $0 }
+            )) {
+                Text(s.consentRowTitle)
+                    .font(.system(size: 14))
+                    .foregroundStyle(Theme.textPrimary)
+            }
+            .tint(Theme.accent)
+            Text(s.consentRowHint)
+                .font(.system(size: 10.5))
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
     }
 
     private var workSection: some View {
