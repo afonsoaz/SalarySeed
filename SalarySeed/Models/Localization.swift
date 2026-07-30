@@ -1001,32 +1001,46 @@ struct Strings {
           "Nada deste ecrã fica guardado. O teu salário e o teu perfil ficam intactos.")
     }
 
-    // MARK: v0.12 consent
+    // MARK: v0.12 consent, corrected in v0.13
     //
-    // Written to be true first and inviting second, in that order. Every claim
-    // here is one the app can actually keep: no name, no email, no device id,
-    // aggregate only, withdrawable in the profile, and the app works the same
-    // either way. The reason to say yes is stated as what it produces, which is
-    // the comparison itself getting better, rather than as a favour to us.
+    // WHY IT CHANGED. The v0.12 wording was written for a fully anonymous design
+    // and overstated in three places once the design became pseudonymous: it said
+    // "dados anónimos", it promised nothing identifying "o telemóvel" is shared
+    // when a random token is exactly that, and "podes mudar de ideias" never said
+    // whether it meant stop or delete. None of it had shipped, so correcting it
+    // cost nothing; leaving it would have cost a re-consent of the whole base.
+    //
+    // The order of the four points is deliberate. What IS shared comes before
+    // what is not, because a consent screen that leads with reassurance is
+    // selling. The token is disclosed third rather than buried, and framed by
+    // what it does for the user, which happens to be both the honest framing and
+    // the persuasive one.
+    //
+    // Nothing here promises anything about the future, because nothing in the app
+    // will ever ask again. There is no timer and no scheduled question.
 
     var consentTitle: String {
         t("Want your numbers to count?", "Queres que os teus números contem?")
     }
     var consentBody: String {
-        t("The official tables are a photograph of 2024 and they stop at broad sectors. What is missing is what people actually earn, by job, now. If you agree, your answers join everyone else's and are only ever shown as totals and averages, never on their own.",
-          "As tabelas oficiais são uma fotografia de 2024 e ficam-se por setores largos. O que falta é o que as pessoas ganham mesmo, por profissão, agora. Se concordares, as tuas respostas juntam-se às das outras pessoas e só aparecem em totais e médias, nunca sozinhas.")
+        t("The official tables are a photograph of 2024 and they stop at broad sectors. What is missing is what people actually earn, by job, now. If you agree, your pay and your profile answers join everyone else's. What shows up, for you and for anyone, is totals and averages.",
+          "As tabelas oficiais são uma fotografia de 2024 e ficam-se por setores largos. O que falta é o que as pessoas ganham mesmo, por profissão, agora. Se concordares, o teu salário e as respostas do perfil juntam-se às das outras pessoas. O que aparece, para ti e para qualquer pessoa, são totais e médias.")
     }
     var consentPointShared: String {
-        t("Shared: your salary and the profile answers you gave, as anonymous data in a pool.",
-          "Partilhado: o teu salário e as respostas do perfil, como dados anónimos num conjunto.")
+        t("Shared: your pay and your profile answers. Not your município, only the region.",
+          "Partilhado: o teu salário e as respostas do perfil. O concelho não, só a região.")
     }
     var consentPointNotShared: String {
-        t("Not shared: your name, your email, your contacts, anything that identifies you or your phone.",
-          "Não partilhado: o teu nome, o teu email, os teus contactos, nada que te identifique a ti ou ao telemóvel.")
+        t("Not shared: your name, your email, your contacts, your location.",
+          "Não partilhado: o teu nome, o teu email, os teus contactos, a tua localização.")
     }
-    var consentPointWithdraw: String {
-        t("You can change your mind whenever you want, in the profile tab.",
-          "Podes mudar de ideias quando quiseres, no separador do perfil.")
+    var consentPointCode: String {
+        t("Your answers carry a random code. There is nothing of yours inside it, and it is what lets you delete them later.",
+          "As tuas respostas levam um código aleatório. Não tem nada teu lá dentro, e é ele que te deixa apagá-las depois.")
+    }
+    var consentPointDelete: String {
+        t("You can delete everything you have sent, whenever you want, in the profile.",
+          "Podes apagar tudo o que enviaste, quando quiseres, no perfil.")
     }
     var consentAccept: String { t("Ok, I agree", "Ok, eu concordo") }
     var consentDecline: String { t("No, thanks", "Não, obrigado") }
@@ -1035,9 +1049,43 @@ struct Strings {
           "A app funciona exatamente na mesma de qualquer das formas.")
     }
 
-    var consentRowTitle: String { t("Share my data anonymously", "Partilhar os meus dados anonimamente") }
+    // Profile
+
+    var consentRowTitle: String { t("Share my data", "Partilhar os meus dados") }
     var consentRowHint: String {
-        t("Your salary and profile answers join the pool, shown only as totals and averages. Never your name, your email or anything that identifies you. Off is fine, nothing in the app changes.",
-          "O teu salário e as respostas do perfil juntam-se ao conjunto, mostrados só em totais e médias. Nunca o teu nome, o teu email ou o que quer que te identifique. Desligado não faz mal, nada muda na app.")
+        t("Your pay and your profile answers join everyone else's, shown only as totals and averages. Not your município, only the region. Never your name, your email or your location. Off is fine, nothing in the app changes.",
+          "O teu salário e as respostas do perfil juntam-se às das outras pessoas, mostrados só em totais e médias. O concelho não, só a região. Nunca o teu nome, o teu email ou a tua localização. Desligado não faz mal, nada muda na app.")
     }
+    var consentCodeLabel: String { t("Your code", "O teu código") }
+    var consentCodeHint: String {
+        t("This is what links your answers to you, and it is the only thing that can. Copy it if you want to be able to ask for them to be deleted from a phone you no longer have.",
+          "É isto que liga as tuas respostas a ti, e é a única coisa que consegue. Copia-o se quiseres poder pedir para as apagar a partir de um telemóvel que já não tens.")
+    }
+    var copyWord: String { t("Copy", "Copiar") }
+    var consentCodeCopied: String { t("Copied", "Copiado") }
+    var consentDeleteButton: String { t("Delete what I sent", "Apagar o que enviei") }
+    var consentDeleteTitle: String { t("Delete everything you sent?", "Apagar tudo o que enviaste?") }
+    var consentDeleteMessage: String {
+        t("Your contributions go, your code goes with them, and sharing turns off. Your salary and your profile on this phone are untouched.",
+          "As tuas contribuições vão-se, o teu código vai com elas, e a partilha desliga-se. O teu salário e o teu perfil neste telemóvel ficam na mesma.")
+    }
+    var consentDeleteConfirm: String { t("Delete", "Apagar") }
+
+    // The preview. v0.13: a consent screen that describes the data in a paragraph
+    // asks to be trusted; one that can show you your own row does not have to.
+    var consentPreviewButton: String { t("See exactly what would be sent", "Ver exatamente o que seria enviado") }
+    var consentPreviewTitle: String { t("What would be sent", "O que seria enviado") }
+    var consentPreviewSub: String {
+        t("This is the whole thing, field by field. Nothing else leaves this phone.",
+          "É isto tudo, campo a campo. Mais nada sai deste telemóvel.")
+    }
+    var consentPreviewNothingYet: String {
+        t("Nothing has been sent, by anyone. There is nowhere to send it yet, so this is what would go the day there is.",
+          "Ainda não foi enviado nada, por ninguém. Ainda não há para onde enviar, por isso isto é o que iria no dia em que houver.")
+    }
+    var consentPreviewNoSalary: String {
+        t("Add your salary first and this fills in.",
+          "Põe primeiro o teu salário e isto preenche-se.")
+    }
+    var consentPreviewDone: String { t("Close", "Fechar") }
 }

@@ -41,6 +41,7 @@ struct OnboardingView: View {
     @State private var education: EducationLevel?
     @State private var sectorSel: Sector?
     @State private var tenureYearsSel: Int = 3
+    @State private var showConsentPreview = false
 
     private var s: Strings { store.s }
     /// v0.12: nine questions and then the consent screen, which is asked last on
@@ -77,6 +78,7 @@ struct OnboardingView: View {
         // Tap empty space to drop the keyboard.
         .contentShape(Rectangle())
         .onTapGesture { dismissKeyboard() }
+        .sheet(isPresented: $showConsentPreview) { ContributionPreviewSheet() }
     }
 
     private var trimmedName: String {
@@ -93,12 +95,18 @@ struct OnboardingView: View {
         withAnimation { step += 1 }
     }
 
-    /// Writes everything and opens the app. `consent` is the answer given on the
-    /// last screen, and it is a required argument rather than a defaulted one so
-    /// that no future caller can finish onboarding without deciding what it is.
-    private func finish(consent: Bool) {
-        dismissKeyboard()
-        store.dataSharingConsent = consent
+    /// v0.13: the answers are written to the store one step BEFORE the end.
+    ///
+    /// The consent screen offers to show the exact row that would be sent, and
+    /// that row is built by reading the store. If the answers were still sitting
+    /// in `@State` at that point, the preview would truthfully render the
+    /// PREVIOUS contents of the store, which for a first run is a €1.500 default
+    /// nobody typed. A preview that shows the wrong number is worse than no
+    /// preview, so the answers land first and consent is decided against them.
+    ///
+    /// `hasOnboarded` stays false until the last screen, so a launch killed in
+    /// between still reopens onboarding.
+    private func commitAnswers() {
         store.name = trimmedName
         let raw = salaryValue ?? 1500
         store.schedule = entryMode.schedule
@@ -113,6 +121,18 @@ struct OnboardingView: View {
         store.education = education
         store.sector = sectorSel
         store.tenureYears = (sectorSel != nil) ? tenureYearsSel : nil
+    }
+
+    /// The last act. `consent` is a required argument rather than a defaulted
+    /// one so no future caller can finish onboarding without deciding what it is.
+    ///
+    /// Granting creates the token; declining does not, and declining is not a
+    /// silent state either: it is recorded, so the app can tell "asked and said
+    /// no" apart from "never asked" and never raises the subject again.
+    private func finish(consent: Bool) {
+        dismissKeyboard()
+        commitAnswers()
+        if consent { store.grantDataSharing() } else { store.revokeDataSharing() }
         store.hasOnboarded = true
     }
 
@@ -566,15 +586,19 @@ struct OnboardingView: View {
             }
 
             Spacer(minLength: 4)
-            PrimaryButton(title: s.okButton) { advance() }
+            PrimaryButton(title: s.okButton) {
+                commitAnswers()
+                advance()
+            }
             bigSkipButton(s.skipQuestion) {
                 sectorSel = nil
+                commitAnswers()
                 advance()
             }
         }
     }
 
-    // MARK: Step 9, the consent screen (v0.12)
+    // MARK: Step 9, the consent screen (v0.12, copy corrected in v0.13)
 
     /// Asked once, at the end, when there is something concrete to consent to.
     ///
@@ -614,11 +638,28 @@ struct OnboardingView: View {
             VStack(alignment: .leading, spacing: 7) {
                 consentPoint(icon: "checkmark.circle", text: s.consentPointShared)
                 consentPoint(icon: "xmark.circle", text: s.consentPointNotShared)
-                consentPoint(icon: "arrow.uturn.backward.circle", text: s.consentPointWithdraw)
+                consentPoint(icon: "key", text: s.consentPointCode)
+                consentPoint(icon: "trash", text: s.consentPointDelete)
             }
             .padding(.top, 16)
 
+            // v0.13: the row itself, readable before deciding. Everything above
+            // is a description of the data; this is the data.
+            Button { showConsentPreview = true } label: {
+                Text(s.consentPreviewButton)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.accent)
+                    .underline()
+            }
+            .padding(.top, 12)
+
             Spacer(minLength: 12)
+            consentActions
+        }
+    }
+
+    private var consentActions: some View {
+        VStack(spacing: 0) {
             PrimaryButton(title: s.consentAccept) { finish(consent: true) }
             bigSkipButton(s.consentDecline) { finish(consent: false) }
             Text(s.consentEitherWay)

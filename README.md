@@ -1,4 +1,4 @@
-# SalarySeed — v0.12
+# SalarySeed — v0.13
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
@@ -9,7 +9,7 @@ Concept and design rationale live in [`../app-concept.md`](../app-concept.md). E
 1. Open `SalarySeed.xcodeproj` in Xcode 16 or newer. The project uses folder-synchronized groups, so files added to `SalarySeed/` appear in Xcode automatically.
 2. Pick an iPhone simulator and press Run.
 
-No dependencies, no backend, no account, no network calls. Everything is on-device: bundled datasets plus arithmetic.
+No dependencies, no backend, no account, no network calls. Everything is on-device: bundled datasets plus arithmetic. v0.13 added the shape of a future contribution, but `ContributionService.endpoint` is nil and nothing has ever been sent, by anyone.
 
 ## The five tabs
 
@@ -19,7 +19,7 @@ No dependencies, no backend, no account, no network calls. Everything is on-devi
 | **Compare** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region. |
 | **Map** | Where it would sit differently. A Portuguese district choropleth, and a 27-tile grid of the European Union. |
 | **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. |
-| **Profile** | The inputs behind all of it, each with what it unlocks, and the data-sharing consent. |
+| **Profile** | The inputs behind all of it, each with what it unlocks, plus the data-sharing consent: the toggle, the code, the delete, and the row itself. |
 
 ## Data
 
@@ -46,6 +46,7 @@ SalarySeed/
     EuroDataset          Eurostat SES: 17 NACE sections x 27 countries + price levels
     EuroComparison       the European map's ratios, ranks and colour buckets
     GrowthEngine         the projection: anchoring, stay and move paths, rates
+    Contribution         the one row that would ever leave the phone, and its coarsening
   Features/    one folder per screen
   Models/      SalaryStore (the single source of truth), Localization, catalogues
   Theme.swift  design tokens and the OKLCH diverging ramp
@@ -68,6 +69,9 @@ These are not aspirations. Each one is enforced somewhere, and most were learned
 - **Show the quantity the source publishes.** GEP publishes gross ganho, so the whole projection is gross. Net appears only where a single point is inspected.
 - **Quote rates, not bare percentages.** A percentage with no time attached cannot be compared to a raise or to inflation. Anything labelled "per year" is the compounded rate of the path actually drawn.
 - **A published table is not a law.** Quadro 104 measures what staying at one employer is worth, so the model does not hand someone who moves a tenure raise the survey never observed.
+- **Define the payload by subtraction.** Every field has to earn its place by being able to change an aggregate. One that cannot is not neutral, it is a fingerprint bit. The concelho never leaves the phone; the region goes instead.
+- **Show the row, do not describe it.** A consent screen that explains the data in a paragraph asks to be believed. This one prints the JSON.
+- **Stopping and deleting are different acts.** The toggle keeps the code, because the code is the only thing that makes deletion possible later.
 
 ## Verifying changes without a compiler
 
@@ -84,8 +88,11 @@ Much of this app was built where no Swift toolchain was available, so correctnes
 9. Check generated English ordinals and plurals.
 10. Check that a rate shown as text agrees with the path drawn beside it.
 11. Check the store's symbol surface: every `store.x` and `Engine.x` referenced from a view exists on the type. This is the check that catches a rename halfway done.
+12. Check that doc comments do not reference symbols that no longer exist. v0.13 left two behind within an hour of writing them.
 
 ## Version history
+
+**v0.13** — Everything the app needs for crowd data, with nothing switched on. The pseudonymous token in the Keychain, deliberately surviving app deletion so erasure stays possible and shown in the profile as a copyable code. `Contribution`: 19 fields, a coarsening rule and a stated reason per field, a fixed wire shape that always writes every key. The consent copy corrected for a pseudonymous design, since the v0.12 wording said "anónimo", claimed nothing identifying the phone was shared, and never said whether withdrawal meant stop or delete. Delete-what-I-sent, and a sheet that prints the exact row. No endpoint, no scheduled question, nothing sent.
 
 **v0.12** — A polish pass with one new screen. The onboarding salary step asks for the amount first and drops the labels over its own segments. The consent screen: at the end of onboarding, in plain language, with equally weighted buttons and a matching toggle in the profile. Grow's levers became "Change parameters", the job-move raise is shown in euros at every change rather than as a percentage, and tax and prices moved behind "Change more". The European map names its units "Salário absoluto (€)" and "Salário PPP (€)", explaining PPP only where PPP is selected. Plus the missing `%` in the salary explorer, two equal exit buttons in place of one accent button and a text link, a red part-time caveat, a green button that says what it does, and 36 orphaned strings deleted.
 

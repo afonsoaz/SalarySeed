@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// profileSeed: the "give to get" hub and the sprout's home.
 /// Profile completeness IS the sprout's growth stage.
@@ -16,6 +17,9 @@ struct ProfileView: View {
     // v0.9.4
     @State private var showExplorer = false
     @State private var askingSalaryChange = false
+    @State private var showContributionPreview = false
+    @State private var askingForget = false
+    @State private var codeCopied = false
 
     private var s: Strings { store.s }
 
@@ -63,6 +67,17 @@ struct ProfileView: View {
             .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
             .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
             .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
+            .sheet(isPresented: $showContributionPreview) { ContributionPreviewSheet() }
+            .confirmationDialog(s.consentDeleteTitle, isPresented: $askingForget,
+                                titleVisibility: .visible) {
+                Button(s.consentDeleteConfirm, role: .destructive) {
+                    store.forgetContributions()
+                    codeCopied = false
+                }
+                Button(s.cancelButton, role: .cancel) {}
+            } message: {
+                Text(s.consentDeleteMessage)
+            }
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
             }
@@ -106,16 +121,25 @@ struct ProfileView: View {
     }
 
     /// v0.12: the consent given at the end of onboarding, changeable here.
+    /// v0.13: and revocable, deletable and inspectable here, which is what makes
+    /// it consent rather than a checkbox.
     ///
-    /// This card is not a nicety, it is what makes the onboarding screen's
-    /// consent valid: an answer that cannot be taken back afterwards is not a
-    /// free choice. The toggle carries the same wording as the screen that first
-    /// asked, so the two cannot drift into describing different things.
+    /// THREE ACTS, DELIBERATELY DISTINCT. The toggle stops future sharing and
+    /// keeps the code, because "stop" and "delete" are different intentions.
+    /// Deleting is its own destructive action with its own confirmation. And the
+    /// preview is neither: it is the row itself, readable at any time, on or off.
+    ///
+    /// The code is shown rather than hidden. It is the only thing in the app that
+    /// links a contribution to a person, so concealing it would be concealing the
+    /// one fact the consent screen is asking about, and copying it is what lets
+    /// someone ask for deletion from a phone they no longer have.
     private var consentCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 10) {
             Toggle(isOn: Binding(
                 get: { store.dataSharingConsent == true },
-                set: { store.dataSharingConsent = $0 }
+                set: { on in
+                    if on { store.grantDataSharing() } else { store.revokeDataSharing() }
+                }
             )) {
                 Text(s.consentRowTitle)
                     .font(.system(size: 14))
@@ -126,10 +150,55 @@ struct ProfileView: View {
                 .font(.system(size: 10.5))
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
+
+            Button { showContributionPreview = true } label: {
+                Text(s.consentPreviewButton)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Theme.accent)
+            }
+
+            if let token = store.contributionToken {
+                Divider().overlay(Theme.cardBorder)
+                codeRow(token)
+                Button(role: .destructive) { askingForget = true } label: {
+                    Text(s.consentDeleteButton)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Theme.danger)
+                }
+            }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func codeRow(_ token: String) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 8) {
+                Text(s.consentCodeLabel)
+                    .font(.system(size: 11))
+                    .foregroundStyle(Theme.textSecondary)
+                Text(ContributionToken.short(token))
+                    .font(.system(size: 13, weight: .medium, design: .monospaced))
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer(minLength: 6)
+                Button {
+                    // The FULL token, not the shortened display form. The short
+                    // one is for reading; a copy that could not be used to
+                    // identify the rows would be a decoration.
+                    UIPasteboard.general.string = token
+                    withAnimation(.easeOut(duration: 0.15)) { codeCopied = true }
+                } label: {
+                    Text(codeCopied ? s.consentCodeCopied : s.copyWord)
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Theme.accent)
+                }
+            }
+            Text(s.consentCodeHint)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private var workSection: some View {

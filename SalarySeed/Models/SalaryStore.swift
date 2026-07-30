@@ -341,4 +341,65 @@ final class SalaryStore: ObservableObject {
     var percentile: Double {
         PercentileEngine.percentile(grossMonthly: breakdown.grossMonthly)
     }
+
+    // MARK: Data sharing (v0.13)
+
+    /// THREE ACTS, NOT TWO, and keeping them apart is the whole design.
+    ///
+    /// Granting creates the token. Revoking stops future sharing and deliberately
+    /// KEEPS the token, because "stop sending" and "delete what you sent" are
+    /// different intentions with different consequences, in exactly the sense
+    /// v0.9.4 separated recording from exploring. Forgetting is the third act:
+    /// it deletes, and only then clears the token.
+    ///
+    /// Getting that order wrong is the failure worth naming. Clearing the token
+    /// first would leave rows on a server with nothing left that can name them,
+    /// which is the precise situation the token exists to prevent.
+    func grantDataSharing() {
+        ContributionToken.ensure()
+        dataSharingConsent = true
+    }
+
+    func revokeDataSharing() {
+        dataSharingConsent = false
+    }
+
+    /// The token, when consent has ever been given. Shown in the profile so that
+    /// someone who has lost the phone can still ask for their rows to go.
+    var contributionToken: String? { ContributionToken.load() }
+
+    /// Delete everything ever sent, then forget who we were. Returns false only
+    /// when a server exists and refused, so the UI can avoid telling the user
+    /// their data is gone when it is not.
+    @discardableResult
+    func forgetContributions() -> Bool {
+        guard let token = contributionToken else {
+            dataSharingConsent = false
+            return true
+        }
+        switch ContributionService.forget(token: token) {
+        case .notConfigured:
+            // Nothing has ever been sent under this token, because there has
+            // never been anywhere to send it. Clearing it locally IS the
+            // deletion, completely, and saying so is not a convenient reading:
+            // `ContributionService.endpoint` is nil, so no row can exist.
+            ContributionToken.clear()
+            dataSharingConsent = false
+            return true
+        case .sent:
+            ContributionToken.clear()
+            dataSharingConsent = false
+            return true
+        case .notConsented, .nothingToSend, .failed:
+            return false
+        }
+    }
+
+    /// The row that would leave the phone right now, for the preview sheet.
+    /// Falls back to a placeholder code so the preview works before consent,
+    /// which is exactly when someone most wants to look at it.
+    func contributionPreview(year: Int) -> Contribution? {
+        ContributionService.payload(for: self, year: year,
+                                    token: contributionToken ?? ContributionService.placeholderToken)
+    }
 }
