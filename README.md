@@ -1,8 +1,25 @@
-# SalarySeed — v0.15.3
+# SalarySeed — v0.15.4
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
-Concept and design rationale live in [`../app-concept.md`](../app-concept.md). Every non-obvious decision in this repo is explained in a comment at the point it was made, including the ones that were wrong the first time.
+Concept and design rationale live in [`app-concept.md`](app-concept.md), next to this file. Every non-obvious decision in this repo is explained in a comment at the point it was made, including the ones that were wrong the first time.
+
+## Where things are
+
+```
+Salary_App/                    <- the git repo root
+  SalarySeed.xcodeproj         <- OPEN THIS ONE. The only project file in the repo.
+  SalarySeed/                  <- every source file. Xcode compiles this whole folder.
+    Engine/ Models/ Features/ Assets.xcassets/
+  tools/                       <- the Python that generated the bundled datasets
+  README.md  app-concept.md    <- this file and the design doc
+  _archive/                    <- not part of the app, gitignored
+    deliveries/                   tarballs and patches
+    data-sources/                 the workbooks the datasets came from
+    old/                          dead directories kept only so nothing is lost
+```
+
+`SalarySeed/` is a folder-synchronized group, so **every `.swift` inside it is compiled whether or not git knows about it**. That is why nothing else is allowed to live there and why `_archive/` sits outside it.
 
 ## Run it
 

@@ -28,3 +28,8 @@ Package.resolved
 # Source data kept beside the project, never committed but never disposable.
 *.xlsx
 app-concept.md
+
+# Everything that is not the app. Delivered tarballs and patches, the source
+# workbooks the datasets were generated from, and dead directories that can be
+# looked at but not deleted from here.
+_archive/

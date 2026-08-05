@@ -7,7 +7,7 @@ import Foundation
 ///
 /// Sources (all open data, commercial use OK with attribution):
 /// - [QP]  GEP-MTSSS, Quadros de Pessoal, October 2024, Continente
-///         (qp2024pub.xlsx, parsed by parse_qp2024.py). "Ganho médio mensal"
+///         (qp2024pub.xlsx, parsed by tools/parse_qp2024.py). "Ganho médio mensal"
 ///         = base pay + regular subsidies + overtime. Private-sector employees.
 ///         National mean: €1,582.74, consistent across Quadros 105, 113, 114,
 ///         138 and the GEP síntese. Occupation, education, age and region
@@ -142,7 +142,7 @@ enum SalaryDataset {
 
     /// GEP-MTSSS, Quadros de Pessoal, Oct 2024 ganho médio by habilitação
     /// (Quadro 105 TOTAL row), aggregated to the app's four levels with
-    /// worker-count weights from Quadro 39. See parse_qp2024.py.
+    /// worker-count weights from Quadro 39. See tools/parse_qp2024.py.
     /// basic = up to 3º ciclo; postSecondary = pós-secundário + CTeSP
     /// (0.9% of workers, thin); higher = bacharelato through doutoramento.
     static let education: [EducationLevel: Cell] = [
