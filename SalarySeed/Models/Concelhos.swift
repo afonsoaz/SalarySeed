@@ -552,18 +552,23 @@ enum ConcelhoCatalog {
 
     /// Ranked, diacritic and case insensitive. Typing a district name finds every
     /// municipality in it, so "setubal" surfaces Almada and Sines too.
+    ///
+    /// v0.15: island concelhos have no district, so the REGION plays that part.
+    /// Typing "madeira" surfaces Funchal for exactly the reason typing "setubal"
+    /// surfaces Almada, and the one search behaviour the doc comment promises
+    /// stays true for all 308 rather than only the mainland 278.
     static func search(_ query: String) -> [Concelho] {
         let q = SearchText.fold(query.trimmingCharacters(in: .whitespacesAndNewlines))
         guard !q.isEmpty else { return [] }
         var scored: [(Concelho, Int)] = []
         for item in all {
             let name = SearchText.fold(item.name)
-            let district = SearchText.fold(item.district.label)
+            let area = SearchText.fold(item.district?.label ?? item.region.label)
             var score = -1
             if name.hasPrefix(q) { score = 0 }
             else if SearchText.hasWordPrefix(name, q) { score = 1 }
             else if name.contains(q) { score = 2 }
-            else if SearchText.hasWordPrefix(district, q) { score = 3 }
+            else if SearchText.hasWordPrefix(area, q) { score = 3 }
             if score >= 0 { scored.append((item, score)) }
         }
         return scored
