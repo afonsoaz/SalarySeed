@@ -28,8 +28,16 @@ import Foundation
 ///  - Sertã and Vila de Rei moved from Médio Tejo to Beira Baixa, which is what
 ///    makes Castelo Branco district map cleanly to Centro.
 ///
-/// Continente only, matching the GEP data. Açores and Madeira have no districts
-/// and no published cells, so they are absent here as they are everywhere else.
+/// v0.15 ADDED AÇORES AND MADEIRA, and they do not fit the mainland shape.
+/// The islands have no districts: the old Angra, Horta, Ponta Delgada and Funchal
+/// districts were abolished in 1976 and the GEP district table has 18 rows, all
+/// mainland. So `district` became optional rather than being faked, and the
+/// picker browses the two regions as their own sections.
+///
+/// They are here now because TAX made them necessary, not because the comparison
+/// data arrived. Both regions apply their own IRS and an islander computed on the
+/// Continente tables is told they owe more than they do. The comparison figures
+/// are still Continente-only, which the screens say out loud.
 ///
 /// Stable slug ids, persisted in UserDefaults. Never rename one.
 
@@ -85,13 +93,41 @@ enum District: String, CaseIterable, Identifiable {
 struct Concelho: Identifiable, Hashable {
     let id: String
     let name: String
-    let district: District
+    /// nil for Açores and Madeira, which have no districts. Everything downstream
+    /// already treated the user's district as optional, so nothing had to bend to
+    /// accommodate this.
+    let district: District?
     /// NUTS 2024 NUTS II. This is what every existing cohort comparison keys on.
     let region: PTRegion
 }
 
 private func c(_ id: String, _ name: String, _ d: District, _ r: PTRegion) -> Concelho {
     Concelho(id: id, name: name, district: d, region: r)
+}
+
+/// An island concelho: no district, region stated directly.
+private func i(_ id: String, _ name: String, _ r: PTRegion) -> Concelho {
+    Concelho(id: id, name: name, district: nil, region: r)
+}
+
+/// How the picker offers the country: eighteen mainland districts, then the two
+/// autonomous regions as sections of their own.
+enum ConcelhoGroup: Identifiable, Hashable {
+    case district(District)
+    case island(PTRegion)
+
+    var id: String {
+        switch self {
+        case .district(let d): return "d_" + d.rawValue
+        case .island(let r): return "i_" + r.rawValue
+        }
+    }
+    var label: String {
+        switch self {
+        case .district(let d): return d.label
+        case .island(let r): return r.label
+        }
+    }
 }
 
 enum ConcelhoCatalog {
@@ -430,11 +466,60 @@ enum ConcelhoCatalog {
 
     /// 278 mainland municipalities. Split per district so the Swift type
     /// checker stays linear.
+
+    /// The 19 concelhos of the Região Autónoma dos Açores, across the nine islands.
+    private static let acores: [Concelho] = [
+        // Santa Maria
+        i("vila_do_porto", "Vila do Porto", .acores),
+        // São Miguel
+        i("lagoa_acores", "Lagoa (Açores)", .acores),
+        i("nordeste", "Nordeste", .acores),
+        i("ponta_delgada", "Ponta Delgada", .acores),
+        i("povoacao", "Povoação", .acores),
+        i("ribeira_grande", "Ribeira Grande", .acores),
+        i("vila_franca_do_campo", "Vila Franca do Campo", .acores),
+        // Terceira
+        i("angra_do_heroismo", "Angra do Heroísmo", .acores),
+        i("praia_da_vitoria", "Praia da Vitória", .acores),
+        // Graciosa
+        i("santa_cruz_da_graciosa", "Santa Cruz da Graciosa", .acores),
+        // São Jorge
+        i("calheta_sao_jorge", "Calheta (São Jorge)", .acores),
+        i("velas", "Velas", .acores),
+        // Pico
+        i("lajes_do_pico", "Lajes do Pico", .acores),
+        i("madalena", "Madalena", .acores),
+        i("sao_roque_do_pico", "São Roque do Pico", .acores),
+        // Faial
+        i("horta", "Horta", .acores),
+        // Flores
+        i("lajes_das_flores", "Lajes das Flores", .acores),
+        i("santa_cruz_das_flores", "Santa Cruz das Flores", .acores),
+        // Corvo
+        i("corvo", "Corvo", .acores),
+    ]
+
+    /// The 11 concelhos of the Região Autónoma da Madeira, including Porto Santo.
+    private static let madeira: [Concelho] = [
+        i("calheta_madeira", "Calheta (Madeira)", .madeira),
+        i("camara_de_lobos", "Câmara de Lobos", .madeira),
+        i("funchal", "Funchal", .madeira),
+        i("machico", "Machico", .madeira),
+        i("ponta_do_sol", "Ponta do Sol", .madeira),
+        i("porto_moniz", "Porto Moniz", .madeira),
+        i("porto_santo", "Porto Santo", .madeira),
+        i("ribeira_brava", "Ribeira Brava", .madeira),
+        i("santa_cruz", "Santa Cruz", .madeira),
+        i("santana", "Santana", .madeira),
+        i("sao_vicente", "São Vicente", .madeira),
+    ]
+
     static let all: [Concelho] =
         aveiro + beja + braga + braganca + casteloBranco
         + coimbra + evora + faro + guarda + leiria
         + lisboa + portalegre + porto + santarem + setubal
         + vianaCastelo + vilaReal + viseu
+        + acores + madeira
 
     private static let byID: [String: Concelho] = Dictionary(
         all.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first }
@@ -447,6 +532,22 @@ enum ConcelhoCatalog {
 
     static func concelhos(in district: District) -> [Concelho] {
         all.filter { $0.district == district }
+    }
+
+    /// Eighteen districts and then the two regions, in the order the picker shows
+    /// them. Built from the data rather than hard-coded, so a region with no
+    /// concelhos could never appear as an empty section.
+    static let groups: [ConcelhoGroup] =
+        District.allCases.map { ConcelhoGroup.district($0) }
+        + [PTRegion.acores, .madeira]
+            .filter { r in all.contains { $0.district == nil && $0.region == r } }
+            .map { ConcelhoGroup.island($0) }
+
+    static func concelhos(in group: ConcelhoGroup) -> [Concelho] {
+        switch group {
+        case .district(let d): return concelhos(in: d)
+        case .island(let r): return all.filter { $0.district == nil && $0.region == r }
+        }
     }
 
     /// Ranked, diacritic and case insensitive. Typing a district name finds every

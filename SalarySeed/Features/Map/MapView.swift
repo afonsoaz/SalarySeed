@@ -209,6 +209,11 @@ struct MapView: View {
                     .font(.system(size: 9.5))
                     .foregroundStyle(Theme.textFaint)
                     .fixedSize(horizontal: false, vertical: true)
+                // v0.15: the islands sit beside the mainland rather than being
+                // left off it. They carry no colour because the source carries no
+                // figure for them, which is a fact worth showing rather than
+                // hiding. See IslandTiles.
+                IslandTiles(s: s, home: store.region)
                 Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -340,6 +345,10 @@ struct MapView: View {
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
             Text(s.mapScopeNote)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(s.mapIslandNote)
                 .font(.system(size: 10))
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)

@@ -16,7 +16,7 @@ struct ConcelhoPickerList: View {
     let s: Strings
 
     @State private var query: String = ""
-    @State private var expanded: District?
+    @State private var expanded: ConcelhoGroup?
 
     /// Written out rather than left to the memberwise initializer, because this
     /// is the one new view that takes parameters from another file and also holds
@@ -97,20 +97,20 @@ struct ConcelhoPickerList: View {
 
     private var districtList: some View {
         VStack(spacing: 6) {
-            ForEach(District.allCases) { district in
-                districtSection(district)
+            ForEach(ConcelhoCatalog.groups) { group in
+                districtSection(group)
             }
         }
         .padding(.bottom, 12)
     }
 
     @ViewBuilder
-    private func districtSection(_ district: District) -> some View {
-        let isOpen = expanded == district
+    private func districtSection(_ group: ConcelhoGroup) -> some View {
+        let isOpen = expanded == group
         VStack(spacing: 6) {
             Button {
                 withAnimation(.easeOut(duration: 0.16)) {
-                    expanded = isOpen ? nil : district
+                    expanded = isOpen ? nil : group
                 }
             } label: {
                 HStack(spacing: 11) {
@@ -118,7 +118,7 @@ struct ConcelhoPickerList: View {
                         .font(.system(size: 14))
                         .foregroundStyle(Theme.accent)
                         .frame(width: 22)
-                    Text(district.label)
+                    Text(group.label)
                         .font(.system(size: 14))
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
@@ -132,7 +132,7 @@ struct ConcelhoPickerList: View {
             }
 
             if isOpen {
-                ForEach(ConcelhoCatalog.concelhos(in: district)) { item in
+                ForEach(ConcelhoCatalog.concelhos(in: group)) { item in
                     row(item, showDistrict: false)
                 }
             }
@@ -181,7 +181,12 @@ struct ConcelhoPickerList: View {
     /// Browsing inside a district would repeat the district name on every row,
     /// so there it shows only the region.
     private func subtitle(_ item: Concelho, showDistrict: Bool) -> String {
-        if showDistrict { return "\(item.district.label) · \(item.region.label)" }
+        // v0.15: island concelhos have no district, so the region carries the row
+        // on its own rather than showing an empty prefix.
+        if showDistrict {
+            guard let district = item.district else { return item.region.label }
+            return "\(district.label) · \(item.region.label)"
+        }
         return item.region.label
     }
 }

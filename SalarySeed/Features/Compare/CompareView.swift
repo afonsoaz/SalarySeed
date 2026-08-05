@@ -82,6 +82,20 @@ struct CompareView: View {
         }
     }
 
+    /// v0.15: the islands have no cells in the Quadros de Pessoal, so an islander
+    /// gets sector and tenure figures that are mainland ones and no regional
+    /// comparison at all. The region simply vanishing from the picker would read
+    /// as a bug rather than as an absence in the source, so it is named.
+    @ViewBuilder
+    private var islandCaveat: some View {
+        if let region = store.region, region == .acores || region == .madeira {
+            Text(s.islandNoCohortNote)
+                .font(.system(size: 11))
+                .foregroundStyle(Theme.danger)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
     /// Shown when the user works part-time: the published averages are mostly
     /// full-time pay, so the comparison is not like for like.
     @ViewBuilder
@@ -193,6 +207,7 @@ struct CompareView: View {
             }
 
             partTimeCaveat
+            islandCaveat
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
     }

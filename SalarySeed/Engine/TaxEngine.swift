@@ -109,8 +109,63 @@ struct SalaryBreakdown {
 /// - IAS 2026 = €537,13; dedução específica cat. A = 8,54 × IAS.
 ///
 /// Everything here is an estimate for insight, not official tax advice.
-/// Continente only for now (Açores/Madeira have their own reduced tables).
+///
+/// v0.15 ADDED THE AUTONOMOUS REGIONS. Every figure below that carries a region
+/// is real: the withholding tables were generated from the AT workbooks rather
+/// than transcribed, and round-tripped back against them.
 enum TaxEngine {
+
+    /// Where the user pays tax. Not a preference: it is derived from the concelho
+    /// and nothing else, the same way the district and the NUTS II region are.
+    ///
+    /// WHY THIS EXISTS AT ALL. Social Security is national, IAS is national, and
+    /// the per-dependant parcelas are national, so for twelve versions a single
+    /// set of tables was defensible. IRS is not national. Both regions apply the
+    /// maximum reduction the Lei das Finanças das Regiões Autónomas allows, and
+    /// an islander computed on the Continente tables is told they pay more tax
+    /// than they do, on every screen, for ever.
+    enum TaxRegion: String, CaseIterable, Identifiable, Codable {
+        case continente, acores, madeira
+        var id: String { rawValue }
+
+        func label(pt: Bool) -> String {
+            switch self {
+            case .continente: return pt ? "Continente" : "Mainland"
+            case .acores: return "Açores"
+            case .madeira: return "Madeira"
+            }
+        }
+
+        /// The regional minimum wage, which is also the first row of each region's
+        /// withholding table: the tables are built so that someone on the regional
+        /// minimum withholds nothing.
+        var minWage: Double {
+            switch self {
+            case .continente: return 920
+            case .acores: return 966
+            case .madeira: return 980
+            }
+        }
+
+        /// What the region does to the NATIONAL annual rates.
+        ///
+        /// In 2026 both regions apply the full 30% differential the Lei das
+        /// Finanças das Regiões Autónomas permits, to all nine brackets, with the
+        /// thresholds left at the national values. One number instead of eighteen,
+        /// and it is the rule the law states rather than a table to keep in sync.
+        ///
+        /// Verified two ways. The Açores withholding table is EXACTLY 0.70 of the
+        /// Continente table on all twelve rates, which is arithmetic, not opinion.
+        /// And AT Madeira's own January 2026 fiscal agenda says Madeira applies
+        /// "o diferencial fiscal máximo de 30%" across all nine brackets. Note
+        /// Madeira's withholding table is NOT 0.70 of Continente's, and that is
+        /// not a contradiction: a withholding table is a derived instrument built
+        /// around the regional minimum wage, so a different floor gives a
+        /// different derivation of the same underlying rates.
+        var annualRateFactor: Double {
+            self == .continente ? 1 : 0.70
+        }
+    }
 
     // MARK: Social Security
 
@@ -120,6 +175,7 @@ enum TaxEngine {
     // MARK: 2026 constants (Continente)
 
     static let ias = 537.13
+    /// Continente. Each region's own floor lives on `TaxRegion.minWage`.
     static let minWage = 920.0
     /// The fiscal year the engine models. Used by the IRS Jovem assessor to count
     /// benefit years and to check the age limit at the end of the income year.
@@ -178,8 +234,80 @@ enum TaxEngine {
         Row(upTo: .infinity,    rate: 0.4717, abate: { _ in 2_821.13 }),
     ]
 
-    static func rows(for m: MaritalSituation) -> [Row] {
-        m == .marriedOne ? tableMarriedOne : tableSingle
+    // MARK: Açores (Categoria A, from the AT workbook)
+
+    /// Açores, Tabelas I and II. GENERATED from the AT workbook, never transcribed.
+    static let tableSingleAcores: [Row] = [
+        Row(upTo: 966,           rate: 0,        abate: { _ in 0 }),
+        Row(upTo: 1_042,         rate: 0.0875,   abate: { R in 0.0875 * 2.6 * (1337.54 - R) }),
+        Row(upTo: 1_108,         rate: 0.1099,   abate: { R in 0.1099 * 1.35 * (1652.49 - R) }),
+        Row(upTo: 1_154,         rate: 0.1099,   abate: { _ in 80.79 }),
+        Row(upTo: 1_212,         rate: 0.1484,   abate: { _ in 125.22 }),
+        Row(upTo: 1_819,         rate: 0.1687,   abate: { _ in 149.83 }),
+        Row(upTo: 2_119,         rate: 0.2177,   abate: { _ in 238.97 }),
+        Row(upTo: 2_499,         rate: 0.2443,   abate: { _ in 295.34 }),
+        Row(upTo: 3_305,         rate: 0.2685,   abate: { _ in 355.82 }),
+        Row(upTo: 5_547,         rate: 0.2779,   abate: { _ in 386.89 }),
+        Row(upTo: 20_221,        rate: 0.3146,   abate: { _ in 590.47 }),
+        Row(upTo: .infinity,     rate: 0.3302,   abate: { _ in 905.92 }),
+    ]
+
+    /// Açores, Tabela III. 10 rows, not 12: each region sets its own bracket boundaries, so a row-for-row comparison with Continente is meaningless.
+    static let tableMarriedOneAcores: [Row] = [
+        Row(upTo: 1_226,         rate: 0,        abate: { _ in 0 }),
+        Row(upTo: 1_267,         rate: 0.0728,   abate: { _ in 89.26 }),
+        Row(upTo: 1_602,         rate: 0.0964,   abate: { _ in 119.17 }),
+        Row(upTo: 1_962,         rate: 0.1099,   abate: { _ in 140.8 }),
+        Row(upTo: 2_240,         rate: 0.1357,   abate: { _ in 191.42 }),
+        Row(upTo: 2_900,         rate: 0.1594,   abate: { _ in 244.51 }),
+        Row(upTo: 3_389,         rate: 0.1799,   abate: { _ in 303.96 }),
+        Row(upTo: 5_965,         rate: 0.2017,   abate: { _ in 377.85 }),
+        Row(upTo: 20_265,        rate: 0.271,    abate: { _ in 791.23 }),
+        Row(upTo: .infinity,     rate: 0.3302,   abate: { _ in 1990.92 }),
+    ]
+
+    // MARK: Madeira (Categoria A, from the AT workbook)
+
+    /// Madeira, Tabelas I and II. GENERATED from the AT workbook, never transcribed.
+    static let tableSingleMadeira: [Row] = [
+        Row(upTo: 980,           rate: 0,        abate: { _ in 0 }),
+        Row(upTo: 1_028,         rate: 0.0872,   abate: { R in 0.0872 * 2.6 * (1356.92 - R) }),
+        Row(upTo: 1_099,         rate: 0.1204,   abate: { R in 0.1204 * 1.35 * (1696.78 - R) }),
+        Row(upTo: 1_201,         rate: 0.1204,   abate: { _ in 97.17 }),
+        Row(upTo: 1_623,         rate: 0.1763,   abate: { _ in 164.31 }),
+        Row(upTo: 2_332,         rate: 0.223,    abate: { _ in 240.11 }),
+        Row(upTo: 3_203,         rate: 0.2242,   abate: { _ in 242.91 }),
+        Row(upTo: 3_614,         rate: 0.2727,   abate: { _ in 398.26 }),
+        Row(upTo: 6_585,         rate: 0.2778,   abate: { _ in 416.7 }),
+        Row(upTo: 6_954,         rate: 0.2802,   abate: { _ in 432.51 }),
+        Row(upTo: 21_411,        rate: 0.2924,   abate: { _ in 517.35 }),
+        Row(upTo: .infinity,     rate: 0.3278,   abate: { _ in 1275.3 }),
+    ]
+
+    /// Madeira, Tabela III. 11 rows, not 12: each region sets its own bracket boundaries, so a row-for-row comparison with Continente is meaningless.
+    static let tableMarriedOneMadeira: [Row] = [
+        Row(upTo: 997,           rate: 0,        abate: { _ in 0 }),
+        Row(upTo: 1_099,         rate: 0.0872,   abate: { R in 0.0872 * 1.35 * (1819.64 - R) }),
+        Row(upTo: 1_141,         rate: 0.0872,   abate: { _ in 84.84 }),
+        Row(upTo: 1_857,         rate: 0.1033,   abate: { _ in 103.22 }),
+        Row(upTo: 2_485,         rate: 0.1091,   abate: { _ in 114 }),
+        Row(upTo: 3_331,         rate: 0.1236,   abate: { _ in 150.04 }),
+        Row(upTo: 3_895,         rate: 0.1404,   abate: { _ in 206.01 }),
+        Row(upTo: 6_673,         rate: 0.1595,   abate: { _ in 280.41 }),
+        Row(upTo: 6_878,         rate: 0.2213,   abate: { _ in 692.81 }),
+        Row(upTo: 21_411,        rate: 0.2493,   abate: { _ in 885.4 }),
+        Row(upTo: .infinity,     rate: 0.3278,   abate: { _ in 2566.17 }),
+    ]
+
+    /// The table for a situation and a region. Tabelas I and II share their rows
+    /// in every region; only the per-dependant parcela separates them, and that
+    /// is national.
+    static func rows(for m: MaritalSituation, region: TaxRegion) -> [Row] {
+        switch region {
+        case .continente: return m == .marriedOne ? tableMarriedOne : tableSingle
+        case .acores:     return m == .marriedOne ? tableMarriedOneAcores : tableSingleAcores
+        case .madeira:    return m == .marriedOne ? tableMarriedOneMadeira : tableSingleMadeira
+        }
     }
 
     /// Parcela adicional a abater por dependente.
@@ -192,8 +320,9 @@ enum TaxEngine {
     }
 
     /// Normal monthly IRS withholding (no IRS Jovem), for a gross remuneration R.
-    static func withholding(grossMonthly R: Double, marital: MaritalSituation, dependents: Int) -> Double {
-        let table = rows(for: marital)
+    static func withholding(grossMonthly R: Double, marital: MaritalSituation,
+                            dependents: Int, region: TaxRegion) -> Double {
+        let table = rows(for: marital, region: region)
         let perDep = perDependent(marital, dependents: dependents)
         for row in table where R <= row.upTo {
             return max(0, R * row.rate - row.abate(R) - Double(dependents) * perDep)
@@ -210,8 +339,10 @@ enum TaxEngine {
                            marital: MaritalSituation,
                            dependents: Int,
                            jovemExemption: Double,
-                           months: Double) -> Double {
-        let normal = withholding(grossMonthly: R, marital: marital, dependents: dependents)
+                           months: Double,
+                           region: TaxRegion) -> Double {
+        let normal = withholding(grossMonthly: R, marital: marital,
+                                 dependents: dependents, region: region)
         guard jovemExemption > 0, R > 0 else { return normal }
         let effRate = normal / R
         let monthlyCap = jovemAnnualCap / max(months, 12)
@@ -237,10 +368,24 @@ enum TaxEngine {
         Escalao(upTo: .infinity, normal: 0.48,   media: 0.0),
     ]
 
+    /// The nine brackets as they apply in a region: same thresholds, rates scaled
+    /// by the regional factor.
+    ///
+    /// The média scales too, and that is not an approximation. Média is defined as
+    /// the tax at the bracket's upper limit divided by that limit, so scaling every
+    /// normal rate by k scales the tax by k and therefore the média by k exactly.
+    /// Checked numerically at all eight finite bracket tops before relying on it.
+    static func escaloes(for region: TaxRegion) -> [Escalao] {
+        let k = region.annualRateFactor
+        guard k != 1 else { return escaloes }
+        return escaloes.map { Escalao(upTo: $0.upTo, normal: $0.normal * k, media: $0.media * k) }
+    }
+
     /// Progressive annual IRS on a taxable income, split-bracket method:
     /// for income in bracket N, tax = lowerLimit × média(N−1) + (income − lowerLimit) × normal(N).
-    static func progressiveAnnual(_ income: Double) -> Double {
+    static func progressiveAnnual(_ income: Double, region: TaxRegion) -> Double {
         guard income > 0 else { return 0 }
+        let escaloes = escaloes(for: region)
         var lower = 0.0
         for (i, e) in escaloes.enumerated() {
             if income <= e.upTo {
@@ -264,9 +409,11 @@ enum TaxEngine {
                               months: Double,
                               marital: MaritalSituation,
                               dependents: Int,
-                              jovemExemption: Double) -> Double {
+                              jovemExemption: Double,
+                              region: TaxRegion) -> Double {
         annualDetail(grossMonthly: grossMonthly, months: months, marital: marital,
-                     dependents: dependents, jovemExemption: jovemExemption).due
+                     dependents: dependents, jovemExemption: jovemExemption,
+                     region: region).due
     }
 
     /// v0.9.4: the same calculation, but returning its parts rather than only the
@@ -296,14 +443,15 @@ enum TaxEngine {
                              months: Double,
                              marital: MaritalSituation,
                              dependents: Int,
-                             jovemExemption: Double) -> AnnualSettlement {
+                             jovemExemption: Double,
+                             region: TaxRegion) -> AnnualSettlement {
         let grossYear = grossMonthly * months
         let fullBase = max(0, grossYear - specificDeductionA)
         let exemptYear = min(max(0, jovemExemption) * grossYear, jovemAnnualCap)
         let nonExemptBase = max(0, fullBase - exemptYear)
 
         let quotient: Double = marital == .marriedOne ? 2 : 1
-        let taxFull = progressiveAnnual(fullBase / quotient) * quotient
+        let taxFull = progressiveAnnual(fullBase / quotient, region: region) * quotient
         let avgRate = fullBase > 0 ? taxFull / fullBase : 0
 
         let coleta = avgRate * nonExemptBase
@@ -326,21 +474,27 @@ enum TaxEngine {
 
     // MARK: Breakdown
 
+    /// `region` is deliberately NOT defaulted. A default would let a call site
+    /// forget it and silently hand an islander Continente tax, which is the exact
+    /// failure this whole change exists to remove. Without a default the compiler
+    /// asks the question at every site, which is where it should be asked.
     static func breakdown(grossMonthly: Double,
                           months: Double,
                           ajudasMonthly: Double = 0,
                           marital: MaritalSituation = .single,
                           dependents: Int = 0,
-                          jovemExemption: Double = 0) -> SalaryBreakdown {
+                          jovemExemption: Double = 0,
+                          region: TaxRegion) -> SalaryBreakdown {
         let gross = max(0, grossMonthly)
         let deps = max(0, dependents)
         let ss = gross * employeeSSRate
         let irs = monthlyIRS(grossMonthly: gross, marital: marital, dependents: deps,
-                             jovemExemption: jovemExemption, months: months)
+                             jovemExemption: jovemExemption, months: months, region: region)
         let net = gross - ss - irs
 
         let detail = annualDetail(grossMonthly: gross, months: months, marital: marital,
-                                  dependents: deps, jovemExemption: jovemExemption)
+                                  dependents: deps, jovemExemption: jovemExemption,
+                                  region: region)
         let withheld = irs * months
 
         return SalaryBreakdown(
@@ -364,13 +518,15 @@ enum TaxEngine {
                              marital: MaritalSituation = .single,
                              dependents: Int = 0,
                              jovemExemption: Double = 0,
-                             months: Double = 14) -> Double {
+                             months: Double = 14,
+                             region: TaxRegion) -> Double {
         guard net > 0 else { return 0 }
         var lo = net, hi = net * 3 + 1_000
         for _ in 0..<60 {
             let mid = (lo + hi) / 2
             let midNet = breakdown(grossMonthly: mid, months: months, marital: marital,
-                                   dependents: dependents, jovemExemption: jovemExemption).netMonthly
+                                   dependents: dependents, jovemExemption: jovemExemption,
+                                   region: region).netMonthly
             if midNet < net { lo = mid } else { hi = mid }
         }
         return (lo + hi) / 2

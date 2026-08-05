@@ -347,6 +347,18 @@ struct HomeView: View {
             }
 
             assumptionLine(icon: "receipt", text: creditText, tint: Theme.textFaint)
+            // v0.15: which IRS tables produced these numbers. Stated in BOTH
+            // branches, per the v0.9.4 rule: an islander needs to know their
+            // figures are already regional, and a mainland-assumed user needs to
+            // know the app guessed. Silence would look identical in both cases.
+            if store.taxRegionAssumed {
+                assumptionLine(icon: "mappin.slash", text: s.taxRegionAssumedNote,
+                               tint: Theme.textFaint)
+            } else if store.taxRegion != .continente {
+                assumptionLine(icon: "map",
+                               text: s.taxRegionNote(store.taxRegion.label(pt: s.pt)),
+                               tint: Theme.accent)
+            }
             assumptionLine(icon: "info.circle", text: s.annualNote, tint: Theme.textFaint)
         }
     }

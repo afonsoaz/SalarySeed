@@ -48,7 +48,8 @@ struct GrowView: View {
             marital: store.maritalSituation,
             dependents: store.dependents,
             jovemBenefitYear: jovemBenefitYear,
-            homeDistrict: store.district
+            homeDistrict: store.district,
+            taxRegion: store.taxRegion
         )
     }
 
@@ -545,6 +546,12 @@ struct GrowView: View {
             }
             if store.growScenario.district != nil {
                 line(s.growAssumptionRegion)
+            }
+            // v0.15: for an islander the district lever is inert, because the
+            // district table is mainland. The tax on the path is theirs, though,
+            // and both halves of that are worth saying together.
+            if store.district == nil, store.taxRegion != .continente {
+                line(s.growIslandNote)
             }
             if jovemBenefitYear != nil {
                 line(s.growAssumptionJovem)

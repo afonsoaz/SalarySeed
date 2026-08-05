@@ -1,4 +1,4 @@
-# SalarySeed — v0.14
+# SalarySeed — v0.15
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
@@ -29,7 +29,7 @@ Everything is published, openly licensed, and bundled. Nothing is scraped, and n
 - **INE, Inquérito à Estrutura dos Ganhos 2022** (CC BY 4.0), for the shape of the national distribution.
 - **Eurostat, Structure of Earnings Survey 2022** (`earn_ses22_24`, free reuse with attribution), for the European comparison.
 - **CAOP / DGT** for the district boundaries, credited in-app.
-- **Tax**: a real 2026 Continente engine. Social Security 11% and 23.75%, the three withholding tables from Despacho 233-A/2026, the nine annual escalões, the specific deduction, dependant credits, the €1,000 general-expense credit, and IRS Jovem in both the monthly withholding and the annual settlement.
+- **Tax**: a real 2026 engine for **all three fiscal regions**. Continente, Açores and Madeira, each with its own withholding tables (generated from the AT workbooks and round-tripped, never transcribed) and its own annual rates. Social Security 11% and 23.75%, the three withholding tables from Despacho 233-A/2026, the nine annual escalões, the specific deduction, dependant credits, the €1,000 general-expense credit, and IRS Jovem in both the monthly withholding and the annual settlement.
 
 ## Architecture
 
@@ -95,6 +95,8 @@ Much of this app was built where no Swift toolchain was available, so correctnes
 14. **Check that every payload field appears in the summary that claims to describe it.** `Contribution`'s `CodingKeys` against the source of `summaryFields`. A consent screen listing what will be sent is a promise, and the way it breaks is a field added to the payload and forgotten in the list.
 
 ## Version history
+
+**v0.15** — Açores and Madeira. The tax is the real work: `TaxEngine.TaxRegion`, the two regions' withholding tables generated from the AT workbooks and round-tripped against them, and the annual rates computed as the 30% differential both regions apply in 2026 rather than embedded as eighteen more numbers. `region` is deliberately not defaulted anywhere, so the compiler asks at every call site. 30 island concelhos, `Concelho.district` now optional because the islands have none, and the picker browses the two regions as their own sections. On the map they appear beside the mainland with no colour, because the Quadros de Pessoal are Continente-only and there is no figure to give them. Compare and Grow say what that costs.
 
 **v0.14** — Consent reframed. The screen is now unskippable, with no default and two active buttons, and it argues for itself: what the pool is for, what a yes unlocks in a future version, and the row itself listed on the screen rather than behind a link. Both answers still continue into the app, because a screen that gates the app collects consent that is void under Article 7(4) and leaves a database with no lawful basis. The profile toggle became a status card that states what is happening, with the stop and the delete as plain text actions. New kit step 14: every payload field must appear in the summary that claims to describe it.
 

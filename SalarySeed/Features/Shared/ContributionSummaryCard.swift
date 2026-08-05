@@ -12,7 +12,7 @@ import SwiftUI
 ///
 /// It also means adding a field to `Contribution` and forgetting it here is a
 /// visible omission rather than a silent one, which the verification kit checks
-/// by making sure every `CodingKey` name appears in `summaryFields` below.
+/// by making sure every coding key name appears in `summaryFields` below.
 struct ContributionSummaryCard: View {
     let row: Contribution
     let s: Strings

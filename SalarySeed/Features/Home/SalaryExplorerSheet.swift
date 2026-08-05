@@ -42,7 +42,8 @@ struct SalaryExplorerSheet: View {
                 marital: store.maritalSituation,
                 dependents: store.dependents,
                 jovemExemption: store.irsJovemExemption,
-                months: store.schedule.months
+                months: store.schedule.months,
+                region: store.taxRegion
             )
         }
     }
@@ -53,7 +54,8 @@ struct SalaryExplorerSheet: View {
             months: store.schedule.months,
             marital: store.maritalSituation,
             dependents: store.dependents,
-            jovemExemption: store.irsJovemExemption
+            jovemExemption: store.irsJovemExemption,
+            region: store.taxRegion
         )
     }
 

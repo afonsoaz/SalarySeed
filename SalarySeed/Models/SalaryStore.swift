@@ -250,6 +250,25 @@ final class SalaryStore: ObservableObject {
     /// keys on this, so it stays a PTRegion and nothing downstream changes.
     var region: PTRegion? { concelho?.region }
 
+    /// v0.15: where the user pays IRS, derived from the concelho like everything
+    /// else geographic. Nobody is ever asked this directly.
+    ///
+    /// No concelho means Continente, and that is a real assumption rather than a
+    /// neutral one. It is the safe direction to be wrong in, because the mainland
+    /// rates are the higher ones, so an unplaced islander is overcharged on paper
+    /// rather than undercharged. The tax screens say so rather than leaving it.
+    var taxRegion: TaxEngine.TaxRegion {
+        switch region {
+        case .acores: return .acores
+        case .madeira: return .madeira
+        default: return .continente
+        }
+    }
+
+    /// True when mainland tax is being shown to someone whose location the app
+    /// does not know. Drives the one caveat that assumption earns.
+    var taxRegionAssumed: Bool { concelho == nil }
+
     /// Every signal the seed counts. v0.9 grew this from 4 to 10, so the sprout
     /// maps the fraction filled onto its 5 drawn stages instead of counting
     /// signals one for one.
@@ -320,7 +339,8 @@ final class SalaryStore: ObservableObject {
             marital: maritalSituation,
             dependents: dependents,
             jovemExemption: irsJovemExemption,
-            months: schedule.months
+            months: schedule.months,
+            region: taxRegion
         )
         }
         return TaxEngine.breakdown(
@@ -329,7 +349,8 @@ final class SalaryStore: ObservableObject {
             ajudasMonthly: ajudasMonthly,
             marital: maritalSituation,
             dependents: dependents,
-            jovemExemption: irsJovemExemption
+            jovemExemption: irsJovemExemption,
+            region: taxRegion
         )
     }
 

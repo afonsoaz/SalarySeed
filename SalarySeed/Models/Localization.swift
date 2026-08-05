@@ -610,6 +610,36 @@ struct Strings {
     }
     var mapGeoCredit: String { "Fronteiras: CAOP, Direção-Geral do Território" }
 
+    // MARK: v0.15 the autonomous regions
+
+    var mapIslandNoData: String { t("no figure", "sem valor") }
+    var mapIslandNote: String {
+        t("Açores and Madeira are on the map but have no colour: the Quadros de Pessoal cover the mainland only, and there is no published figure for either region in this source. Their tax is another matter, and the app does compute that properly.",
+          "Os Açores e a Madeira estão no mapa mas sem cor: os Quadros de Pessoal só cobrem o continente, e não há valor publicado para nenhuma das regiões nesta fonte. Os impostos são outra história, e esses a app já calcula bem.")
+    }
+
+    /// Shown wherever a tax figure appears, when the user is in a region with its
+    /// own IRS. Not a warning: the number is right, and this says why it differs
+    /// from what a mainland calculator would tell them.
+    func taxRegionNote(_ region: String) -> String {
+        t("Calculated with the \(region) IRS tables, which are lower than the mainland ones. Social Security is the same everywhere.",
+          "Calculado com as tabelas de IRS da \(region), que são mais baixas do que as do continente. A Segurança Social é igual em todo o lado.")
+    }
+    /// Shown when the app is guessing Continente because it has no município.
+    var taxRegionAssumedNote: String {
+        t("Calculated with the mainland IRS tables. If you live in Açores or Madeira, add your município and the figures drop: both regions tax 30% lower.",
+          "Calculado com as tabelas de IRS do continente. Se vives nos Açores ou na Madeira, põe o teu concelho e as contas descem: as duas regiões cobram menos 30%.")
+    }
+    /// The comparison side, which the tax fix does not reach.
+    var islandNoCohortNote: String {
+        t("The Quadros de Pessoal cover the mainland only, so there is no regional average to put you against. Everything comparing you to a region is missing for Açores and Madeira, and the sector and tenure figures you do see are mainland ones.",
+          "Os Quadros de Pessoal só cobrem o continente, por isso não há média regional para te comparar. Tudo o que te compara com uma região falta para os Açores e a Madeira, e os valores de setor e antiguidade que vês são do continente.")
+    }
+    var growIslandNote: String {
+        t("The district lever does nothing for Açores and Madeira: the district table is mainland only. The tax on this path is your region's, though.",
+          "O botão do distrito não faz nada para os Açores e a Madeira: a tabela dos distritos é só do continente. Mas o imposto deste percurso já é o da tua região.")
+    }
+
     // MARK: v0.9.4 salary explorer
 
     /// The fork: recording a real change, or trying a number on. Same wording

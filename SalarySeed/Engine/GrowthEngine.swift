@@ -112,6 +112,9 @@ enum GrowthEngine {
         /// exemption does not apply to them.
         let jovemBenefitYear: Int?
         let homeDistrict: District?
+        /// v0.15: the projection is taxed where the user actually lives. Without
+        /// this, an islander's whole twenty-year net path would be mainland tax.
+        let taxRegion: TaxEngine.TaxRegion
 
         /// The anchor. Their salary as a share of their own band's mean.
         var anchor: Double {
@@ -279,7 +282,8 @@ enum GrowthEngine {
             months: ctx.months,
             marital: ctx.marital,
             dependents: ctx.dependents,
-            jovemExemption: exemption
+            jovemExemption: exemption,
+            region: ctx.taxRegion
         )
         let deflator = pow(1 + scenario.inflation, Double(year))
         return YearPoint(
