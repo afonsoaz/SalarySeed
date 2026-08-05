@@ -322,17 +322,17 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(option.label(pt: s.pt))
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
+                        .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                     Text(option.hint(pt: s.pt))
                         .font(.system(size: 11.5))
-                        .foregroundStyle(isSelected ? Color(hex: 0x06281C).opacity(0.75) : Theme.textSecondary)
+                        .foregroundStyle(isSelected ? Theme.ink.opacity(0.75) : Theme.textSecondary)
                         .multilineTextAlignment(.leading)
                 }
                 Spacer(minLength: 8)
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Color(hex: 0x06281C))
+                        .foregroundStyle(Theme.ink)
                 }
             }
             .padding(14)
@@ -742,7 +742,7 @@ struct OnboardingView: View {
         } label: {
             Text(sector.label(pt: s.pt))
                 .font(.system(size: 12.5, weight: isSelected ? .medium : .regular))
-                .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -767,7 +767,7 @@ struct OnboardingView: View {
         } label: {
             Text(option.label)
                 .font(.system(size: 13, weight: isSelected ? .medium : .regular))
-                .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.82)
@@ -809,7 +809,7 @@ struct PrimaryButton: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color(hex: 0x06281C))
+                .foregroundStyle(Theme.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
                 .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
@@ -837,7 +837,7 @@ struct SegmentedPicker<Option: Identifiable & Equatable>: View {
                             in: RoundedRectangle(cornerRadius: 11)
                         )
                         .foregroundStyle(
-                            selection == option ? Color(hex: 0x06281C) : Theme.textSecondary
+                            selection == option ? Theme.ink : Theme.textSecondary
                         )
                 }
             }

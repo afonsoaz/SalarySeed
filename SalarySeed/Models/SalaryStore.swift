@@ -109,6 +109,23 @@ final class SalaryStore: ObservableObject {
     // v0.3: language. Follows the device by default, can be changed in the profile tab.
     @Published var language: AppLanguage { didSet { save() } }
 
+    // MARK: v0.16 accent
+
+    /// The chosen accent. Persisted for everyone, CHANGEABLE only by supporters,
+    /// which is the whole of the paid feature.
+    ///
+    /// It is persisted unconditionally rather than only for supporters, because
+    /// a refund should take away the ability to change the colour, not silently
+    /// rewrite what the user last chose. `SupporterStore` calls
+    /// `enforceAccentEntitlement` when the entitlement goes away, and that is the
+    /// one place allowed to reset it.
+    @Published var accent: AccentTheme {
+        didSet {
+            Theme.current = accent
+            save()
+        }
+    }
+
     // MARK: v0.12 consent
 
     /// Whether the user agreed to their answers being pooled anonymously.
@@ -172,6 +189,10 @@ final class SalaryStore: ObservableObject {
         gender = Gender(rawValue: defaults.string(forKey: "profile.gender") ?? "")
         variableAnnual = defaults.object(forKey: "profile.variableAnnual") as? Double
         language = AppLanguage(rawValue: defaults.string(forKey: "language") ?? "") ?? .auto
+        accent = AccentTheme(rawValue: defaults.string(forKey: "accent") ?? "") ?? .default
+        // The static mirror has to be right before the first view is built, so it
+        // is set here rather than waiting for the first `didSet`.
+        Theme.current = accent
         // `object(forKey:)` rather than `bool(forKey:)`: a missing key has to come
         // back as nil, and `bool(forKey:)` turns it into false, which is a
         // recorded refusal. See the note on the property.
@@ -191,6 +212,7 @@ final class SalaryStore: ObservableObject {
         defaults.set(irsJovemExemption, forKey: "irsJovemExemption")
         defaults.set(name, forKey: "name")
         defaults.set(language.rawValue, forKey: "language")
+        defaults.set(accent.rawValue, forKey: "accent")
         setOptional(ageBand?.rawValue, forKey: "profile.ageBand")
         setOptional(concelhoID, forKey: "profile.concelho")
         setOptional(education?.rawValue, forKey: "profile.education")
@@ -361,6 +383,17 @@ final class SalaryStore: ObservableObject {
     /// carry annual bonuses, so folding them in would compare unlike with unlike.
     var percentile: Double {
         PercentileEngine.percentile(grossMonthly: breakdown.grossMonthly)
+    }
+
+    // MARK: Supporter (v0.16)
+
+    /// Called by `SupporterStore` when the entitlement is lost, which happens on
+    /// a refund or a family-sharing revocation. Anything the purchase unlocked
+    /// has to go back with it, or a cancelled payment leaves a paid app behind.
+    func enforceAccentEntitlement(isSupporter: Bool) {
+        if !isSupporter, accent != .default {
+            accent = .default
+        }
     }
 
     // MARK: Data sharing (v0.13)

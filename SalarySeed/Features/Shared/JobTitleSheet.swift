@@ -183,19 +183,19 @@ struct JobTitleSheet: View {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title.label(pt: s.pt))
                         .font(.system(size: 14, weight: isSelected ? .medium : .regular))
-                        .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
+                        .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                         .multilineTextAlignment(.leading)
                     if showFamily {
                         Text(title.family.label(pt: s.pt))
                             .font(.system(size: 10))
-                            .foregroundStyle(isSelected ? Color(hex: 0x06281C).opacity(0.7) : Theme.textFaint)
+                            .foregroundStyle(isSelected ? Theme.ink.opacity(0.7) : Theme.textFaint)
                     }
                 }
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(Color(hex: 0x06281C))
+                        .foregroundStyle(Theme.ink)
                 }
             }
             .padding(.vertical, 11)

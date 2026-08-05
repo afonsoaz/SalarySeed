@@ -365,7 +365,7 @@ struct GrowthLeversSheet: View {
         } label: {
             Text(s.growLeversDone)
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Color(hex: 0x06281C))
+                .foregroundStyle(Theme.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .background(Theme.accent, in: RoundedRectangle(cornerRadius: 15))
@@ -378,7 +378,7 @@ struct GrowthLeversSheet: View {
         } label: {
             Text(label)
                 .font(.system(size: 13, weight: on ? .medium : .regular))
-                .foregroundStyle(on ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .foregroundStyle(on ? Theme.ink : Theme.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
                 .background(on ? Theme.accent : Color.white.opacity(0.05),

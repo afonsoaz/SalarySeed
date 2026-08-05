@@ -427,22 +427,22 @@ struct HomeView: View {
             HStack(spacing: 12) {
                 Image(systemName: "slider.horizontal.below.square.filled.and.square")
                     .font(.system(size: 20))
-                    .foregroundStyle(Color(hex: 0x06281C))
+                    .foregroundStyle(Theme.ink)
                     .frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.explorerNudgeTitle)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color(hex: 0x06281C))
+                        .foregroundStyle(Theme.ink)
                     Text(s.explorerNudgeSub)
                         .font(.system(size: 11))
-                        .foregroundStyle(Color(hex: 0x06281C).opacity(0.75))
+                        .foregroundStyle(Theme.ink.opacity(0.75))
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color(hex: 0x06281C).opacity(0.6))
+                    .foregroundStyle(Theme.ink.opacity(0.6))
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)

@@ -250,7 +250,7 @@ struct GrowView: View {
             } label: {
                 Text(store.growScenario.inTodaysMoney ? s.growReal : s.growNominal)
                     .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(store.growScenario.inTodaysMoney ? Color(hex: 0x06281C) : Theme.textSecondary)
+                    .foregroundStyle(store.growScenario.inTodaysMoney ? Theme.ink : Theme.textSecondary)
                     .padding(.horizontal, 11)
                     .padding(.vertical, 8)
                     .background(store.growScenario.inTodaysMoney ? Theme.accent : Color.white.opacity(0.06),
@@ -417,21 +417,21 @@ struct GrowView: View {
             HStack(spacing: 12) {
                 Image(systemName: "slider.horizontal.3")
                     .font(.system(size: 18))
-                    .foregroundStyle(Color(hex: 0x06281C))
+                    .foregroundStyle(Theme.ink)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.growLeversButton)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color(hex: 0x06281C))
+                        .foregroundStyle(Theme.ink)
                     Text(activeLeversLine)
                         .font(.system(size: 11))
-                        .foregroundStyle(Color(hex: 0x06281C).opacity(0.75))
+                        .foregroundStyle(Theme.ink.opacity(0.75))
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Color(hex: 0x06281C).opacity(0.6))
+                    .foregroundStyle(Theme.ink.opacity(0.6))
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -590,7 +590,7 @@ struct GrowView: View {
             Button { showSectorTenure = true } label: {
                 Text(s.growEmptyButton)
                     .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(Color(hex: 0x06281C))
+                    .foregroundStyle(Theme.ink)
                     .padding(.horizontal, 22)
                     .padding(.vertical, 13)
                     .background(Theme.accent, in: RoundedRectangle(cornerRadius: 14))

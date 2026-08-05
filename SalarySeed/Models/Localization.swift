@@ -343,8 +343,6 @@ struct Strings {
     var namePlaceholder: String { t("Add your name", "O teu nome") }
     var appSection: String { "App" }
     var languageLabel: String { t("Language", "Idioma") }
-    var premiumLabel: String { "Premium" }
-    var premiumValue: String { t("Free version", "Versão gratuita") }
     var privacyLabel: String { t("Privacy", "Privacidade") }
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
@@ -1033,6 +1031,92 @@ struct Strings {
     var euroFootnoteGaps: String {
         t("Cyprus and Malta have no figure for mining or for electricity and gas. Length of service is in the source but is not on this screen yet.",
           "Chipre e Malta não têm valor para as indústrias extractivas nem para a eletricidade e gás. A antiguidade existe na fonte mas ainda não está neste ecrã.")
+    }
+
+    // MARK: v0.16 Support SalarySeed
+    //
+    // Afonso's own words, kept verbatim in Portuguese. The English is a
+    // translation of them rather than a separate pitch, because the two drifting
+    // apart is how an app ends up promising different things in different
+    // languages.
+    //
+    // The three benefits are ordered deliberately: what it funds first, because
+    // that is the honest reason; the grandfathering second, as a commitment to
+    // the person rather than a claim about a feature that does not exist; the
+    // colours last, because they are the smallest of the three and leading with
+    // them would make the whole thing feel like it is selling paint.
+
+    var supportButton: String { t("Support SalarySeed", "Apoia o SalarySeed") }
+    var supportTitle: String { t("Support SalarySeed", "Apoia o SalarySeed") }
+    var supportBody: String {
+        t("I built this app so people can understand what they earn, and how they compare against their industry, in a way that is intuitive but detailed. But building and maintaining SalarySeed costs money. Thank you for your support!",
+          "Construí esta app para as pessoas perceberem o que ganham, e como se comparam contra a sua industria de uma forma intuitiva, mas detalhada. Mas, criar e manter o SalarySeed custa dinheiro. Obrigado pelo teu apoio!")
+    }
+    var supportBenefitFund: String {
+        t("You pay what the app costs to run. Servers, updates when the law changes, and the time that goes into what comes next.",
+          "Pagas o que a app custa a manter. Servidores, atualizações perante mudanças legislativas, e o tempo dedicado a desenvolvimentos futuros.")
+    }
+    var supportBenefitFuture: String {
+        t("Whatever comes later is yours. If there are ever paid features, everyone who supported now gets them without paying again, whatever they end up costing.",
+          "O que vier depois, é teu. Se um dia houver funcionalidades pagas, quem apoiou agora fica com elas sem pagar outra vez, independentemente do preço das mesmas.")
+    }
+    var supportBenefitColour: String {
+        t("Make the app yours. Pick the interface colour.",
+          "Personaliza a app. Escolhe a cor da interface.")
+    }
+    func supportCTA(_ price: String) -> String {
+        t("Support for \(price)", "Apoiar por \(price)")
+    }
+    var supportRestore: String { t("Restore purchase", "Restaurar compra") }
+    var supportOneOff: String {
+        t("One-off payment, not a subscription", "Pagamento único, não é subscrição")
+    }
+    /// Shown while the App Store has not answered yet. Never a hardcoded price:
+    /// a wrong number on a payment button is worse than a moment of nothing.
+    var supportPriceLoading: String { t("Loading…", "A carregar…") }
+    var supportUnavailable: String {
+        t("The App Store is not answering right now. Try again in a moment.",
+          "A App Store não está a responder agora. Tenta daqui a bocado.")
+    }
+
+    // After the purchase
+    var supportThanksTitle: String { t("Thank you", "Obrigado") }
+    var supportThanksBody: String {
+        t("You are a SalarySeed supporter. Whatever comes later is yours.",
+          "És apoiante do SalarySeed. O que vier depois, é teu.")
+    }
+    var supportColourTitle: String { t("Interface colour", "Cor da interface") }
+    var supportColourLocked: String {
+        t("Supporters choose the colour of the app and its icon.",
+          "Quem apoia escolhe a cor da app e do ícone.")
+    }
+    var supportIconNote: String {
+        t("The home-screen icon changes too. iOS shows its own alert when it does.",
+          "O ícone no ecrã principal também muda. O iOS mostra um aviso dele quando isso acontece.")
+    }
+
+    // Errors, one line each, only for the cases worth interrupting someone over.
+    func supportError(_ code: String) -> String? {
+        switch code {
+        case "verification":
+            // Deliberately does not promise that nothing was charged. An
+            // unverified transaction may still have been paid for, and a
+            // reassurance the app cannot check is worse than none. Restore is
+            // the way out, so the message points at it.
+            return t("That purchase could not be verified, so nothing was unlocked. If you were charged, tap Restore purchase.",
+                     "Não foi possível verificar essa compra, por isso nada foi desbloqueado. Se foste cobrado, carrega em Restaurar compra.")
+        case "pending":
+            return t("Waiting for approval. If it goes through, the colours unlock on their own.",
+                     "À espera de aprovação. Se for aprovada, as cores desbloqueiam sozinhas.")
+        case "nothingToRestore":
+            return t("Nothing to restore on this Apple ID.",
+                     "Não há nada para restaurar nesta conta Apple.")
+        case "failed":
+            return t("That did not go through. Nothing was charged.",
+                     "Não foi possível concluir. Não foi cobrado nada.")
+        default:
+            return nil
+        }
     }
 
     var growAssumptionNothingSaved: String {

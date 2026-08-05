@@ -119,7 +119,7 @@ struct WorkDetailsSheet: View {
         } label: {
             Text(s.saveButton)
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(Color(hex: 0x06281C))
+                .foregroundStyle(Theme.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
                 .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
@@ -197,7 +197,7 @@ struct WorkDetailsSheet: View {
         } label: {
             Text(option.label(pt: s.pt))
                 .font(.system(size: 13, weight: isSelected ? .medium : .regular))
-                .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
                 .background(
@@ -311,7 +311,7 @@ struct GenderSheet: View {
         } label: {
             Text(option.label(pt: s.pt))
                 .font(.system(size: 14, weight: isSelected ? .medium : .regular))
-                .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 12)
                 .padding(.horizontal, 13)

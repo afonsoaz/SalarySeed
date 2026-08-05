@@ -49,7 +49,7 @@ struct IRSJovemAssessorView: View {
                     } label: {
                         Text(s.jovemSeeResult)
                             .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(Color(hex: 0x06281C))
+                            .foregroundStyle(Theme.ink)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 15)
                             .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
@@ -213,7 +213,7 @@ struct IRSJovemAssessorView: View {
                     Text(applied ? s.jovemApplied : s.jovemApply)
                         .font(.system(size: 14, weight: .medium))
                 }
-                .foregroundStyle(applied ? Theme.accent : Color(hex: 0x06281C))
+                .foregroundStyle(applied ? Theme.accent : Theme.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 13)
                 .background(

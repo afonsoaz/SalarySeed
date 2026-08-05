@@ -106,7 +106,7 @@ struct EuropeScopeView: View {
         } label: {
             Text(label)
                 .font(.system(size: 12, weight: on ? .medium : .regular))
-                .foregroundStyle(on ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .foregroundStyle(on ? Theme.ink : Theme.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
                 .background(on ? Theme.accent : Color.white.opacity(0.05),
@@ -152,7 +152,7 @@ struct EuropeScopeView: View {
                     if focus.isPortugal {
                         Text(s.euroReferenceTag)
                             .font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(Color(hex: 0x06281C))
+                            .foregroundStyle(Theme.ink)
                             .padding(.horizontal, 7)
                             .padding(.vertical, 2)
                             .background(Theme.accent, in: Capsule())
@@ -335,7 +335,7 @@ struct EuropeScopeView: View {
                 Button(action: onPickSector) {
                     Text(action)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(Color(hex: 0x06281C))
+                        .foregroundStyle(Theme.ink)
                         .padding(.horizontal, 18)
                         .padding(.vertical, 11)
                         .background(Theme.accent, in: RoundedRectangle(cornerRadius: 12))

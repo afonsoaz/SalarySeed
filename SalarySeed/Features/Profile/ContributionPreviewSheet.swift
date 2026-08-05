@@ -95,7 +95,7 @@ struct ContributionPreviewSheet: View {
         Button { dismiss() } label: {
             Text(s.consentPreviewDone)
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundStyle(Color(hex: 0x06281C))
+                .foregroundStyle(Theme.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
                 .background(Theme.accent, in: RoundedRectangle(cornerRadius: 15))

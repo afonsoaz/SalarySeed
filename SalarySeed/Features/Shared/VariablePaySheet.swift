@@ -66,7 +66,7 @@ struct VariablePaySheet: View {
                 } label: {
                     Text(s.okButton)
                         .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(Color(hex: 0x06281C))
+                        .foregroundStyle(Theme.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
                         .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))

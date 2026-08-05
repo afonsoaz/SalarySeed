@@ -13,7 +13,28 @@ func dismissKeyboard() {
 
 /// SalarySeed design tokens — matches the onboarding HTML mockup.
 enum Theme {
-    static let accent = Color(hex: 0x3DDC97)        // seed green
+
+    // MARK: The accent, which moved (v0.16)
+    //
+    // `accent` used to be a `static let` and is now computed from `current`,
+    // because supporters can change it. Two consequences worth knowing:
+    //
+    // 1. SwiftUI has no idea this changed. A computed static is invisible to the
+    //    dependency graph, so nothing re-renders on its own. Views redraw because
+    //    they observe `SalaryStore`, which nearly all of them already did. The
+    //    eight that draw with the accent and had no other reason to hold the
+    //    store now hold it anyway, each with a comment saying so. `SalarySeedApp`
+    //    explains why the shortcut, `.id(store.accent)` on the root, was taken
+    //    out again.
+    //
+    // 2. `current` is set from `SalaryStore`, which owns the persisted choice.
+    //    Nothing else may write it. It is not a second source of truth, it is a
+    //    mirror kept for the call sites that cannot reach the store.
+    static var current: AccentTheme = .default
+
+    static var accent: Color { current.accent }
+    /// What to draw ON the accent. Was a hardcoded near-black green in 52 places.
+    static var ink: Color { current.ink }
     static let background = Color(hex: 0x070B09)
     static let card = Color.white.opacity(0.05)
     static let cardBorder = Color.white.opacity(0.07)
@@ -21,14 +42,16 @@ enum Theme {
     static let textSecondary = Color(hex: 0x7E938A)
     static let textFaint = Color(hex: 0x42554B)
 
-    // Breakdown segment colors
+    // Breakdown segment colors. segNet stays seed green on purpose: it is a DATA
+    // colour, not a chrome colour, and the same is true of the map ramp below.
+    // Letting a preference repaint a chart is how a chart starts meaning less.
     static let segNet = Color(hex: 0x3DDC97)
     static let segIRS = Color(hex: 0xE0795A)
     static let segEmployeeSS = Color(hex: 0xE6B450)
     static let segEmployerSS = Color(hex: 0x5E6F66)
 
-    static let accentSoft = Color(hex: 0x3DDC97).opacity(0.08)
-    static let accentBorder = Color(hex: 0x3DDC97).opacity(0.18)
+    static var accentSoft: Color { current.accent.opacity(0.08) }
+    static var accentBorder: Color { current.accent.opacity(0.18) }
 
     // v0.5: warning red for the ajudas de custo highlight
     static let danger = Color(hex: 0xE06A5E)

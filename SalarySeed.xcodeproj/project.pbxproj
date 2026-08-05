@@ -8,6 +8,7 @@
 
 /* Begin PBXFileReference section */
 		AA0000052E00000100000005 /* SalarySeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SalarySeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000102E00000100000010 /* SalarySeed.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = SalarySeed.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -33,6 +34,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000012E00000100000001 /* SalarySeed */,
+				AA0000102E00000100000010 /* SalarySeed.storekit */,
 				AA0000042E00000100000004 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -231,7 +233,9 @@
 		AA00000E2E0000010000000E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Blue AppIcon-Purple AppIcon-Pink AppIcon-Amber";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 55F6AXB3XA;
@@ -258,7 +262,9 @@
 		AA00000F2E0000010000000F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Blue AppIcon-Purple AppIcon-Pink AppIcon-Amber";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 55F6AXB3XA;

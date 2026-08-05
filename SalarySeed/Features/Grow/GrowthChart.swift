@@ -16,6 +16,13 @@ import SwiftUI
 /// answered a question nobody had asked, under a word ("position") that
 /// explained nothing.
 struct GrowthChart: View {
+    // v0.16: held, not read. This view draws with `Theme.accent`, which is a
+    // computed static, and SwiftUI cannot see a static change. Observing the
+    // store is what makes the view redraw when a supporter picks a new colour.
+    // Every other view that uses the accent already holds the store for its own
+    // reasons; these few did not, and without this line they keep the old colour
+    // until something unrelated happens to invalidate them. See SalarySeedApp.
+    @EnvironmentObject private var accentObserver: SalaryStore
     let stay: [GrowthEngine.YearPoint]
     let move: [GrowthEngine.YearPoint]?
     /// Applied before drawing, so the today's-money toggle moves the chart and
@@ -184,6 +191,13 @@ struct GrowthChart: View {
 /// The key under the chart. Colour is never the only channel: each entry is
 /// also named.
 struct GrowthLegend: View {
+    // v0.16: held, not read. This view draws with `Theme.accent`, which is a
+    // computed static, and SwiftUI cannot see a static change. Observing the
+    // store is what makes the view redraw when a supporter picks a new colour.
+    // Every other view that uses the accent already holds the store for its own
+    // reasons; these few did not, and without this line they keep the old colour
+    // until something unrelated happens to invalidate them. See SalarySeedApp.
+    @EnvironmentObject private var accentObserver: SalaryStore
     let s: Strings
     let showMove: Bool
     let moveAhead: Bool

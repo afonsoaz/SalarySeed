@@ -20,6 +20,13 @@ import SwiftUI
 /// hit testing is correct by construction rather than by care, and the empty
 /// positions are `Color.clear` of the same size. It is also less code.
 struct EuropeGrid: View {
+    // v0.16: held, not read. This view draws with `Theme.accent`, which is a
+    // computed static, and SwiftUI cannot see a static change. Observing the
+    // store is what makes the view redraw when a supporter picks a new colour.
+    // Every other view that uses the accent already holds the store for its own
+    // reasons; these few did not, and without this line they keep the old colour
+    // until something unrelated happens to invalidate them. See SalarySeedApp.
+    @EnvironmentObject private var accentObserver: SalaryStore
     let readings: [EuroReading]
     /// Only needed so the voice-over label is in the user's language. A tile
     /// shows a two-letter code, which is not something to read aloud.
@@ -127,7 +134,7 @@ struct EuropeGrid: View {
     }
 
     private func label(_ reading: EuroReading?) -> Color {
-        reading?.hasData == true ? Color(hex: 0x06281C) : Theme.textFaint
+        reading?.hasData == true ? Theme.ink : Theme.textFaint
     }
 }
 

@@ -92,7 +92,7 @@ struct MapView: View {
                 } label: {
                     Text(option.label(s))
                         .font(.system(size: 13, weight: isOn ? .medium : .regular))
-                        .foregroundStyle(isOn ? Color(hex: 0x06281C) : Theme.textPrimary)
+                        .foregroundStyle(isOn ? Theme.ink : Theme.textPrimary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(isOn ? Theme.accent : Color.white.opacity(0.05),
@@ -179,7 +179,7 @@ struct MapView: View {
         } label: {
             Text(enabled ? label : s.mapNeedConcelho)
                 .font(.system(size: 12, weight: isOn ? .medium : .regular))
-                .foregroundStyle(isOn ? Color(hex: 0x06281C) : (enabled ? Theme.textPrimary : Theme.accent))
+                .foregroundStyle(isOn ? Theme.ink : (enabled ? Theme.textPrimary : Theme.accent))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
                 .background(isOn ? Theme.accent : Color.white.opacity(0.05),
@@ -242,7 +242,7 @@ struct MapView: View {
                     if focus.district == home {
                         Text(s.mapHomeTag)
                             .font(.system(size: 9, weight: .medium))
-                            .foregroundStyle(Color(hex: 0x06281C))
+                            .foregroundStyle(Theme.ink)
                             .padding(.horizontal, 7)
                             .padding(.vertical, 2)
                             .background(Theme.accent, in: Capsule())

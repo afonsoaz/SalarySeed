@@ -20,6 +20,9 @@ struct ProfileView: View {
     @State private var showContributionPreview = false
     @State private var askingForget = false
     @State private var codeCopied = false
+    // v0.16
+    @EnvironmentObject private var supporter: SupporterStore
+    @State private var showSupport = false
 
     private var s: Strings { store.s }
 
@@ -37,6 +40,7 @@ struct ProfileView: View {
                     }
                     .padding(.top, 8)
 
+                    supportCard
                     progressCard
                     currentSalaryCard
                     nameCard
@@ -68,6 +72,7 @@ struct ProfileView: View {
             .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
             .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
             .sheet(isPresented: $showContributionPreview) { ContributionPreviewSheet() }
+            .sheet(isPresented: $showSupport) { SupportSheet() }
             .confirmationDialog(s.consentDeleteTitle, isPresented: $askingForget,
                                 titleVisibility: .visible) {
                 Button(s.consentDeleteConfirm, role: .destructive) {
@@ -113,11 +118,133 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(s.appSection)
             languageCard
+            accentCard
             consentCard
-            InfoRow(label: s.premiumLabel, value: s.premiumValue)
+            // The "Premium: free version" row went in v0.16. There is a real
+            // purchase now, and its state is said twice on this screen already:
+            // the card at the top, and the lock on the colour picker. A third
+            // line that only ever reads "free version" would be wrong for
+            // everyone who paid.
             InfoRow(label: s.privacyLabel, value: s.privacyValue)
             InfoRow(label: s.sourcesLabel, value: s.sourcesValue)
         }
+    }
+
+    // MARK: Support (v0.16)
+
+    /// The first thing on the tab, above even the sprout.
+    ///
+    /// Accent-filled before purchase and quiet after, because the two states are
+    /// asking for different things: one wants to be noticed, the other only needs
+    /// to confirm that something happened. A supporter should not be sold to
+    /// every time they open their own profile.
+    @ViewBuilder
+    private var supportCard: some View {
+        if supporter.isSupporter {
+            Button { showSupport = true } label: {
+                HStack(spacing: 10) {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Theme.accent)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(s.supportThanksTitle)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text(s.supportThanksBody)
+                            .font(.system(size: 10.5))
+                            .foregroundStyle(Theme.textFaint)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .padding(13)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 14))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accentBorder, lineWidth: 1))
+            }
+        } else {
+            Button { showSupport = true } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(Theme.ink)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(s.supportButton)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Theme.ink)
+                        Text(s.supportOneOff)
+                            .font(.system(size: 11))
+                            .foregroundStyle(Theme.ink.opacity(0.75))
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(Theme.ink.opacity(0.6))
+                }
+                .padding(16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
+            }
+        }
+    }
+
+    /// The colour picker: always visible, only usable by supporters.
+    ///
+    /// Visible-but-locked rather than hidden, because the thing being sold should
+    /// be something you can see. Tapping a locked swatch opens the sheet rather
+    /// than doing nothing, so the lock explains itself instead of just refusing.
+    private var accentCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Text(s.supportColourTitle)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textSecondary)
+                if !supporter.isSupporter {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 9))
+                        .foregroundStyle(Theme.textFaint)
+                }
+                Spacer(minLength: 0)
+            }
+            HStack(spacing: 10) {
+                ForEach(AccentTheme.allCases) { theme in
+                    accentSwatch(theme)
+                }
+            }
+            Text(supporter.isSupporter ? s.supportIconNote : s.supportColourLocked)
+                .font(.system(size: 10))
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func accentSwatch(_ theme: AccentTheme) -> some View {
+        let isOn = store.accent == theme
+        return Button {
+            guard supporter.isSupporter else {
+                showSupport = true
+                return
+            }
+            withAnimation(.easeOut(duration: 0.18)) { store.accent = theme }
+            AppIcon.apply(theme)
+        } label: {
+            Circle()
+                .fill(theme.accent)
+                .frame(height: 34)
+                .opacity(supporter.isSupporter ? 1 : 0.45)
+                .overlay(Circle().stroke(Theme.textPrimary.opacity(isOn ? 0.9 : 0), lineWidth: 2))
+                .overlay(
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(theme.ink)
+                        .opacity(isOn && supporter.isSupporter ? 1 : 0)
+                )
+                .accessibilityLabel(theme.label(pt: s.pt))
+        }
+        .frame(maxWidth: .infinity)
     }
 
     /// v0.14: a status card, not a setting.
@@ -303,7 +430,7 @@ struct ProfileView: View {
                 if value == nil {
                     Text(s.addPill)
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color(hex: 0x06281C))
+                        .foregroundStyle(Theme.ink)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
                         .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
@@ -455,7 +582,7 @@ struct ProfileView: View {
         } label: {
             Text(title)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textSecondary)
+                .foregroundStyle(isSelected ? Theme.ink : Theme.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
                 .background(
@@ -599,7 +726,7 @@ struct ProfileView: View {
                     Spacer()
                     Text(s.addPill)
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color(hex: 0x06281C))
+                        .foregroundStyle(Theme.ink)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
                         .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
@@ -668,7 +795,7 @@ struct ProfileView: View {
                     Spacer()
                     Text(s.addPill)
                         .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color(hex: 0x06281C))
+                        .foregroundStyle(Theme.ink)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
                         .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))

@@ -101,7 +101,7 @@ struct EnrichmentCard: View {
             Button { onOpenSheet(signal) } label: {
                 Text(s.enrichOpenLabel(signal.rawValue))
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(Color(hex: 0x06281C))
+                    .foregroundStyle(Theme.ink)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(Theme.accent, in: RoundedRectangle(cornerRadius: 13))

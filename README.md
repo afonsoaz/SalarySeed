@@ -1,4 +1,4 @@
-# SalarySeed — v0.15.4
+# SalarySeed — v0.16
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
@@ -11,6 +11,7 @@ Salary_App/                    <- the git repo root
   SalarySeed.xcodeproj         <- OPEN THIS ONE. The only project file in the repo.
   SalarySeed/                  <- every source file. Xcode compiles this whole folder.
     Engine/ Models/ Features/ Assets.xcassets/
+  SalarySeed.storekit          <- the fake store, for running the purchase in the simulator
   tools/                       <- the Python that generated the bundled datasets
   README.md  app-concept.md    <- this file and the design doc
   _archive/                    <- not part of the app, gitignored
@@ -24,9 +25,9 @@ Salary_App/                    <- the git repo root
 ## Run it
 
 1. Open `SalarySeed.xcodeproj` in Xcode 16 or newer. The project uses folder-synchronized groups, so files added to `SalarySeed/` appear in Xcode automatically. The flip side, and it has bitten once: a file **removed from git** is not removed from disk, and folder-synchronized groups keep compiling it. After any `git reset --hard`, run `git clean -nd` and look at what it lists.
-2. Pick an iPhone simulator and press Run.
+2. Pick an iPhone simulator and press Run. The shared scheme already points at `SalarySeed.storekit`, so the €2.99 purchase, the restore and a refund all work in the simulator with no App Store Connect product and no paid developer account. Buying costs nothing there; Xcode's Debug → StoreKit menu is where you undo it.
 
-No dependencies, no backend, no account, no network calls. Everything is on-device: bundled datasets plus arithmetic. v0.13 added the shape of a future contribution, but `ContributionService.endpoint` is nil and nothing has ever been sent, by anyone.
+No dependencies, no backend, no account. Every figure is on-device: bundled datasets plus arithmetic, and nothing about a salary is ever transmitted. **One thing does leave the phone as of v0.16**, and the earlier "no network calls" line in this README stopped being true the moment it did: StoreKit talks to Apple to fetch the product price, complete a purchase and check the entitlement. That traffic is between the device and Apple, carries no app data, and happens only around the support sheet. v0.13 added the shape of a future salary contribution, but `ContributionService.endpoint` is still nil and nothing has ever been sent, by anyone.
 
 ## The five tabs
 
@@ -36,7 +37,7 @@ No dependencies, no backend, no account, no network calls. Everything is on-devi
 | **Compare** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region. |
 | **Map** | Where it would sit differently. A Portuguese district choropleth, and a 27-tile grid of the European Union. |
 | **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. |
-| **Profile** | The inputs behind all of it, each with what it unlocks, plus the data-sharing consent: the toggle, the code, the delete, and the row itself. |
+| **Profile** | The inputs behind all of it, each with what it unlocks, the data-sharing status, the code, the delete and the row itself, and at the top the one place the app asks for money. |
 
 ## Data
 
@@ -66,6 +67,9 @@ SalarySeed/
     Contribution         the one row that would ever leave the phone, and its coarsening
   Features/    one folder per screen
   Models/      SalaryStore (the single source of truth), Localization, catalogues
+    SupporterStore       StoreKit 2: the product, the entitlement, restore, refunds
+    AccentTheme          the five accents, each carrying its own ink
+    AppIcon              setAlternateIconName, and the guard that stops the alert
   Theme.swift  design tokens and the OKLCH diverging ramp
 ```
 
@@ -91,6 +95,9 @@ These are not aspirations. Each one is enforced somewhere, and most were learned
 - **Stopping and deleting are different acts.** Stopping keeps the code, because the code is the only thing that makes deletion possible later.
 - **Unskippable screen, free answer.** The consent screen cannot be skipped or dismissed and has no default. Both answers continue into the app, and the app is identical either way, because consent conditioned on using the service is not consent.
 - **The summary is generated from the payload, never beside it.** The card that lists what will be sent decodes the actual row, so it cannot describe a field the payload lacks or hide one it has.
+- **Ask for money once, where they came looking.** The support sheet opens from a button in the profile and from nowhere else. No countdown, no crossed-out price, no interstitial, no nagging on the tenth launch. An app whose whole argument is that it does not manipulate the reader cannot manipulate the reader at the till.
+- **Show the thing, then ask.** The accent swatches are live before paying: tapping one recolours the whole app behind the sheet, and closing without buying puts it back. A locked feature you cannot see is a claim; one you can see is an offer.
+- **The receipt is the truth, never the cache.** `UserDefaults` mirrors the entitlement only so the first frame does not flicker. `Transaction.currentEntitlements` overwrites it on every launch and `Transaction.updates` overwrites it on every refund, so a paid flag can never outlive the payment.
 
 ## Verifying changes without a compiler
 
@@ -113,8 +120,15 @@ Much of this app was built where no Swift toolchain was available, so correctnes
 15. **Round-trip anything generated.** Emit the Swift from the source file, parse the Swift back, compare to the source. The regional tax tables are 45 rows nobody should ever retype.
 16. **When a stored property's type or optionality changes, grep every use of it in the same edit.** A type checker does this for free; a regex kit cannot. v0.15.2 shipped a build error this would have caught.
 17. **When a value becomes reachable that previously was not, grep every filter that used to exclude it.** v0.15 made Açores and Madeira selectable; a `filter { $0.cohort != nil }` written when they were unreachable then silently rendered them as unanswered. This failure has no error message and no crash, which is what makes it worth its own step.
+18. **When a constant becomes computed, check that nothing it now reads reads it back.** v0.16 turned `Theme.ink` from a literal into `current.ink`, and the bulk edit that replaced 52 hardcoded ink values happily replaced the one inside `AccentTheme.ink` too. That single line made the two properties call each other until the stack ran out: no compiler error, no warning, a crash on the first frame. Grep the new computed property's own definition first, before anything else.
+19. **When a design token stops being a constant, list the views that draw with it and check each one observes the thing that changes it.** SwiftUI cannot see a static change, so `Theme.accent` becoming computed made eight views quietly stale. The tempting fix, `.id(store.accent)` on the root, is worse than the bug: it rebuilds the whole tree and resets every `@State`, including the sheet the user is standing in while tapping the swatches. Grep for the token, then grep those files for the store.
+20. **Check that every name in a build setting exists on disk, and spelt the same.** `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES`, the `.appiconset` folder names and `AccentTheme.alternateIconName` have to agree three ways. Two of the three are strings no compiler ever reads, and the failure is a silent no-op at runtime.
 
 ## Version history
+
+**v0.16** — The first time the app asks for money. A €2.99 non-consumable, bought from a button at the top of the profile and from nowhere else, which funds the app, promises whatever paid features come later at no further cost, and unlocks five accent colours: green, blue, purple, pink, amber. The colours are live before paying and revert on close, because the honest version of a paywall shows the thing first. `Theme.accent` and `Theme.ink` became computed, which meant replacing 52 hardcoded ink values across 20 files and taught the kit step 18. Each accent carries its own ink rather than deriving one, so the check on a pink swatch is readable. `Theme.segNet` stays seed green throughout: it is a data colour, not chrome, and a net-pay segment that changed meaning with the user's taste would be a lie. The home-screen icon follows the accent through `setAlternateIconName`, with the four variants generated from the green master by `tools/make_alternate_icons.py` and declared in the asset catalogue rather than by hand. StoreKit is the only source of entitlement truth; the cached flag exists purely to stop a first-frame flicker, and a refund takes the colours back through the `Transaction.updates` listener. `SalarySeed.storekit` and a shared scheme make the whole flow testable in the simulator with no developer account.
+
+**v0.15.4** — Repository layout: `_archive/` for deliveries, data sources and dead directories, everything outside the folder-synchronized group so nothing stray is ever compiled.
 
 **v0.15.3** — Three island bugs, one of them user-visible. The region dimension's option list was still filtered to regions with a published cohort, which was correct while the islands were unreachable and became a silent failure the moment they were not: picking a Madeira município stored fine and then rendered everywhere as though nothing had been chosen. Grow's island note claimed the district lever "does nothing", which was false — with no home district the model falls back to the national sector average, so it does move the path. And the map's "vs where I am" chip was offered to users with no district, where it lit up and changed nothing.
 
@@ -146,8 +160,8 @@ Much of this app was built where no Swift toolchain was available, so correctnes
 
 ## Not done yet
 
-Açores and Madeira (the publication covers Continente). Tenure on the European map, where coverage is already measured. The pension model, which is still a placeholder and should fold into Grow's timeline. Self-employed mode. Variable pay in the tax engine. A real app icon. No premium or IAP yet, and no full accessibility pass. And the pooling itself: v0.12 asks for consent and records the answer, but there is no backend and no network call anywhere in the app, so nothing is uploaded from anyone, consenting or not.
+Island cohort figures: the tax is real for all three regions, but the Quadros de Pessoal cover Continente only, so Açores and Madeira have no published comparison and the app says so wherever that bites. Tenure on the European map, where coverage is already measured. The pension model, which is still a placeholder and should fold into Grow's timeline. Self-employed mode. Variable pay in the tax engine. No full accessibility pass. The supporter promise of "whatever comes later" has nothing to redeem yet, because there are no paid features beyond the colours. And the pooling itself: consent is asked and recorded, but there is no backend and nothing is uploaded from anyone, consenting or not.
 
 ## Honest limits
 
-Estimates for guidance, not tax advice. The engine models regular monthly salary under 2026 Continente rules and does not know your health or education deductions. Cohort figures cover private-sector employees; public-function contracts sit outside the Quadros de Pessoal entirely, and the app says so once you tell it that is your situation. Within-cohort dispersions are modelling assumptions, not published values, while the national curve's are derived from published deciles. The European figures are 2022 against Portugal's 2024, which is exactly why the two are never added together.
+Estimates for guidance, not tax advice. The engine models regular monthly salary under 2026 rules for whichever of the three fiscal regions you are in, and does not know your health or education deductions. Cohort figures cover private-sector employees; public-function contracts sit outside the Quadros de Pessoal entirely, and the app says so once you tell it that is your situation. Within-cohort dispersions are modelling assumptions, not published values, while the national curve's are derived from published deciles. The European figures are 2022 against Portugal's 2024, which is exactly why the two are never added together.

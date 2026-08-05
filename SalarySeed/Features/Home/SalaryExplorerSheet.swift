@@ -152,7 +152,7 @@ struct SalaryExplorerSheet: View {
         } label: {
             Text(option.label(pt: s.pt))
                 .font(.system(size: 13, weight: isOn ? .medium : .regular))
-                .foregroundStyle(isOn ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .foregroundStyle(isOn ? Theme.ink : Theme.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
                 .background(isOn ? Theme.accent : Color.white.opacity(0.05),
@@ -286,7 +286,7 @@ struct SalaryExplorerSheet: View {
         Button(action: action) {
             Text(title)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(primary ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .foregroundStyle(primary ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.8)

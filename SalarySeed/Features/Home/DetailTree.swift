@@ -22,6 +22,13 @@ struct TreeChild: Identifiable {
 }
 
 struct DetailTreeCard: View {
+    // v0.16: held, not read. This view draws with `Theme.accent`, which is a
+    // computed static, and SwiftUI cannot see a static change. Observing the
+    // store is what makes the view redraw when a supporter picks a new colour.
+    // Every other view that uses the accent already holds the store for its own
+    // reasons; these few did not, and without this line they keep the old colour
+    // until something unrelated happens to invalidate them. See SalarySeedApp.
+    @EnvironmentObject private var accentObserver: SalaryStore
     let title: String
     let total: String
     var totalCaption: String? = nil

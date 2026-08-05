@@ -81,7 +81,7 @@ struct ProfilePickerSheet: View {
         } label: {
             Text(option.label)
                 .font(.system(size: 13, weight: isSelected ? .medium : .regular))
-                .foregroundStyle(isSelected ? Color(hex: 0x06281C) : Theme.textPrimary)
+                .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .minimumScaleFactor(0.82)
