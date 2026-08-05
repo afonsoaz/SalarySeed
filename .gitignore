@@ -17,3 +17,14 @@ xcuserdata/
 # Swift Package Manager
 .swiftpm/
 Package.resolved
+
+# Files Claude delivers into the repo root. They are untracked by design, and
+# without these lines a repo-wide `git clean -fd` deletes them along with any
+# source data sitting beside them. It has happened once: v0.15's own tarball,
+# the AT tax workbooks and app-concept.md all went in a single clean.
+*.tar.gz
+*.patch
+*.bundle
+# Source data kept beside the project, never committed but never disposable.
+*.xlsx
+app-concept.md
