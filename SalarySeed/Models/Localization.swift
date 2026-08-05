@@ -1001,14 +1001,17 @@ struct Strings {
           "Nada deste ecrã fica guardado. O teu salário e o teu perfil ficam intactos.")
     }
 
-    // MARK: v0.12 consent, corrected in v0.13
+    // MARK: Consent (v0.12, corrected v0.13, reframed v0.14)
     //
-    // WHY IT CHANGED. The v0.12 wording was written for a fully anonymous design
-    // and overstated in three places once the design became pseudonymous: it said
-    // "dados anónimos", it promised nothing identifying "o telemóvel" is shared
-    // when a random token is exactly that, and "podes mudar de ideias" never said
-    // whether it meant stop or delete. None of it had shipped, so correcting it
-    // cost nothing; leaving it would have cost a re-consent of the whole base.
+    // WHY IT KEEPS CHANGING. v0.12 was written for a fully anonymous design and
+    // overstated once the design became pseudonymous. v0.14 reframes it again:
+    // the screen now has to argue for itself, because it is the only moment
+    // anyone is asked and there is no toggle anywhere to pick the decision up
+    // later. Afonso's instinct was to make it mandatory; that is the one thing it
+    // must not be, because consent conditioned on using the service is presumed
+    // not freely given (GDPR Art. 7(4), Recital 43) and void consent would leave
+    // a database with no lawful basis. So the screen is unskippable and the
+    // ANSWER is free, and the copy carries the weight a wall would have carried.
     //
     // The order of the four points is deliberate. What IS shared comes before
     // what is not, because a consent screen that leads with reassurance is
@@ -1016,8 +1019,8 @@ struct Strings {
     // what it does for the user, which happens to be both the honest framing and
     // the persuasive one.
     //
-    // Nothing here promises anything about the future, because nothing in the app
-    // will ever ask again. There is no timer and no scheduled question.
+    // Nothing here promises anything about the future asking, because nothing in
+    // the app will ever ask again. There is no timer and no scheduled question.
 
     var consentTitle: String {
         t("Want your numbers to count?", "Queres que os teus números contem?")
@@ -1025,6 +1028,12 @@ struct Strings {
     var consentBody: String {
         t("The official tables are a photograph of 2024 and they stop at broad sectors. What is missing is what people actually earn, by job, now. If you agree, your pay and your profile answers join everyone else's. What shows up, for you and for anyone, is totals and averages.",
           "As tabelas oficiais são uma fotografia de 2024 e ficam-se por setores largos. O que falta é o que as pessoas ganham mesmo, por profissão, agora. Se concordares, o teu salário e as respostas do perfil juntam-se às das outras pessoas. O que aparece, para ti e para qualquer pessoa, são totais e médias.")
+    }
+    /// v0.14: what saying yes actually buys. Stated as what it produces rather
+    /// than as a favour, because it is true and because a reason beats a plea.
+    var consentUnlocks: String {
+        t("It is what lets a future version compare you against real people doing your job, instead of against a table from 2024. That comparison does not exist yet, and it cannot exist without enough people.",
+          "É isto que vai permitir que uma versão futura te compare com pessoas a sério que fazem o que tu fazes, em vez de com uma tabela de 2024. Essa comparação ainda não existe, e não pode existir sem gente suficiente.")
     }
     var consentPointShared: String {
         t("Shared: your pay and your profile answers. Not your município, only the region.",
@@ -1035,27 +1044,93 @@ struct Strings {
           "Não partilhado: o teu nome, o teu email, os teus contactos, a tua localização.")
     }
     var consentPointCode: String {
-        t("Your answers carry a random code. There is nothing of yours inside it, and it is what lets you delete them later.",
-          "As tuas respostas levam um código aleatório. Não tem nada teu lá dentro, e é ele que te deixa apagá-las depois.")
+        t("Your answers travel with a random code instead of anything that identifies you. There is nothing of yours inside it, and it is what lets you delete them later.",
+          "As tuas respostas viajam com um código aleatório em vez de qualquer coisa que te identifique. Não tem nada teu lá dentro, e é ele que te deixa apagá-las depois.")
     }
     var consentPointDelete: String {
         t("You can delete everything you have sent, whenever you want, in the profile.",
           "Podes apagar tudo o que enviaste, quando quiseres, no perfil.")
     }
-    var consentAccept: String { t("Ok, I agree", "Ok, eu concordo") }
-    var consentDecline: String { t("No, thanks", "Não, obrigado") }
+    /// v0.14: the header over the row itself, shown inline on the screen rather
+    /// than behind a link. "Show what will be sent" is a promise best kept by
+    /// showing it without being asked twice.
+    var consentWhatIsSent: String { t("This is what would be sent", "É isto que seria enviado") }
+    var consentAccept: String {
+        t("I agree to share anonymised data", "Aceito partilhar dados anónimos")
+    }
+    var consentDecline: String { t("Don't share", "Não partilhar") }
     var consentEitherWay: String {
         t("The app works exactly the same either way.",
           "A app funciona exatamente na mesma de qualquer das formas.")
     }
 
-    // Profile
+    // MARK: The row, in words (v0.14)
+    //
+    // Rendered by decoding the CONTRIBUTION, never by reading the store. If the
+    // coarsening drops something, this has to show it dropped; a summary written
+    // beside the payload would drift from it on the first schema change.
 
-    var consentRowTitle: String { t("Share my data", "Partilhar os meus dados") }
-    var consentRowHint: String {
-        t("Your pay and your profile answers join everyone else's, shown only as totals and averages. Not your município, only the region. Never your name, your email or your location. Off is fine, nothing in the app changes.",
-          "O teu salário e as respostas do perfil juntam-se às das outras pessoas, mostrados só em totais e médias. O concelho não, só a região. Nunca o teu nome, o teu email ou a tua localização. Desligado não faz mal, nada muda na app.")
+    var contribRowCode: String { t("Code", "Código") }
+    var contribRowYear: String { t("Year", "Ano") }
+    var contribRowPay: String { t("Pay", "Salário") }
+    var contribRowNetTyped: String { t("Net you typed", "Líquido que puseste") }
+    var contribRowAjudas: String { t("Allowances", "Subsídios") }
+    var contribRowVariable: String { t("Bonus a year", "Prémios por ano") }
+    var contribRowSector: String { t("Sector", "Setor") }
+    var contribRowJob: String { t("Job", "Profissão") }
+    var contribRowTenure: String { t("Time at employer", "Antiguidade") }
+    var contribRowEmployer: String { t("Employer", "Empregador") }
+    var contribRowHours: String { t("Working time", "Tempo de trabalho") }
+    var contribRowRegion: String { t("Region", "Região") }
+    var contribRowAge: String { t("Age", "Idade") }
+    var contribRowEducation: String { t("Education", "Escolaridade") }
+    var contribRowGender: String { t("Gender", "Sexo") }
+    var contribNotAnswered: String { t("not answered", "não respondido") }
+
+    /// The band ladders in words. The raw value is the source of truth and this
+    /// only dresses it, so a band that is added to `Contribution` and not here
+    /// shows up as itself rather than silently disappearing.
+    func contribBandLabel(_ raw: String) -> String {
+        switch raw {
+        case "0": return t("none", "nenhum")
+        case "none": return t("none", "nenhuns")
+        case "1-100": return "1-100 €"
+        case "101-200": return "101-200 €"
+        case "201-400": return "201-400 €"
+        case "400+": return "400+ €"
+        case "1-1000": return "1-1 000 €"
+        case "1001-3000": return "1 001-3 000 €"
+        case "3001-6000": return "3 001-6 000 €"
+        case "6001-12000": return "6 001-12 000 €"
+        case "12000+": return "12 000+ €"
+        case "lt20": return t("under 20 h", "menos de 20 h")
+        case "20-29": return "20-29 h"
+        case "30-34": return "30-34 h"
+        case "35+": return "35+ h"
+        default: return raw
+        }
     }
+
+    // MARK: Profile status (v0.14, replaces the toggle)
+    //
+    // Afonso asked for information rather than a setting. Withdrawal still has to
+    // be as easy as giving it (Art. 7(3)), so the stop is a plain text action
+    // rather than a switch: quiet enough to read as information, real enough to
+    // be a right.
+
+    var consentStatusOnTitle: String { t("You are sharing anonymised data", "Estás a partilhar dados anónimos") }
+    var consentStatusOffTitle: String { t("You are not sharing data", "Não estás a partilhar dados") }
+    var consentStatusOnBody: String {
+        t("Your pay and your profile answers go into the pool under a random code, and only ever come back out as totals and averages. Not your município, only the region. Never your name, your email or your location.",
+          "O teu salário e as respostas do perfil vão para o conjunto com um código aleatório, e só voltam a sair em totais e médias. O concelho não, só a região. Nunca o teu nome, o teu email ou a tua localização.")
+    }
+    var consentStatusOffBody: String {
+        t("Nothing about you goes anywhere. The app works exactly the same, and the crowd comparisons will simply have one fewer person in them.",
+          "Nada teu vai para lado nenhum. A app funciona exatamente na mesma, e as comparações vão só ter menos uma pessoa lá dentro.")
+    }
+    var consentStopSharing: String { t("Stop sharing", "Deixar de partilhar") }
+    var consentStartSharing: String { t("Start sharing", "Começar a partilhar") }
+
     var consentCodeLabel: String { t("Your code", "O teu código") }
     var consentCodeHint: String {
         t("This is what links your answers to you, and it is the only thing that can. Copy it if you want to be able to ask for them to be deleted from a phone you no longer have.",

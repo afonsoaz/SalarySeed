@@ -1,4 +1,4 @@
-# SalarySeed — v0.13.1
+# SalarySeed — v0.14
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
@@ -71,7 +71,9 @@ These are not aspirations. Each one is enforced somewhere, and most were learned
 - **A published table is not a law.** Quadro 104 measures what staying at one employer is worth, so the model does not hand someone who moves a tenure raise the survey never observed.
 - **Define the payload by subtraction.** Every field has to earn its place by being able to change an aggregate. One that cannot is not neutral, it is a fingerprint bit. The concelho never leaves the phone; the region goes instead.
 - **Show the row, do not describe it.** A consent screen that explains the data in a paragraph asks to be believed. This one prints the JSON.
-- **Stopping and deleting are different acts.** The toggle keeps the code, because the code is the only thing that makes deletion possible later.
+- **Stopping and deleting are different acts.** Stopping keeps the code, because the code is the only thing that makes deletion possible later.
+- **Unskippable screen, free answer.** The consent screen cannot be skipped or dismissed and has no default. Both answers continue into the app, and the app is identical either way, because consent conditioned on using the service is not consent.
+- **The summary is generated from the payload, never beside it.** The card that lists what will be sent decodes the actual row, so it cannot describe a field the payload lacks or hide one it has.
 
 ## Verifying changes without a compiler
 
@@ -90,8 +92,11 @@ Much of this app was built where no Swift toolchain was available, so correctnes
 11. Check the store's symbol surface: every `store.x` and `Engine.x` referenced from a view exists on the type. This is the check that catches a rename halfway done.
 12. Check that doc comments do not reference symbols that no longer exist. v0.13 left two behind within an hour of writing them.
 13. **Check that the tracked file list matches the files actually on disk.** Xcode's folder-synchronized groups compile every `.swift` under `SalarySeed/`, tracked or not, so a file git does not know about is still a file the compiler reads. This is the one check the others cannot substitute for: steps 3 and 11 scan the repo, and a file outside the repo is invisible to them by construction. v0.13 shipped four "unused" string deletions that were being used, by a file deleted from git in v0.10 that had never left the disk.
+14. **Check that every payload field appears in the summary that claims to describe it.** `Contribution`'s `CodingKeys` against the source of `summaryFields`. A consent screen listing what will be sent is a promise, and the way it breaks is a field added to the payload and forgotten in the list.
 
 ## Version history
+
+**v0.14** — Consent reframed. The screen is now unskippable, with no default and two active buttons, and it argues for itself: what the pool is for, what a yes unlocks in a future version, and the row itself listed on the screen rather than behind a link. Both answers still continue into the app, because a screen that gates the app collects consent that is void under Article 7(4) and leaves a database with no lawful basis. The profile toggle became a status card that states what is happening, with the stop and the delete as plain text actions. New kit step 14: every payload field must appear in the summary that claims to describe it.
 
 **v0.13.1** — Removed `RaiseSimulatorView`, deleted from git in v0.10 but still sitting on disk and still being compiled, where it was the only remaining user of four `Strings` keys that v0.12 deleted as unused. Committed the `DEVELOPMENT_TEAM` setting so `git reset --hard` stops wiping the signing config. Added kit step 13.
 

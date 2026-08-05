@@ -120,33 +120,34 @@ struct ProfileView: View {
         }
     }
 
-    /// v0.12: the consent given at the end of onboarding, changeable here.
-    /// v0.13: and revocable, deletable and inspectable here, which is what makes
-    /// it consent rather than a checkbox.
+    /// v0.14: a status card, not a setting.
     ///
-    /// THREE ACTS, DELIBERATELY DISTINCT. The toggle stops future sharing and
-    /// keeps the code, because "stop" and "delete" are different intentions.
-    /// Deleting is its own destructive action with its own confirmation. And the
-    /// preview is neither: it is the row itself, readable at any time, on or off.
+    /// Afonso's call: the profile should say what is happening rather than offer
+    /// a switch, because the decision belongs to the one screen that explained it
+    /// properly. So the card leads with the state in a sentence, shows the code
+    /// and the row, and carries the two real actions as plain text.
     ///
-    /// The code is shown rather than hidden. It is the only thing in the app that
-    /// links a contribution to a person, so concealing it would be concealing the
-    /// one fact the consent screen is asking about, and copying it is what lets
-    /// someone ask for deletion from a phone they no longer have.
+    /// The stop is quiet but it is NOT decorative, and it cannot be. Withdrawing
+    /// consent has to be as easy as giving it (GDPR Art. 7(3)); a status card
+    /// with no way out would turn the onboarding screen's consent into something
+    /// that cannot be relied on. Quiet is allowed. Absent is not.
+    ///
+    /// Stopping and deleting stay separate, as they have since v0.13. Stopping
+    /// keeps the code, because the code is the only thing that makes the deleting
+    /// possible later.
     private var consentCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Toggle(isOn: Binding(
-                get: { store.dataSharingConsent == true },
-                set: { on in
-                    if on { store.grantDataSharing() } else { store.revokeDataSharing() }
-                }
-            )) {
-                Text(s.consentRowTitle)
-                    .font(.system(size: 14))
+        let sharing = store.dataSharingConsent == true
+        return VStack(alignment: .leading, spacing: 9) {
+            HStack(spacing: 8) {
+                Image(systemName: sharing ? "checkmark.seal.fill" : "hand.raised")
+                    .font(.system(size: 13))
+                    .foregroundStyle(sharing ? Theme.accent : Theme.textSecondary)
+                Text(sharing ? s.consentStatusOnTitle : s.consentStatusOffTitle)
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .tint(Theme.accent)
-            Text(s.consentRowHint)
+            Text(sharing ? s.consentStatusOnBody : s.consentStatusOffBody)
                 .font(.system(size: 10.5))
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
@@ -160,16 +161,33 @@ struct ProfileView: View {
             if let token = store.contributionToken {
                 Divider().overlay(Theme.cardBorder)
                 codeRow(token)
-                Button(role: .destructive) { askingForget = true } label: {
-                    Text(s.consentDeleteButton)
+            }
+
+            Divider().overlay(Theme.cardBorder)
+            HStack(spacing: 16) {
+                Button {
+                    if sharing { store.revokeDataSharing() } else { store.grantDataSharing() }
+                } label: {
+                    Text(sharing ? s.consentStopSharing : s.consentStartSharing)
                         .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Theme.danger)
+                        .foregroundStyle(Theme.textSecondary)
                 }
+                if store.contributionToken != nil {
+                    Button(role: .destructive) { askingForget = true } label: {
+                        Text(s.consentDeleteButton)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Theme.danger)
+                    }
+                }
+                Spacer(minLength: 0)
             }
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        .background(sharing ? Theme.accentSoft : Theme.card,
+                    in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14)
+            .stroke(sharing ? Theme.accentBorder : Theme.cardBorder, lineWidth: 1))
     }
 
     private func codeRow(_ token: String) -> some View {

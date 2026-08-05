@@ -598,66 +598,115 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 9, the consent screen (v0.12, copy corrected in v0.13)
+    // MARK: Step 9, the consent screen (v0.12, copy v0.13, reframed v0.14)
 
     /// Asked once, at the end, when there is something concrete to consent to.
     ///
-    /// WHAT MAKES IT VALID rather than decorative. Consent has to be freely given,
-    /// specific, informed and as easy to refuse as to give, so this screen does
-    /// four things deliberately. Both buttons are full width and equally reachable,
-    /// and neither is styled as a mistake. The screen states what is shared, what
-    /// is not, and what it is used for, in that order, before either button. It
-    /// says the app works exactly the same either way, which is true and is what
-    /// makes the choice free rather than a toll gate. And it says the answer can
-    /// be changed later, with the place named, because consent that cannot be
-    /// withdrawn is not consent.
+    /// v0.14 MADE THE SCREEN UNSKIPPABLE AND THE ANSWER FREE, and the distance
+    /// between those two is the entire design. There is no skip, no dismiss, no
+    /// default and no pre-selection: the only way past is to press one of two
+    /// buttons. But BOTH buttons continue into the app, and the app is identical
+    /// either way.
     ///
-    /// WHAT IT DOES NOT DO is pretend. Nothing is uploaded today: there is no
-    /// account and no network call in the app. The wording is future tense on
-    /// purpose, and the flag it writes is the thing any later pooling has to check.
+    /// The obvious alternative, "agree or the app closes", is wrong twice.
+    /// Practically, iOS has no sanctioned way for an app to terminate itself, so
+    /// it would be a dead end rather than an exit. Legally, consent conditioned
+    /// on using the service is presumed NOT freely given (GDPR Art. 7(4),
+    /// Recital 43), the pooling is plainly not necessary to compute anyone's
+    /// tax, and void consent would leave a database with no lawful basis. That
+    /// is strictly worse than not collecting: the data, and no right to use it.
+    ///
+    /// So the copy carries the weight the wall would have carried. It says what
+    /// the pool is for, shows the actual row instead of describing it, explains
+    /// the code, and says what a yes unlocks in a future version. A screen that
+    /// argues for itself converts better than one that traps.
+    ///
+    /// It scrolls, because the row is on it. The two buttons stay pinned below,
+    /// so no amount of content can push the decision off screen.
     private var consentStep: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Spacer().frame(height: 26)
-            HStack {
-                Spacer()
-                SproutView(stage: 4, size: 72, animatesIn: true, sways: true)
-                Spacer()
+            ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
+                    consentHeader
+                    consentPoints
+                    consentRowBlock
+                }
+                .padding(.bottom, 18)
             }
-            Text(s.consentTitle)
-                .font(.system(size: 26, weight: .medium))
-                .foregroundStyle(Theme.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 22)
-            Text(s.consentBody)
-                .font(.system(size: 13.5))
-                .foregroundStyle(Theme.textSecondary)
-                .lineSpacing(3)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 10)
-
-            VStack(alignment: .leading, spacing: 7) {
-                consentPoint(icon: "checkmark.circle", text: s.consentPointShared)
-                consentPoint(icon: "xmark.circle", text: s.consentPointNotShared)
-                consentPoint(icon: "key", text: s.consentPointCode)
-                consentPoint(icon: "trash", text: s.consentPointDelete)
-            }
-            .padding(.top, 16)
-
-            // v0.13: the row itself, readable before deciding. Everything above
-            // is a description of the data; this is the data.
-            Button { showConsentPreview = true } label: {
-                Text(s.consentPreviewButton)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Theme.accent)
-                    .underline()
-            }
-            .padding(.top, 12)
-
-            Spacer(minLength: 12)
             consentActions
         }
     }
 
+    private var consentHeader: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Spacer()
+                SproutView(stage: 4, size: 64, animatesIn: true, sways: true)
+                Spacer()
+            }
+            .padding(.top, 14)
+            Text(s.consentTitle)
+                .font(.system(size: 25, weight: .medium))
+                .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 18)
+            Text(s.consentBody)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.textSecondary)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 10)
+            // v0.14: the reason to say yes, stated as what it produces rather
+            // than as a favour asked.
+            Text(s.consentUnlocks)
+                .font(.system(size: 13))
+                .foregroundStyle(Theme.accent)
+                .lineSpacing(3)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 10)
+        }
+    }
+
+    private var consentPoints: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            consentPoint(icon: "checkmark.circle", text: s.consentPointShared)
+            consentPoint(icon: "xmark.circle", text: s.consentPointNotShared)
+            consentPoint(icon: "key", text: s.consentPointCode)
+            consentPoint(icon: "trash", text: s.consentPointDelete)
+        }
+        .padding(.top, 16)
+    }
+
+    /// v0.14: the row, on the screen, not behind a link. Everything above is a
+    /// description of the data. This is the data, decoded from the payload
+    /// itself, so it cannot describe a row the app would not actually send.
+    @ViewBuilder
+    private var consentRowBlock: some View {
+        let year = Calendar.current.component(.year, from: Date())
+        VStack(alignment: .leading, spacing: 8) {
+            Text(s.consentWhatIsSent)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(Theme.textSecondary)
+            if let row = store.contributionPreview(year: year) {
+                ContributionSummaryCard(row: row, s: s)
+                Button { showConsentPreview = true } label: {
+                    Text(s.consentPreviewButton)
+                        .font(.system(size: 11.5, weight: .medium))
+                        .foregroundStyle(Theme.accent)
+                        .underline()
+                }
+            } else {
+                Text(s.consentPreviewNoSalary)
+                    .font(.system(size: 12))
+                    .foregroundStyle(Theme.textFaint)
+            }
+        }
+        .padding(.top, 18)
+    }
+
+    /// Pinned below the scroll view. Both full width, both reachable without
+    /// scrolling, neither pre-selected, and the line underneath is the sentence
+    /// that makes the choice free rather than a toll gate.
     private var consentActions: some View {
         VStack(spacing: 0) {
             PrimaryButton(title: s.consentAccept) { finish(consent: true) }
@@ -670,6 +719,7 @@ struct OnboardingView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 10)
         }
+        .padding(.top, 4)
     }
 
     private func consentPoint(icon: String, text: String) -> some View {
