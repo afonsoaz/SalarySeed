@@ -1,4 +1,4 @@
-# SalarySeed — v0.15
+# SalarySeed — v0.15.3
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
@@ -93,8 +93,15 @@ Much of this app was built where no Swift toolchain was available, so correctnes
 12. Check that doc comments do not reference symbols that no longer exist. v0.13 left two behind within an hour of writing them.
 13. **Check that the tracked file list matches the files actually on disk.** Xcode's folder-synchronized groups compile every `.swift` under `SalarySeed/`, tracked or not, so a file git does not know about is still a file the compiler reads. This is the one check the others cannot substitute for: steps 3 and 11 scan the repo, and a file outside the repo is invisible to them by construction. v0.13 shipped four "unused" string deletions that were being used, by a file deleted from git in v0.10 that had never left the disk.
 14. **Check that every payload field appears in the summary that claims to describe it.** `Contribution`'s `CodingKeys` against the source of `summaryFields`. A consent screen listing what will be sent is a promise, and the way it breaks is a field added to the payload and forgotten in the list.
+15. **Round-trip anything generated.** Emit the Swift from the source file, parse the Swift back, compare to the source. The regional tax tables are 45 rows nobody should ever retype.
+16. **When a stored property's type or optionality changes, grep every use of it in the same edit.** A type checker does this for free; a regex kit cannot. v0.15.2 shipped a build error this would have caught.
+17. **When a value becomes reachable that previously was not, grep every filter that used to exclude it.** v0.15 made Açores and Madeira selectable; a `filter { $0.cohort != nil }` written when they were unreachable then silently rendered them as unanswered. This failure has no error message and no crash, which is what makes it worth its own step.
 
 ## Version history
+
+**v0.15.3** — Three island bugs, one of them user-visible. The region dimension's option list was still filtered to regions with a published cohort, which was correct while the islands were unreachable and became a silent failure the moment they were not: picking a Madeira município stored fine and then rendered everywhere as though nothing had been chosen. Grow's island note claimed the district lever "does nothing", which was false — with no home district the model falls back to the national sector average, so it does move the path. And the map's "vs where I am" chip was offered to users with no district, where it lit up and changed nothing.
+
+**v0.15.1 / v0.15.2** — `git clean` protection in `.gitignore`, and `ConcelhoCatalog.search` fixed after `Concelho.district` became optional.
 
 **v0.15** — Açores and Madeira. The tax is the real work: `TaxEngine.TaxRegion`, the two regions' withholding tables generated from the AT workbooks and round-tripped against them, and the annual rates computed as the 30% differential both regions apply in 2026 rather than embedded as eighteen more numbers. `region` is deliberately not defaulted anywhere, so the compiler asks at every call site. 30 island concelhos, `Concelho.district` now optional because the islands have none, and the picker browses the two regions as their own sections. On the map they appear beside the mainland with no colour, because the Quadros de Pessoal are Continente-only and there is no figure to give them. Compare and Grow say what that costs.
 

@@ -631,13 +631,22 @@ struct Strings {
           "Calculado com as tabelas de IRS do continente. Se vives nos Açores ou na Madeira, põe o teu concelho e as contas descem: as duas regiões cobram menos 30%.")
     }
     /// The comparison side, which the tax fix does not reach.
+    /// v0.15.3 widened this. The regional average is not the only thing missing:
+    /// the national distribution behind the headline percentile is built from the
+    /// Quadros de Pessoal too, so for an islander even "all of Portugal" is really
+    /// the mainland. Saying half of that would have been the flattering half.
     var islandNoCohortNote: String {
-        t("The Quadros de Pessoal cover the mainland only, so there is no regional average to put you against. Everything comparing you to a region is missing for Açores and Madeira, and the sector and tenure figures you do see are mainland ones.",
-          "Os Quadros de Pessoal só cobrem o continente, por isso não há média regional para te comparar. Tudo o que te compara com uma região falta para os Açores e a Madeira, e os valores de setor e antiguidade que vês são do continente.")
+        t("The Quadros de Pessoal cover the mainland only. So there is no regional average to put you against, the sector and tenure figures are mainland ones, and even the national percentile above is really a mainland distribution.",
+          "Os Quadros de Pessoal só cobrem o continente. Por isso não há média regional para te comparar, os valores de setor e antiguidade são do continente, e até a percentagem nacional aqui em cima é, na verdade, uma distribuição do continente.")
     }
+    /// v0.15.3 corrected this. It used to say the district lever "does nothing"
+    /// for islanders, and that was simply false: with no home district the model
+    /// falls back to the national sector average as the baseline, so picking a
+    /// district does move the path, just from a different starting point. Copy
+    /// that describes behaviour the app does not have is worse than no copy.
     var growIslandNote: String {
-        t("The district lever does nothing for Açores and Madeira: the district table is mainland only. The tax on this path is your region's, though.",
-          "O botão do distrito não faz nada para os Açores e a Madeira: a tabela dos distritos é só do continente. Mas o imposto deste percurso já é o da tua região.")
+        t("There is no district figure for Açores or Madeira, so changing district compares against the national average for your sector rather than against where you are now. The tax on this path is your region's.",
+          "Não há valor por distrito para os Açores nem para a Madeira, por isso mudar de distrito compara com a média nacional do teu setor em vez de comparar com onde estás agora. O imposto deste percurso é o da tua região.")
     }
 
     // MARK: v0.9.4 salary explorer

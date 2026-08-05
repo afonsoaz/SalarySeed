@@ -94,9 +94,21 @@ struct CompareDimension: Identifiable {
         CompareDimension(
             id: "region",
             icon: "map",
-            // Only regions with published cells appear (Açores and Madeira
-            // stay hidden until their data lands; QP covers Continente).
-            options: { _ in PTRegion.allCases.filter { $0.cohort != nil }.map { DimensionOption(id: $0.rawValue, label: $0.label) } },
+            // v0.15.3: EVERY region, including the two with no published cell.
+            //
+            // This list used to be filtered to regions that have a cohort, which
+            // was right while Açores and Madeira were unreachable. Once v0.15 let
+            // someone pick a Madeira concelho, the filter turned into a bug with
+            // no error message: `selectedOption` looks the stored region up IN
+            // THIS LIST, found nothing, returned nil, and every screen rendered
+            // the row as though no município had ever been chosen.
+            //
+            // Nothing is offered from here for this dimension anyway. Region is
+            // answered through `ConcelhoSheet` (see `usesConcelhoPicker`), so the
+            // list is a label lookup, not a menu. The absence of a cohort is
+            // handled where it belongs, by `cell` returning nil, and every caller
+            // already guards on that.
+            options: { _ in PTRegion.allCases.map { DimensionOption(id: $0.rawValue, label: $0.label) } },
             selectedID: { $0.region?.rawValue },
             // v0.9.1: region is derived from the município, so it cannot be set
             // directly. Passing nil clears the município; anything else is

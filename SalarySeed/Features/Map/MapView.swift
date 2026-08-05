@@ -152,10 +152,18 @@ struct MapView: View {
         }
     }
 
+    /// v0.15.3: the home chip only appears when there IS a home district.
+    ///
+    /// `effectiveBaseline` has always fallen back to national when the district
+    /// is unknown, so the chip was a control that lit up and changed nothing.
+    /// Rare before, because it needed someone to clear their município; routine
+    /// now, because every islander has no district by definition.
     private var baselinePicker: some View {
         HStack(spacing: 8) {
             baselineChip(.national, s.mapVsNational)
-            baselineChip(.home, s.mapVsHome)
+            if home != nil {
+                baselineChip(.home, s.mapVsHome)
+            }
         }
     }
 
