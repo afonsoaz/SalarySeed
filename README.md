@@ -1,4 +1,4 @@
-# SalarySeed — v0.13
+# SalarySeed — v0.13.1
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
@@ -6,7 +6,7 @@ Concept and design rationale live in [`../app-concept.md`](../app-concept.md). E
 
 ## Run it
 
-1. Open `SalarySeed.xcodeproj` in Xcode 16 or newer. The project uses folder-synchronized groups, so files added to `SalarySeed/` appear in Xcode automatically.
+1. Open `SalarySeed.xcodeproj` in Xcode 16 or newer. The project uses folder-synchronized groups, so files added to `SalarySeed/` appear in Xcode automatically. The flip side, and it has bitten once: a file **removed from git** is not removed from disk, and folder-synchronized groups keep compiling it. After any `git reset --hard`, run `git clean -nd` and look at what it lists.
 2. Pick an iPhone simulator and press Run.
 
 No dependencies, no backend, no account, no network calls. Everything is on-device: bundled datasets plus arithmetic. v0.13 added the shape of a future contribution, but `ContributionService.endpoint` is nil and nothing has ever been sent, by anyone.
@@ -89,8 +89,11 @@ Much of this app was built where no Swift toolchain was available, so correctnes
 10. Check that a rate shown as text agrees with the path drawn beside it.
 11. Check the store's symbol surface: every `store.x` and `Engine.x` referenced from a view exists on the type. This is the check that catches a rename halfway done.
 12. Check that doc comments do not reference symbols that no longer exist. v0.13 left two behind within an hour of writing them.
+13. **Check that the tracked file list matches the files actually on disk.** Xcode's folder-synchronized groups compile every `.swift` under `SalarySeed/`, tracked or not, so a file git does not know about is still a file the compiler reads. This is the one check the others cannot substitute for: steps 3 and 11 scan the repo, and a file outside the repo is invisible to them by construction. v0.13 shipped four "unused" string deletions that were being used, by a file deleted from git in v0.10 that had never left the disk.
 
 ## Version history
+
+**v0.13.1** — Removed `RaiseSimulatorView`, deleted from git in v0.10 but still sitting on disk and still being compiled, where it was the only remaining user of four `Strings` keys that v0.12 deleted as unused. Committed the `DEVELOPMENT_TEAM` setting so `git reset --hard` stops wiping the signing config. Added kit step 13.
 
 **v0.13** — Everything the app needs for crowd data, with nothing switched on. The pseudonymous token in the Keychain, deliberately surviving app deletion so erasure stays possible and shown in the profile as a copyable code. `Contribution`: 19 fields, a coarsening rule and a stated reason per field, a fixed wire shape that always writes every key. The consent copy corrected for a pseudonymous design, since the v0.12 wording said "anónimo", claimed nothing identifying the phone was shared, and never said whether withdrawal meant stop or delete. Delete-what-I-sent, and a sheet that prints the exact row. No endpoint, no scheduled question, nothing sent.
 
