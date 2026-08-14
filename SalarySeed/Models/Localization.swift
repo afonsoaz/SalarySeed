@@ -1066,8 +1066,8 @@ struct Strings {
     /// before the list. The bullets make the same point by being short: if the
     /// list is modest, saying so at length is the part that sounds defensive.
     var supportBody: String {
-        t("A way to keep this app free of ads and paid for. You get a few extra things while you are at it.",
-          "Uma forma de manter esta app sem anúncios e paga. Já agora, ganhas mais umas coisas.")
+        t("If you like SalarySeed, help cover what it costs to build and maintain (App Store hosting, tax updates, new features). And while you are at it, you get access to a few extra tools in the app.",
+          "Se gostas do SalarySeed, ajuda a suportar os custos de desenvolvimento e manutenção da app (p.ex., alojamento na App Store, atualização de IRS, novos features). E já agora, ganhas acesso a algumas ferramentas adicionais na app.")
     }
 
     /// Each benefit is a bold accent-coloured lead and a plain rest, so the list
@@ -1075,16 +1075,21 @@ struct Strings {
     /// than marked up inside one, because the split has to survive translation
     /// and a marker inside a sentence does not.
     var supportBenefits: [(lead: String, rest: String)] {
-        [(t("No ads, ever.", "Sem anúncios, nunca."),
-          t("And nothing about you leaves your phone.", "E nada teu sai do telemóvel.")),
-         (t("Grow.", "Crescer."),
-          t("Your pay over the next 5, 10 or 20 years.", "O teu salário nos próximos 5, 10 ou 20 anos.")),
-         (t("The European map.", "O mapa europeu."),
-          t("Your salary against the other 26 countries.", "O teu salário contra os outros 26 países.")),
-         (t("Your colour.", "A tua cor."),
-          t("Pick the interface colour, and the icon follows.", "Escolhe a cor da interface, e o ícone acompanha.")),
-         (t("Everything after this.", "Tudo o que vier depois."),
-          t("Included, without paying again.", "Incluído, sem pagar outra vez."))]
+        [(t("No ads.", "Sem anúncios."),
+          t("You stay ad-free forever, guaranteed.",
+            "Continuas sem anúncios para sempre, garantido.")),
+         (t("Grow mode.", "Modo \"Crescer\"."),
+          t("See how your salary could develop over the next 5, 10 or 20 years if you stay at the same company, based on the official average for people with more years of experience.",
+            "Vê como o teu salário pode evoluir nos próximos 5, 10, ou 20 anos se te mantiveres na mesma empresa, baseado na média oficial de pessoas com mais anos de experiência.")),
+         (t("EU comparison.", "Comparação na UE."),
+          t("See how your salary compares with the averages in EU countries, according to official Eurostat data.",
+            "Vê como o teu salário se compara com as médias nos países da UE, segundo dados oficiais do Eurostat.")),
+         (t("Make the app yours.", "Personaliza a app."),
+          t("Pick the colour you want for the interface, and for the app icon.",
+            "Escolhe a cor que preferes para a interface, e para o ícone da app.")),
+         (t("Everything that comes later.", "Tudo o que vier depois."),
+          t("If we add more features in future, even paid ones, they are yours.",
+            "Se no futuro implementarmos features adicionais, mesmo que sejam pagos, serão teus."))]
     }
 
     func supportCTA(_ price: String) -> String {
@@ -1133,10 +1138,10 @@ struct Strings {
           "Onde é que ficares te leva, o que mudar de empregador teria de bater, e quando compensa.")
     }
 
-    var lockEuroTitle: String { t("The other 26 countries", "Os outros 26 países") }
+    var lockEuroTitle: String { t("How you compare in the EU", "Como comparas na UE") }
     var lockEuroBlurb: String {
-        t("Your salary across the whole Union, in euros or adjusted for what things cost there.",
-          "O teu salário por toda a União, em euros ou ajustado ao custo de vida de cada país.")
+        t("See how your salary compares across Europe, in euros and adjusted for the cost of living in each country, based on Eurostat data.",
+          "Vê como o teu salário compara pela Europa, em euros e ajustado ao custo de vida de cada país, baseado em dados do Eurostat.")
     }
 
     // Errors, one line each, only for the cases worth interrupting someone over.

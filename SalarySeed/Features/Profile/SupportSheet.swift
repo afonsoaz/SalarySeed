@@ -45,9 +45,17 @@ struct SupportSheet: View {
                     }
                     .padding(.horizontal, 22)
                     .padding(.top, 26)
-                    .padding(.bottom, 18)
+                    .padding(.bottom, 22)
                 }
                 VStack(alignment: .leading, spacing: 0) {
+                    // A hairline over the pinned actions. Without it the content
+                    // scrolling underneath just stops mid-swatch, which reads as
+                    // a clipping bug rather than as "there is more above". The
+                    // rule is what makes the pinned area look like a bar.
+                    Rectangle()
+                        .fill(Theme.cardBorder)
+                        .frame(height: 1)
+                        .padding(.bottom, 14)
                     errorLine
                     actions.padding(.top, 4)
                 }
