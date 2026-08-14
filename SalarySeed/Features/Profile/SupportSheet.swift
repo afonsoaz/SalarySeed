@@ -26,20 +26,33 @@ struct SupportSheet: View {
 
     private var s: Strings { store.s }
 
+    /// v1.0.1 PINNED THE ACTIONS BELOW THE SCROLL.
+    ///
+    /// The benefit list went from three items to five, which pushed the price and
+    /// the buy button off the bottom of a 6.1-inch screen. A payment button that
+    /// has to be scrolled to is not a decision somebody declined, it is one they
+    /// never saw, and the fix is the same one the onboarding consent step used
+    /// for the same reason: the content scrolls, the choice does not move.
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
-            ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        header
+                        benefits.padding(.top, 22)
+                        swatches.padding(.top, 22)
+                    }
+                    .padding(.horizontal, 22)
+                    .padding(.top, 26)
+                    .padding(.bottom, 18)
+                }
                 VStack(alignment: .leading, spacing: 0) {
-                    header
-                    benefits.padding(.top, 22)
-                    swatches.padding(.top, 22)
                     errorLine
-                    actions.padding(.top, 24)
+                    actions.padding(.top, 4)
                 }
                 .padding(.horizontal, 22)
-                .padding(.top, 26)
-                .padding(.bottom, 30)
+                .padding(.bottom, 14)
             }
         }
         .presentationDetents([.large])
@@ -75,9 +88,20 @@ struct SupportSheet: View {
 
     private var benefits: some View {
         VStack(alignment: .leading, spacing: 14) {
+            // v1.0.1: five, and the order is the argument.
+            //
+            // What it funds comes first, because that is the honest reason and
+            // the one that survives if somebody thinks the features are thin.
+            // The two real screens come next, described by the question they
+            // answer. Colours fourth, because leading with them would make this
+            // feel like selling paint. The promise about later comes last, which
+            // is where a commitment belongs: it is what you are left holding
+            // after the list of things you can already see.
             benefit("🌱", s.supportBenefitFund)
-            benefit("🎁", s.supportBenefitFuture)
+            benefit("📈", s.supportBenefitGrow)
+            benefit("🇪🇺", s.supportBenefitEurope)
             benefit("🎨", s.supportBenefitColour)
+            benefit("🎁", s.supportBenefitFuture)
         }
     }
 

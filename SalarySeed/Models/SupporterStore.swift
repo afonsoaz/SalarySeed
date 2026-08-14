@@ -3,7 +3,8 @@ import StoreKit
 
 /// v0.16: the one purchase in the app.
 ///
-/// A €2.99 NON-CONSUMABLE. Not a donation, and the distinction is not pedantry:
+/// A €4.99 NON-CONSUMABLE (€2.99 until v1.0.1). Not a donation, and the
+/// distinction is not pedantry:
 /// Apple does not allow a pure "support the developer" payment through IAP, so
 /// the purchase has to unlock something. The accent colours are what make this a
 /// legitimate unlock rather than a tip.

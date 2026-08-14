@@ -27,7 +27,7 @@ All of it is deleted when you delete the app.
 One thing, and it is not about you.
 
 When you open the support screen, the app asks Apple for the current price of the
-€2.99 supporter unlock, and if you buy it, Apple handles the purchase and tells
+€4.99 supporter unlock, and if you buy it, Apple handles the purchase and tells
 the app whether you own it. That traffic is between your device and Apple. It
 carries nothing from the app: no salary, no profile, no identifier of ours.
 

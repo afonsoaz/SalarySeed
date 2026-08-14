@@ -1,46 +1,40 @@
 {
-  "identifier" : "5A1A5EED",
-  "nonRenewingSubscriptions" : [
-
-  ],
-  "products" : [
+  "identifier": "5A1A5EED",
+  "nonRenewingSubscriptions": [],
+  "products": [
     {
-      "displayPrice" : "2.99",
-      "familyShareable" : false,
-      "internalID" : "5A1A5EED0001",
-      "localizations" : [
+      "displayPrice": "4.99",
+      "familyShareable": false,
+      "internalID": "5A1A5EED0001",
+      "localizations": [
         {
-          "description" : "Apoia o desenvolvimento e a manutenção do SalarySeed. Pagamento único, não é subscrição.",
-          "displayName" : "Apoiar o SalarySeed",
-          "locale" : "pt_PT"
+          "description": "Apoia o desenvolvimento e a manuten\u00e7\u00e3o do SalarySeed. Pagamento \u00fanico, n\u00e3o \u00e9 subscri\u00e7\u00e3o.",
+          "displayName": "Apoiar o SalarySeed",
+          "locale": "pt_PT"
         },
         {
-          "description" : "Support the development and upkeep of SalarySeed. One-off payment, not a subscription.",
-          "displayName" : "Support SalarySeed",
-          "locale" : "en_US"
+          "description": "Support the development and upkeep of SalarySeed. One-off payment, not a subscription.",
+          "displayName": "Support SalarySeed",
+          "locale": "en_US"
         }
       ],
-      "productID" : "com.afonsoazevedo.salaryseed.supporter",
-      "referenceName" : "Supporter",
-      "type" : "NonConsumable"
+      "productID": "com.afonsoazevedo.salaryseed.supporter",
+      "referenceName": "Supporter",
+      "type": "NonConsumable"
     }
   ],
-  "settings" : {
-    "_askToBuyEnabled" : false,
-    "_billingIssuesEnabled" : false,
-    "_disableDialogs" : false,
-    "_failTransactionsEnabled" : false,
-    "_locale" : "pt_PT",
-    "_storefront" : "PRT",
-    "_storeKitErrors" : [
-
-    ]
+  "settings": {
+    "_askToBuyEnabled": false,
+    "_billingIssuesEnabled": false,
+    "_disableDialogs": false,
+    "_failTransactionsEnabled": false,
+    "_locale": "pt_PT",
+    "_storefront": "PRT",
+    "_storeKitErrors": []
   },
-  "subscriptionGroups" : [
-
-  ],
-  "version" : {
-    "major" : 3,
-    "minor" : 0
+  "subscriptionGroups": [],
+  "version": {
+    "major": 3,
+    "minor": 0
   }
 }

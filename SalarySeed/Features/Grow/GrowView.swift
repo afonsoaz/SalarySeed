@@ -25,8 +25,16 @@ import SwiftUI
 /// scenario lives in memory for the session and never reaches UserDefaults. The
 /// single deliberate way to change the real salary is the year-0 card, which
 /// routes through the same salaryChangeConfirmation every other entry point uses.
+///
+/// v1.0.1: THE WHOLE SCREEN IS BEHIND THE SUPPORT PAYMENT. Non-supporters get
+/// `SupportGate` instead, carrying one real figure computed from their own
+/// salary: what they would be earning in ten years if nothing changes. That
+/// number is the honest headline described above, not a flattering one, which is
+/// the point. See `SupportGate` for why a gate here does not contradict v0.16's
+/// "ask once, where they came looking".
 struct GrowView: View {
     @EnvironmentObject private var store: SalaryStore
+    @EnvironmentObject private var supporter: SupporterStore
     @State private var scrubYear = 0
     @State private var showLevers = false
     @State private var showSectorTenure = false
@@ -69,7 +77,9 @@ struct GrowView: View {
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
-            if let ctx, let result = GrowthEngine.result(ctx: ctx, scenario: store.growScenario) {
+            if !supporter.isSupporter {
+                gate
+            } else if let ctx, let result = GrowthEngine.result(ctx: ctx, scenario: store.growScenario) {
                 loaded(ctx: ctx, result: result)
             } else {
                 emptyState
@@ -239,6 +249,38 @@ struct GrowView: View {
     /// v0.10.1: what was a three-way metric picker is now a label and one
     /// toggle. There is only one quantity on this chart, so the only choice left
     /// is which euros it is drawn in.
+    // MARK: The gate (v1.0.1)
+
+    /// The taste is the DEFAULT scenario, every lever off, ten years out.
+    ///
+    /// It deliberately does not read `store.growScenario`: that is the session's
+    /// in-memory exploration, and a gate whose headline moved because of levers
+    /// the person cannot reach would be showing them a number they could not
+    /// reproduce. A fresh `Scenario()` is the same "if you stay" figure the paid
+    /// screen opens on.
+    ///
+    /// Missing when the profile has no sector or no tenure, because the engine
+    /// genuinely cannot answer without them. The gate then makes its case in
+    /// words rather than printing a zero, which is the same rule the rest of the
+    /// app follows: never draw a shape the data does not have.
+    @ViewBuilder
+    private var gate: some View {
+        let taste = ctx.flatMap { GrowthEngine.result(ctx: $0, scenario: GrowthEngine.Scenario()) }
+        ScrollView {
+            SupportGate(
+                symbol: "chart.line.uptrend.xyaxis",
+                title: s.gateGrowTitle,
+                blurb: s.gateGrowBlurb,
+                tasteLabel: taste == nil ? nil : s.gateGrowTasteLabel,
+                tasteValue: taste.flatMap { $0.baseline.last.map { eur($0.gross) } },
+                tasteNote: taste == nil ? nil : s.gateGrowTasteNote,
+                bullets: s.gateGrowBullets
+            )
+            .padding(.horizontal, 20)
+            .padding(.bottom, 28)
+        }
+    }
+
     private var unitRow: some View {
         HStack(spacing: 8) {
             SectionLabel(s.growChartTitle)

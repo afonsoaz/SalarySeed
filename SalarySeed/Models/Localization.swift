@@ -1059,21 +1059,40 @@ struct Strings {
 
     var supportButton: String { t("Support SalarySeed", "Apoia o SalarySeed") }
     var supportTitle: String { t("Support SalarySeed", "Apoia o SalarySeed") }
+    /// v1.0.1 rewrote the body around a payment that now unlocks two real
+    /// screens, and the hard part was not letting it turn into a sales pitch.
+    ///
+    /// It says out loud that the two features are not miraculous, because they
+    /// are not: a projection off a published staircase and a comparison against
+    /// 26 countries. Overselling them would be the first dishonest sentence in
+    /// the app, and the honest version is a better argument anyway, because the
+    /// real thing being bought is an app with no ads that collects nothing.
     var supportBody: String {
-        t("I built this app so people can understand what they earn, and how they compare against their industry, in a way that is intuitive but detailed. But building and maintaining SalarySeed costs money. Thank you for your support!",
-          "Construí esta app para as pessoas perceberem o que ganham, e como se comparam contra a sua industria de uma forma intuitiva, mas detalhada. Mas, criar e manter o SalarySeed custa dinheiro. Obrigado pelo teu apoio!")
+        t("I built this app so people can understand what they earn, and how they compare, in a way that is intuitive but detailed. Two of the screens are for supporters now. Neither is magic, and the app is useful without them. What your money really buys is this staying an app with no ads, no tracking and nothing collected about you, and the time to keep it correct when the law changes.",
+          "Construí esta app para as pessoas perceberem o que ganham, e como se comparam, de uma forma intuitiva mas detalhada. Dois dos ecrãs são agora para quem apoia. Nenhum deles faz milagres, e a app é útil sem eles. O que o teu dinheiro compra mesmo é isto continuar a ser uma app sem anúncios, sem rastreio e sem recolher nada sobre ti, e o tempo para a manter certa quando a lei mudar.")
     }
     var supportBenefitFund: String {
-        t("You pay what the app costs to run. Servers, updates when the law changes, and the time that goes into what comes next.",
-          "Pagas o que a app custa a manter. Servidores, atualizações perante mudanças legislativas, e o tempo dedicado a desenvolvimentos futuros.")
+        t("You pay what the app costs to run. No ads, nothing collected about you, and updates when the tax rules change.",
+          "Pagas o que a app custa a manter. Sem anúncios, sem recolher nada sobre ti, e atualizações quando as regras fiscais mudarem.")
     }
-    var supportBenefitFuture: String {
-        t("Whatever comes later is yours. If there are ever paid features, everyone who supported now gets them without paying again, whatever they end up costing.",
-          "O que vier depois, é teu. Se um dia houver funcionalidades pagas, quem apoiou agora fica com elas sem pagar outra vez, independentemente do preço das mesmas.")
+    /// v1.0.1. The two concrete ones, described by what they answer rather than
+    /// by what they are called, because "Grow" means nothing to somebody who has
+    /// not been in it.
+    var supportBenefitGrow: String {
+        t("Grow: what you would be earning in 5, 10 or 20 years, staying where you are against changing employer, and the raise a move has to beat.",
+          "Crescer: o que estarias a ganhar daqui a 5, 10 ou 20 anos, ficando onde estás ou mudando de empregador, e o aumento que uma mudança tem de bater.")
+    }
+    var supportBenefitEurope: String {
+        t("The European map: your salary against the other 26 countries, in euros or adjusted for what things cost there.",
+          "O mapa europeu: o teu salário contra os outros 26 países, em euros ou ajustado ao custo de vida de cada um.")
     }
     var supportBenefitColour: String {
-        t("Make the app yours. Pick the interface colour.",
-          "Personaliza a app. Escolhe a cor da interface.")
+        t("Make the app yours. Pick the interface colour, and the home-screen icon follows.",
+          "Personaliza a app. Escolhe a cor da interface, e o ícone acompanha.")
+    }
+    var supportBenefitFuture: String {
+        t("Everything that comes later is yours. Whatever gets built next is included, at no further cost, whatever it ends up being worth.",
+          "Tudo o que vier depois é teu. O que for construído a seguir vem incluído, sem custo adicional, valha o que valer.")
     }
     func supportCTA(_ price: String) -> String {
         t("Support for \(price)", "Apoiar por \(price)")
@@ -1104,6 +1123,61 @@ struct Strings {
     var supportIconNote: String {
         t("The home-screen icon changes too. iOS shows its own alert when it does.",
           "O ícone no ecrã principal também muda. O iOS mostra um aviso dele quando isso acontece.")
+    }
+
+    // MARK: The gates (v1.0.1)
+    //
+    // What a non-supporter sees where Grow and the European map live. Each one
+    // states what the screen answers, shows one REAL figure computed from the
+    // person's own salary, and lists what is behind it. The figure is the same
+    // one the paid screen would show, not a flattering pick: Grow's is the
+    // shallow "if nothing changes" staircase the whole screen is honest about.
+
+    var gateWhatYouGet: String { t("What is behind this", "O que está aqui atrás") }
+    var gateSeeWhatSupportGets: String { t("See what supporting gets you", "Ver o que apoiar te dá") }
+
+    var gateGrowTitle: String { t("Where does this go?", "Isto vai dar onde?") }
+    var gateGrowBlurb: String {
+        t("Home says what you earn now. This screen is the only one about later: whether staying where you are is worth it, and what changing employer would have to beat.",
+          "O início diz o que ganhas agora. Este ecrã é o único sobre depois: se vale a pena ficares onde estás, e o que mudar de empregador teria de bater.")
+    }
+    var gateGrowTasteLabel: String {
+        t("In 10 years, if nothing changes", "Daqui a 10 anos, se nada mudar")
+    }
+    var gateGrowTasteNote: String {
+        t("Gross per month, in today's money, from your sector's published tenure steps. It is a shallow staircase, and that is the honest answer.",
+          "Bruto por mês, a preços de hoje, a partir dos escalões de antiguidade publicados do teu setor. É uma escada suave, e essa é a resposta honesta.")
+    }
+    var gateGrowBullets: [String] {
+        [t("The full projection over 5, 10 or 20 years", "A projeção completa a 5, 10 ou 20 anos"),
+         t("Staying put against changing employer, side by side", "Ficar ou mudar de empregador, lado a lado"),
+         t("The raise a move has to beat to be worth it", "O aumento que uma mudança tem de bater para valer a pena"),
+         t("Levers for sector, district and how often you move", "Alavancas de setor, distrito e frequência de mudança")]
+    }
+
+    var gateEuroTitle: String { t("And the rest of Europe?", "E o resto da Europa?") }
+    var gateEuroBlurb: String {
+        t("The Portuguese map is yours either way. This is the other half: the same salary placed against the other 26 countries in the Union.",
+          "O mapa português é teu de qualquer forma. Isto é a outra metade: o mesmo salário colocado contra os outros 26 países da União.")
+    }
+    var gateEuroTasteLabel: String {
+        t("Portugal, in your sector", "Portugal, no teu setor")
+    }
+    /// Reuses `ordinal`, which already knows that English needs 1st/2nd/3rd/21st
+    /// and Portuguese takes "º" for everything. Writing a second rule here is how
+    /// the two come to disagree.
+    func gateEuroTasteValue(_ place: Int, _ outOf: Int) -> String {
+        t("\(ordinal(place)) of \(outOf)", "\(ordinal(place)) de \(outOf)")
+    }
+    var gateEuroTasteNote: String {
+        t("By average pay in your sector, Eurostat 2022. The map shows where every other country sits, and where you sit inside them.",
+          "Por remuneração média no teu setor, Eurostat 2022. O mapa mostra onde estão os outros países, e onde estás tu dentro deles.")
+    }
+    var gateEuroBullets: [String] {
+        [t("All 27 countries, your sector, on one grid", "Os 27 países, o teu setor, numa grelha"),
+         t("In euros, or adjusted for what things cost locally", "Em euros, ou ajustado ao custo de vida local"),
+         t("What your own salary would be worth in each one", "O que o teu salário valeria em cada um"),
+         t("Where Portugal ranks, and by how far", "Em que lugar fica Portugal, e por quanto")]
     }
 
     // Errors, one line each, only for the cases worth interrupting someone over.

@@ -1,10 +1,10 @@
-# SalarySeed — v1.0.0
+# SalarySeed — v1.0.1
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
 **Every figure comes from published, openly licensed data**, and there is no other kind. GEP and INE for Portugal, Eurostat for Europe, the AT workbooks for tax. No crowdsourced number, no recruiter survey, no estimate from another app. If a figure is on screen, a public table stands behind it, and where no such table exists the app says so instead of drawing something.
 
-**Nothing you enter leaves your phone.** Not as a setting, not as a promise: there is no networking code in this app at all beyond StoreKit talking to Apple about the €2.99 unlock. See "Where the data goes" below, which is short.
+**Nothing you enter leaves your phone.** Not as a setting, not as a promise: there is no networking code in this app at all beyond StoreKit talking to Apple about the €4.99 unlock. See "Where the data goes" below, which is short.
 
 Concept and design rationale live in [`app-concept.md`](app-concept.md), next to this file. Every non-obvious decision in this repo is explained in a comment at the point it was made, including the ones that were wrong the first time.
 
@@ -32,7 +32,7 @@ Salary_App/                    <- the git repo root
 ## Run it
 
 1. Open `SalarySeed.xcodeproj` in Xcode 16 or newer. The project uses folder-synchronized groups, so files added to `SalarySeed/` appear in Xcode automatically. The flip side, and it has bitten once: a file **removed from git** is not removed from disk, and folder-synchronized groups keep compiling it. After any `git reset --hard`, run `git clean -nd` and look at what it lists.
-2. Pick an iPhone simulator and press Run. The shared scheme already points at `SalarySeed.storekit`, so the €2.99 purchase, the restore and a refund all work in the simulator with no App Store Connect product and no paid developer account. Buying costs nothing there; Xcode's Debug → StoreKit menu is where you undo it.
+2. Pick an iPhone simulator and press Run. The shared scheme already points at `SalarySeed.storekit`, so the €4.99 purchase, the restore and a refund all work in the simulator with no App Store Connect product and no paid developer account. Buying costs nothing there; Xcode's Debug → StoreKit menu is where you undo it.
 
 No dependencies, no account, no backend. Every figure is on-device: bundled datasets plus arithmetic. The only network traffic the app generates is StoreKit talking to Apple around the support sheet, which carries no app data.
 
@@ -42,8 +42,8 @@ No dependencies, no account, no backend. Every figure is on-device: bundled data
 |---|---|
 | **Home** | What you earn now. Gross ↔ net, yearly figures, total cost to your employer, the full breakdown, and the annual IRS settlement with every assumption written out. |
 | **Compare** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region. |
-| **Map** | Where it would sit differently. A Portuguese district choropleth, and a 27-tile grid of the European Union. |
-| **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. |
+| **Map** | Where it would sit differently. A Portuguese district choropleth, free; and a 27-tile grid of the European Union, for supporters. |
+| **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. For supporters. |
 | **Profile** | The inputs behind all of it, each with what it unlocks, and at the top the one place the app asks for money. |
 
 ## Data
@@ -72,6 +72,7 @@ SalarySeed/
     EuroComparison       the European map's ratios, ranks and colour buckets
     GrowthEngine         the projection: anchoring, stay and move paths, rates
   Features/    one folder per screen
+    Shared/SupportGate     what a non-supporter sees where Grow and the Europe map live
   Models/      SalaryStore (the single source of truth), Localization, catalogues
     SupporterStore       StoreKit 2: the product, the entitlement, restore, refunds
     AccentTheme          the five accents, each carrying its own ink
@@ -142,7 +143,7 @@ is a stronger statement than a privacy policy and the reason the App Store label
 reads "Data Not Collected" without qualification.
 
 The one exception is not about you. StoreKit talks to Apple to fetch the product
-price and complete the €2.99 purchase. Apple is the seller of record, so we never
+price and complete the €4.99 purchase. Apple is the seller of record, so we never
 see an Apple ID, a name or a payment detail, only an anonymous monthly total.
 
 **A contribution pool was built, and deliberately not shipped.** It works: rows
@@ -153,11 +154,20 @@ branch, which is `master` plus exactly that.
 
 It is not here because collecting pay data makes the author a data controller, and
 the lawyer, DPIA, processing record, retention policy, erasure duties and personal
-liability that follow are out of proportion to a one-person app. The €2.99 is
+liability that follow are out of proportion to a one-person app. The payment is
 unaffected either way: the App Store trader disclosure follows from taking money,
 not from taking data.
 
 ## Version history
+
+**v1.0.1** — The support payment goes to €4.99 and starts unlocking something. Grow and the European half of the map are now behind it, alongside the accents and the standing promise that everything built later is included. Portugal's map, Home and Compare stay free, because the app's own country is what the app is for.
+
+This reverses half of a v0.16 decision on purpose. That version said the support sheet opens from the profile and from nowhere else, which was right when the payment bought five colours and anything louder would have been selling paint. A feature nobody can find is not a feature, so Grow and the European map now show a gate where the paid thing lives. What stays forbidden is everything the old rule was really aimed at: interstitials, launch-count nags, countdowns, crossed-out prices, and prompts over a screen somebody was already using. The sheet is still the only place money is asked for.
+
+The other v0.16 decision, show the thing before asking, is kept rather than reversed, and it is what the gates are built around. Each one prints one REAL figure computed from the user's own salary: Grow's is what they would earn in ten years if nothing changes, and it is deliberately the same shallow number the paid screen opens on rather than a flattering pick; the map's is where Portugal actually ranks in their sector, which for IT is 24th of 27. The support sheet says out loud that neither screen is miraculous and the app is useful without them, because it is, and because overselling a projection would be the first dishonest sentence in the app.
+
+The price rises on the SAME product id, in App Store Connect, which is what keeps everyone who paid €2.99 entitled to all of it. A new product at a new price would have stranded them and broken the promise the sheet makes. The buy button also moved below the scroll: five benefits instead of three pushed it off the bottom of a 6.1-inch screen, and a payment button that has to be scrolled to is not a decision anyone declined.
+
 
 **v1.0.0** — The release, and it is smaller than what came before it. Everything the app shows comes from published data and nothing a user types ever leaves the phone, which is now a property of the code rather than a setting: there is no `URLSession` anywhere in the app and no endpoint to point one at.
 

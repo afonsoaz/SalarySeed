@@ -13,6 +13,7 @@ import SwiftUI
 /// inside Eurostat and applied to the user's own salary. See EuroComparison.
 struct MapView: View {
     @EnvironmentObject private var store: SalaryStore
+    @EnvironmentObject private var supporter: SupporterStore
 
     @State private var scope: MapScope = .portugal
     @State private var baseline: MapBaseline = .national
@@ -108,12 +109,49 @@ struct MapView: View {
     private var scopeContent: some View {
         switch scope {
         case .portugal: portugalScope
-        case .europe: EuropeScopeView(sector: store.sector,
-                                      yourGross: store.breakdown.grossMonthly,
-                                      purchasingPower: $purchasingPower,
-                                      selected: $selectedCountry,
-                                      onPickSector: { showSectorSheet = true })
+        // v1.0.1: the European half is behind the support payment; Portugal is
+        // not, and that split is the whole point. The app's own country stays
+        // free because that is what it is for, and the comparison against 26
+        // others is the extra.
+        case .europe:
+            if supporter.isSupporter {
+                EuropeScopeView(sector: store.sector,
+                                yourGross: store.breakdown.grossMonthly,
+                                purchasingPower: $purchasingPower,
+                                selected: $selectedCountry,
+                                onPickSector: { showSectorSheet = true })
+            } else {
+                europeGate
+            }
         }
+    }
+
+    /// The taste is Portugal's own rank in the user's sector.
+    ///
+    /// It is computed from the same bundled Eurostat data the paid grid draws, so
+    /// it is a real reading rather than a headline, and it is the single most
+    /// arresting fact in that dataset: where the country actually sits. Absent
+    /// when the profile has no sector, or when the sector maps to no NACE
+    /// section, which are exactly the two cases where the paid screen also
+    /// refuses to draw and says why.
+    @ViewBuilder
+    private var europeGate: some View {
+        let rank = store.sector?.euroSection.map { section in
+            EuroComparison.portugalRank(
+                in: EuroComparison.readings(section: section,
+                                            purchasingPower: purchasingPower,
+                                            yourGross: store.breakdown.grossMonthly)
+            )
+        } ?? nil
+        SupportGate(
+            symbol: "globe.europe.africa",
+            title: s.gateEuroTitle,
+            blurb: s.gateEuroBlurb,
+            tasteLabel: rank == nil ? nil : s.gateEuroTasteLabel,
+            tasteValue: rank.map { s.gateEuroTasteValue($0.place, $0.outOf) },
+            tasteNote: rank == nil ? nil : s.gateEuroTasteNote,
+            bullets: s.gateEuroBullets
+        )
     }
 
     private var portugalScope: some View {
