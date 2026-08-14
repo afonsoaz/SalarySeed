@@ -86,33 +86,38 @@ struct SupportSheet: View {
 
     // MARK: The three
 
+    /// v1.0.1: five, and the order is the argument.
+    ///
+    /// What it funds comes first, because that is the honest reason and the one
+    /// that survives if somebody thinks the features are thin. The two real
+    /// screens come next. Colours fourth, because leading with them would make
+    /// this feel like selling paint. The promise about later comes last, which
+    /// is where a commitment belongs: it is what you are left holding after the
+    /// list of things you can already see.
     private var benefits: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // v1.0.1: five, and the order is the argument.
-            //
-            // What it funds comes first, because that is the honest reason and
-            // the one that survives if somebody thinks the features are thin.
-            // The two real screens come next, described by the question they
-            // answer. Colours fourth, because leading with them would make this
-            // feel like selling paint. The promise about later comes last, which
-            // is where a commitment belongs: it is what you are left holding
-            // after the list of things you can already see.
-            benefit("🌱", s.supportBenefitFund)
-            benefit("📈", s.supportBenefitGrow)
-            benefit("🇪🇺", s.supportBenefitEurope)
-            benefit("🎨", s.supportBenefitColour)
-            benefit("🎁", s.supportBenefitFuture)
+        VStack(alignment: .leading, spacing: 13) {
+            ForEach(Array(zip(glyphs, s.supportBenefits)), id: \.0) { glyph, item in
+                benefit(glyph, lead: item.lead, rest: item.rest)
+            }
         }
     }
 
-    private func benefit(_ glyph: String, _ text: String) -> some View {
+    private let glyphs = ["🌱", "📈", "🇪🇺", "🎨", "🎁"]
+
+    /// The lead is bold and in the accent so the list can be read by scanning
+    /// only the first few words of each line, which is what people actually do
+    /// with a list of five. Built by concatenating two `Text` values rather than
+    /// with an `AttributedString`: the two halves come from `Strings` already
+    /// separated, so there is no marker inside a sentence for a translation to
+    /// lose track of.
+    private func benefit(_ glyph: String, lead: String, rest: String) -> some View {
         HStack(alignment: .top, spacing: 11) {
             Text(glyph)
                 .font(.system(size: 17))
                 .frame(width: 24, alignment: .leading)
-            Text(text)
-                .font(.system(size: 13))
-                .foregroundStyle(Theme.textPrimary)
+            (Text(lead).font(.system(size: 13.5, weight: .semibold)).foregroundColor(Theme.accent)
+             + Text(" ")
+             + Text(rest).font(.system(size: 13.5)).foregroundColor(Theme.textSecondary))
                 .lineSpacing(2.5)
                 .fixedSize(horizontal: false, vertical: true)
         }

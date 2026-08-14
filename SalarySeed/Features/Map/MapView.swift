@@ -115,43 +115,32 @@ struct MapView: View {
         // others is the extra.
         case .europe:
             if supporter.isSupporter {
-                EuropeScopeView(sector: store.sector,
-                                yourGross: store.breakdown.grossMonthly,
-                                purchasingPower: $purchasingPower,
-                                selected: $selectedCountry,
-                                onPickSector: { showSectorSheet = true })
+                europeContent
             } else {
-                europeGate
+                // v1.0.1a: the grid itself, blurred, rather than a page about it.
+                // Twenty-seven tiles are recognisable out of focus, which says
+                // more about what is behind the payment than a bullet list did.
+                //
+                // A minimum height, because this one is inside MapView's own
+                // ScrollView rather than filling a tab: without it the lock would
+                // be as tall as the grid happens to be, and the card would sit
+                // wherever that left it.
+                SupportLock(title: s.lockEuroTitle, blurb: s.lockEuroBlurb,
+                            contentHeight: 540, contentOffsetY: -170) {
+                    europeContent
+                }
             }
         }
     }
 
-    /// The taste is Portugal's own rank in the user's sector.
-    ///
-    /// It is computed from the same bundled Eurostat data the paid grid draws, so
-    /// it is a real reading rather than a headline, and it is the single most
-    /// arresting fact in that dataset: where the country actually sits. Absent
-    /// when the profile has no sector, or when the sector maps to no NACE
-    /// section, which are exactly the two cases where the paid screen also
-    /// refuses to draw and says why.
-    @ViewBuilder
-    private var europeGate: some View {
-        let rank = store.sector?.euroSection.map { section in
-            EuroComparison.portugalRank(
-                in: EuroComparison.readings(section: section,
-                                            purchasingPower: purchasingPower,
-                                            yourGross: store.breakdown.grossMonthly)
-            )
-        } ?? nil
-        SupportGate(
-            symbol: "globe.europe.africa",
-            title: s.gateEuroTitle,
-            blurb: s.gateEuroBlurb,
-            tasteLabel: rank == nil ? nil : s.gateEuroTasteLabel,
-            tasteValue: rank.map { s.gateEuroTasteValue($0.place, $0.outOf) },
-            tasteNote: rank == nil ? nil : s.gateEuroTasteNote,
-            bullets: s.gateEuroBullets
-        )
+    /// Drawn identically whether or not it is behind the lock, so the blur can
+    /// never drift from what is actually being sold.
+    private var europeContent: some View {
+        EuropeScopeView(sector: store.sector,
+                        yourGross: store.breakdown.grossMonthly,
+                        purchasingPower: $purchasingPower,
+                        selected: $selectedCountry,
+                        onPickSector: { showSectorSheet = true })
     }
 
     private var portugalScope: some View {

@@ -72,7 +72,7 @@ SalarySeed/
     EuroComparison       the European map's ratios, ranks and colour buckets
     GrowthEngine         the projection: anchoring, stay and move paths, rates
   Features/    one folder per screen
-    Shared/SupportGate     what a non-supporter sees where Grow and the Europe map live
+    Shared/SupportLock     the real screen, blurred, where Grow and the Europe map live
   Models/      SalaryStore (the single source of truth), Localization, catalogues
     SupporterStore       StoreKit 2: the product, the entitlement, restore, refunds
     AccentTheme          the five accents, each carrying its own ink
@@ -164,7 +164,9 @@ not from taking data.
 
 This reverses half of a v0.16 decision on purpose. That version said the support sheet opens from the profile and from nowhere else, which was right when the payment bought five colours and anything louder would have been selling paint. A feature nobody can find is not a feature, so Grow and the European map now show a gate where the paid thing lives. What stays forbidden is everything the old rule was really aimed at: interstitials, launch-count nags, countdowns, crossed-out prices, and prompts over a screen somebody was already using. The sheet is still the only place money is asked for.
 
-The other v0.16 decision, show the thing before asking, is kept rather than reversed, and it is what the gates are built around. Each one prints one REAL figure computed from the user's own salary: Grow's is what they would earn in ten years if nothing changes, and it is deliberately the same shallow number the paid screen opens on rather than a flattering pick; the map's is where Portugal actually ranks in their sector, which for IT is 24th of 27. The support sheet says out loud that neither screen is miraculous and the app is useful without them, because it is, and because overselling a projection would be the first dishonest sentence in the app.
+Both gates are the real screen, blurred and inert, with a small card over it. The first version was a page of its own with a headline, a real computed figure and four bullets; every word of it was true and it still read as a destination rather than a hint, which is what rendering it showed. A blur is a weaker promise than v0.16's accent swatches, which recolour the app for real before payment: you can see something is there and you cannot read it. That trade was made deliberately, after looking at both.
+
+The support sheet was cut to two sentences and five lines, each with a bold accent lead so the list can be read by scanning. It says what it is: a way to keep the app free of ads and paid for, with a few extra things attached.
 
 The price rises on the SAME product id, in App Store Connect, which is what keeps everyone who paid €2.99 entitled to all of it. A new product at a new price would have stranded them and broken the promise the sheet makes. The buy button also moved below the scroll: five benefits instead of three pushed it off the bottom of a 6.1-inch screen, and a payment button that has to be scrolled to is not a decision anyone declined.
 
