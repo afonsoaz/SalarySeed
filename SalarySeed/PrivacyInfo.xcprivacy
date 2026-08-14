@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- v1.0: the privacy manifest. Required since May 2024; an app that touches
+	     a required-reason API without declaring it here is rejected (ITMS-91053).
+
+	     This file is a RESOURCE, not a source, and it sits inside SalarySeed/
+	     for exactly one reason: the folder-synchronized group copies everything
+	     under that directory into the bundle, and a privacy manifest that is not
+	     in the bundle is not a privacy manifest. It is the only non-Swift,
+	     non-asset file allowed there, and tools/check_privacy_manifest.sh fails
+	     the build if it stops arriving. Nothing in the project file names it, so
+	     nothing in the project file would otherwise notice. -->
+
+	<!-- No tracking, in Apple's sense: nothing here is ever linked to data from
+	     other companies' apps or sites, and there is no ad network, no analytics
+	     SDK and no third-party framework of any kind in this app. -->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!-- UserDefaults. SalaryStore persists the salary and the profile there
+		     and SupporterStore mirrors the entitlement. All of it is this app
+		     reading and writing its own defaults, which is what CA92.1 covers.
+		     Nothing reads another app's defaults or an app group. -->
+		<key>NSPrivacyAccessedAPIType</key>
+		<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+		<key>NSPrivacyAccessedAPITypeReasons</key>
+		<array>
+			<string>CA92.1</string>
+		</array>
+	</array>
+
+	<!-- NOTHING IS COLLECTED, and unlike most apps that say so, there is no code
+	     path here that could. The app has no networking of its own: no URLSession,
+	     no endpoint, no analytics. The only traffic it generates is StoreKit
+	     talking to Apple around the support sheet, and that is between the device
+	     and Apple, carries no app data, and is not collection by us.
+
+	     The Keychain is not used. The salary, the profile answers and the
+	     preferences live in this app's own UserDefaults and go when the app is
+	     deleted.
+
+	     A contribution pool was built and tested and is NOT in this build. It
+	     lives on the pool-backend branch. If it ever ships, this array stops
+	     being correct and App Store Connect's App Privacy answers change in the
+	     same submission, which is why that work stayed on a branch rather than
+	     behind a flag. -->
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+</dict>
+</plist>

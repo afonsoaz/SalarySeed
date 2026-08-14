@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- v1.0: the one key Xcode cannot generate.
+
+	     GENERATE_INFOPLIST_FILE is still YES, so everything set through an
+	     INFOPLIST_KEY_ build setting (display name, category, orientations,
+	     the launch screen, ITSAppUsesNonExemptEncryption) is merged on top of
+	     this file at build time and must NOT be repeated here.
+
+	     Checked empirically before it was written: INFOPLIST_KEY_
+	     ITSAppUsesNonExemptEncryption lands in the built plist as a real
+	     boolean, and INFOPLIST_KEY_CFBundleLocalizations is dropped on the
+	     floor without a warning. Xcode only maps the key names it knows, which
+	     is the entire reason this file exists. Read any key you set that way
+	     back out of the BUILT plist rather than trusting the setting. -->
+
+	<!-- Both languages the app actually speaks. Every string lives in
+	     Localization.swift rather than in .lproj bundles, which is what lets the
+	     app switch language at runtime without a restart. The cost is that the
+	     BUNDLE looks monolingual to everyone outside it, including the App Store,
+	     which reads this key to decide which languages to list the app under.
+	     Without it a Portuguese app written for Portugal is advertised as
+	     English-only. -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>pt-PT</string>
+	</array>
+</dict>
+</plist>

@@ -178,7 +178,7 @@ struct SupportSheet: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             Button { commitAndClose() } label: {
-                Text(s.consentPreviewDone)
+                Text(s.closeButton)
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(Theme.ink)
                     .frame(maxWidth: .infinity)

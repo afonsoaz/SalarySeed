@@ -17,9 +17,6 @@ struct ProfileView: View {
     // v0.9.4
     @State private var showExplorer = false
     @State private var askingSalaryChange = false
-    @State private var showContributionPreview = false
-    @State private var askingForget = false
-    @State private var codeCopied = false
     // v0.16
     @EnvironmentObject private var supporter: SupporterStore
     @State private var showSupport = false
@@ -71,18 +68,7 @@ struct ProfileView: View {
             .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
             .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
             .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
-            .sheet(isPresented: $showContributionPreview) { ContributionPreviewSheet() }
             .sheet(isPresented: $showSupport) { SupportSheet() }
-            .confirmationDialog(s.consentDeleteTitle, isPresented: $askingForget,
-                                titleVisibility: .visible) {
-                Button(s.consentDeleteConfirm, role: .destructive) {
-                    store.forgetContributions()
-                    codeCopied = false
-                }
-                Button(s.cancelButton, role: .cancel) {}
-            } message: {
-                Text(s.consentDeleteMessage)
-            }
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
             }
@@ -119,7 +105,6 @@ struct ProfileView: View {
             SectionLabel(s.appSection)
             languageCard
             accentCard
-            consentCard
             // The "Premium: free version" row went in v0.16. There is a real
             // purchase now, and its state is said twice on this screen already:
             // the card at the top, and the lock on the colour picker. A third
@@ -127,6 +112,9 @@ struct ProfileView: View {
             // everyone who paid.
             InfoRow(label: s.privacyLabel, value: s.privacyValue)
             InfoRow(label: s.sourcesLabel, value: s.sourcesValue)
+            // v1.0: which build this is. Nobody needs it until something is
+            // wrong, and then it is the first thing anyone asks for.
+            InfoRow(label: s.versionLabel, value: AppConfig.versionLine)
         }
     }
 
@@ -245,105 +233,6 @@ struct ProfileView: View {
                 .accessibilityLabel(theme.label(pt: s.pt))
         }
         .frame(maxWidth: .infinity)
-    }
-
-    /// v0.14: a status card, not a setting.
-    ///
-    /// Afonso's call: the profile should say what is happening rather than offer
-    /// a switch, because the decision belongs to the one screen that explained it
-    /// properly. So the card leads with the state in a sentence, shows the code
-    /// and the row, and carries the two real actions as plain text.
-    ///
-    /// The stop is quiet but it is NOT decorative, and it cannot be. Withdrawing
-    /// consent has to be as easy as giving it (GDPR Art. 7(3)); a status card
-    /// with no way out would turn the onboarding screen's consent into something
-    /// that cannot be relied on. Quiet is allowed. Absent is not.
-    ///
-    /// Stopping and deleting stay separate, as they have since v0.13. Stopping
-    /// keeps the code, because the code is the only thing that makes the deleting
-    /// possible later.
-    private var consentCard: some View {
-        let sharing = store.dataSharingConsent == true
-        return VStack(alignment: .leading, spacing: 9) {
-            HStack(spacing: 8) {
-                Image(systemName: sharing ? "checkmark.seal.fill" : "hand.raised")
-                    .font(.system(size: 13))
-                    .foregroundStyle(sharing ? Theme.accent : Theme.textSecondary)
-                Text(sharing ? s.consentStatusOnTitle : s.consentStatusOffTitle)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Theme.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Text(sharing ? s.consentStatusOnBody : s.consentStatusOffBody)
-                .font(.system(size: 10.5))
-                .foregroundStyle(Theme.textFaint)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Button { showContributionPreview = true } label: {
-                Text(s.consentPreviewButton)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Theme.accent)
-            }
-
-            if let token = store.contributionToken {
-                Divider().overlay(Theme.cardBorder)
-                codeRow(token)
-            }
-
-            Divider().overlay(Theme.cardBorder)
-            HStack(spacing: 16) {
-                Button {
-                    if sharing { store.revokeDataSharing() } else { store.grantDataSharing() }
-                } label: {
-                    Text(sharing ? s.consentStopSharing : s.consentStartSharing)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Theme.textSecondary)
-                }
-                if store.contributionToken != nil {
-                    Button(role: .destructive) { askingForget = true } label: {
-                        Text(s.consentDeleteButton)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Theme.danger)
-                    }
-                }
-                Spacer(minLength: 0)
-            }
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(sharing ? Theme.accentSoft : Theme.card,
-                    in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14)
-            .stroke(sharing ? Theme.accentBorder : Theme.cardBorder, lineWidth: 1))
-    }
-
-    private func codeRow(_ token: String) -> some View {
-        VStack(alignment: .leading, spacing: 5) {
-            HStack(spacing: 8) {
-                Text(s.consentCodeLabel)
-                    .font(.system(size: 11))
-                    .foregroundStyle(Theme.textSecondary)
-                Text(ContributionToken.short(token))
-                    .font(.system(size: 13, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Theme.textPrimary)
-                Spacer(minLength: 6)
-                Button {
-                    // The FULL token, not the shortened display form. The short
-                    // one is for reading; a copy that could not be used to
-                    // identify the rows would be a decoration.
-                    UIPasteboard.general.string = token
-                    withAnimation(.easeOut(duration: 0.15)) { codeCopied = true }
-                } label: {
-                    Text(codeCopied ? s.consentCodeCopied : s.copyWord)
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Theme.accent)
-                }
-            }
-            Text(s.consentCodeHint)
-                .font(.system(size: 10))
-                .foregroundStyle(Theme.textFaint)
-                .fixedSize(horizontal: false, vertical: true)
-        }
     }
 
     private var workSection: some View {

@@ -41,13 +41,12 @@ struct OnboardingView: View {
     @State private var education: EducationLevel?
     @State private var sectorSel: Sector?
     @State private var tenureYearsSel: Int = 3
-    @State private var showConsentPreview = false
 
     private var s: Strings { store.s }
-    /// v0.12: nine questions and then the consent screen, which is asked last on
-    /// purpose. Consent has to be specific about what is being shared, and until
-    /// the answers exist there is nothing specific to point at.
-    private let totalSteps = 10
+    /// v1.0: nine questions and no tenth screen. v0.12 through v0.16 ended on a
+    /// consent screen asking to pool the answers; there is no pool, so there is
+    /// nothing to ask, and the sector step is now the end.
+    private let totalSteps = 9
 
     var body: some View {
         ZStack {
@@ -69,8 +68,7 @@ struct OnboardingView: View {
                 case 5: profileStep(dimensionID: "age")
                 case 6: concelhoStep
                 case 7: profileStep(dimensionID: "education")
-                case 8: sectorStep
-                default: consentStep
+                default: sectorStep
                 }
             }
             .padding(24)
@@ -78,7 +76,6 @@ struct OnboardingView: View {
         // Tap empty space to drop the keyboard.
         .contentShape(Rectangle())
         .onTapGesture { dismissKeyboard() }
-        .sheet(isPresented: $showConsentPreview) { ContributionPreviewSheet() }
     }
 
     private var trimmedName: String {
@@ -95,17 +92,11 @@ struct OnboardingView: View {
         withAnimation { step += 1 }
     }
 
-    /// v0.13: the answers are written to the store one step BEFORE the end.
+    /// Writes every answer to the store in one go.
     ///
-    /// The consent screen offers to show the exact row that would be sent, and
-    /// that row is built by reading the store. If the answers were still sitting
-    /// in `@State` at that point, the preview would truthfully render the
-    /// PREVIOUS contents of the store, which for a first run is a €1.500 default
-    /// nobody typed. A preview that shows the wrong number is worse than no
-    /// preview, so the answers land first and consent is decided against them.
-    ///
-    /// `hasOnboarded` stays false until the last screen, so a launch killed in
-    /// between still reopens onboarding.
+    /// Called from the last step rather than from each step as it is answered,
+    /// so a half-finished run leaves the store untouched. `hasOnboarded` is set
+    /// separately in `finish`.
     private func commitAnswers() {
         store.name = trimmedName
         let raw = salaryValue ?? 1500
@@ -123,16 +114,14 @@ struct OnboardingView: View {
         store.tenureYears = (sectorSel != nil) ? tenureYearsSel : nil
     }
 
-    /// The last act. `consent` is a required argument rather than a defaulted
-    /// one so no future caller can finish onboarding without deciding what it is.
+    /// The last act. Writes the answers and opens the app.
     ///
-    /// Granting creates the token; declining does not, and declining is not a
-    /// silent state either: it is recorded, so the app can tell "asked and said
-    /// no" apart from "never asked" and never raises the subject again.
-    private func finish(consent: Bool) {
+    /// `hasOnboarded` is set here and nowhere else, so a launch killed part way
+    /// through still reopens onboarding rather than dropping someone into an app
+    /// with a salary they never confirmed.
+    private func finish() {
         dismissKeyboard()
         commitAnswers()
-        if consent { store.grantDataSharing() } else { store.revokeDataSharing() }
         store.hasOnboarded = true
     }
 
@@ -586,152 +575,11 @@ struct OnboardingView: View {
             }
 
             Spacer(minLength: 4)
-            PrimaryButton(title: s.okButton) {
-                commitAnswers()
-                advance()
-            }
+            PrimaryButton(title: s.okButton) { finish() }
             bigSkipButton(s.skipQuestion) {
                 sectorSel = nil
-                commitAnswers()
-                advance()
+                finish()
             }
-        }
-    }
-
-    // MARK: Step 9, the consent screen (v0.12, copy v0.13, reframed v0.14)
-
-    /// Asked once, at the end, when there is something concrete to consent to.
-    ///
-    /// v0.14 MADE THE SCREEN UNSKIPPABLE AND THE ANSWER FREE, and the distance
-    /// between those two is the entire design. There is no skip, no dismiss, no
-    /// default and no pre-selection: the only way past is to press one of two
-    /// buttons. But BOTH buttons continue into the app, and the app is identical
-    /// either way.
-    ///
-    /// The obvious alternative, "agree or the app closes", is wrong twice.
-    /// Practically, iOS has no sanctioned way for an app to terminate itself, so
-    /// it would be a dead end rather than an exit. Legally, consent conditioned
-    /// on using the service is presumed NOT freely given (GDPR Art. 7(4),
-    /// Recital 43), the pooling is plainly not necessary to compute anyone's
-    /// tax, and void consent would leave a database with no lawful basis. That
-    /// is strictly worse than not collecting: the data, and no right to use it.
-    ///
-    /// So the copy carries the weight the wall would have carried. It says what
-    /// the pool is for, shows the actual row instead of describing it, explains
-    /// the code, and says what a yes unlocks in a future version. A screen that
-    /// argues for itself converts better than one that traps.
-    ///
-    /// It scrolls, because the row is on it. The two buttons stay pinned below,
-    /// so no amount of content can push the decision off screen.
-    private var consentStep: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    consentHeader
-                    consentPoints
-                    consentRowBlock
-                }
-                .padding(.bottom, 18)
-            }
-            consentActions
-        }
-    }
-
-    private var consentHeader: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Spacer()
-                SproutView(stage: 4, size: 64, animatesIn: true, sways: true)
-                Spacer()
-            }
-            .padding(.top, 14)
-            Text(s.consentTitle)
-                .font(.system(size: 25, weight: .medium))
-                .foregroundStyle(Theme.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 18)
-            Text(s.consentBody)
-                .font(.system(size: 13))
-                .foregroundStyle(Theme.textSecondary)
-                .lineSpacing(3)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 10)
-            // v0.14: the reason to say yes, stated as what it produces rather
-            // than as a favour asked.
-            Text(s.consentUnlocks)
-                .font(.system(size: 13))
-                .foregroundStyle(Theme.accent)
-                .lineSpacing(3)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 10)
-        }
-    }
-
-    private var consentPoints: some View {
-        VStack(alignment: .leading, spacing: 7) {
-            consentPoint(icon: "checkmark.circle", text: s.consentPointShared)
-            consentPoint(icon: "xmark.circle", text: s.consentPointNotShared)
-            consentPoint(icon: "key", text: s.consentPointCode)
-            consentPoint(icon: "trash", text: s.consentPointDelete)
-        }
-        .padding(.top, 16)
-    }
-
-    /// v0.14: the row, on the screen, not behind a link. Everything above is a
-    /// description of the data. This is the data, decoded from the payload
-    /// itself, so it cannot describe a row the app would not actually send.
-    @ViewBuilder
-    private var consentRowBlock: some View {
-        let year = Calendar.current.component(.year, from: Date())
-        VStack(alignment: .leading, spacing: 8) {
-            Text(s.consentWhatIsSent)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(Theme.textSecondary)
-            if let row = store.contributionPreview(year: year) {
-                ContributionSummaryCard(row: row, s: s)
-                Button { showConsentPreview = true } label: {
-                    Text(s.consentPreviewButton)
-                        .font(.system(size: 11.5, weight: .medium))
-                        .foregroundStyle(Theme.accent)
-                        .underline()
-                }
-            } else {
-                Text(s.consentPreviewNoSalary)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Theme.textFaint)
-            }
-        }
-        .padding(.top, 18)
-    }
-
-    /// Pinned below the scroll view. Both full width, both reachable without
-    /// scrolling, neither pre-selected, and the line underneath is the sentence
-    /// that makes the choice free rather than a toll gate.
-    private var consentActions: some View {
-        VStack(spacing: 0) {
-            PrimaryButton(title: s.consentAccept) { finish(consent: true) }
-            bigSkipButton(s.consentDecline) { finish(consent: false) }
-            Text(s.consentEitherWay)
-                .font(.system(size: 11))
-                .foregroundStyle(Theme.textFaint)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 10)
-        }
-        .padding(.top, 4)
-    }
-
-    private func consentPoint(icon: String, text: String) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            Image(systemName: icon)
-                .font(.system(size: 12))
-                .foregroundStyle(Theme.accent)
-                .frame(width: 16)
-            Text(text)
-                .font(.system(size: 12))
-                .foregroundStyle(Theme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 

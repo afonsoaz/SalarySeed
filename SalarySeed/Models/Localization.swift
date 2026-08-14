@@ -344,10 +344,21 @@ struct Strings {
     var appSection: String { "App" }
     var languageLabel: String { t("Language", "Idioma") }
     var privacyLabel: String { t("Privacy", "Privacidade") }
+    /// v1.0: unconditional again, and now simply true. There is no code path in
+    /// this app that sends anything anywhere.
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
+    var versionLabel: String { t("Version", "Versão") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    var profileFooter: String { t("SalarySeed v0.9.4. Estimates only, not official tax or financial advice.", "SalarySeed v0.9.4. Só estimativas, não aconselhamento fiscal ou financeiro oficial.") }
+    /// v1.0: the version is READ, not typed. This line said "v0.9.4" through six
+    /// releases, including the one that added a Version row four lines above it
+    /// saying something else. A number in prose is a number nobody updates, and
+    /// the disclaimer it sits in is the one line on the screen that most needs to
+    /// look maintained.
+    var profileFooter: String {
+        t("SalarySeed v\(AppConfig.version). Estimates only, not official tax or financial advice.",
+          "SalarySeed v\(AppConfig.version). Só estimativas, não aconselhamento fiscal ou financeiro oficial.")
+    }
 
     // v0.6 tax details section (profileSeed)
     var taxSection: String { t("Tax details", "Dados fiscais") }
@@ -1124,166 +1135,13 @@ struct Strings {
           "Nada deste ecrã fica guardado. O teu salário e o teu perfil ficam intactos.")
     }
 
-    // MARK: Consent (v0.12, corrected v0.13, reframed v0.14)
-    //
-    // WHY IT KEEPS CHANGING. v0.12 was written for a fully anonymous design and
-    // overstated once the design became pseudonymous. v0.14 reframes it again:
-    // the screen now has to argue for itself, because it is the only moment
-    // anyone is asked and there is no toggle anywhere to pick the decision up
-    // later. Afonso's instinct was to make it mandatory; that is the one thing it
-    // must not be, because consent conditioned on using the service is presumed
-    // not freely given (GDPR Art. 7(4), Recital 43) and void consent would leave
-    // a database with no lawful basis. So the screen is unskippable and the
-    // ANSWER is free, and the copy carries the weight a wall would have carried.
-    //
-    // The order of the four points is deliberate. What IS shared comes before
-    // what is not, because a consent screen that leads with reassurance is
-    // selling. The token is disclosed third rather than buried, and framed by
-    // what it does for the user, which happens to be both the honest framing and
-    // the persuasive one.
-    //
-    // Nothing here promises anything about the future asking, because nothing in
-    // the app will ever ask again. There is no timer and no scheduled question.
+    /// v1.0: the support sheet's Close button.
+    ///
+    /// It used to be `consentPreviewDone`, borrowed from a screen it had nothing
+    /// to do with, which is how a string survives a feature being deleted only if
+    /// somebody notices. This is the exact shape of the v0.13 bug where four
+    /// "unused" strings were deleted and turned out to be in use, so it now has a
+    /// name that says where it belongs.
+    var closeButton: String { t("Close", "Fechar") }
 
-    var consentTitle: String {
-        t("Want your numbers to count?", "Queres que os teus números contem?")
-    }
-    var consentBody: String {
-        t("The official tables are a photograph of 2024 and they stop at broad sectors. What is missing is what people actually earn, by job, now. If you agree, your pay and your profile answers join everyone else's. What shows up, for you and for anyone, is totals and averages.",
-          "As tabelas oficiais são uma fotografia de 2024 e ficam-se por setores largos. O que falta é o que as pessoas ganham mesmo, por profissão, agora. Se concordares, o teu salário e as respostas do perfil juntam-se às das outras pessoas. O que aparece, para ti e para qualquer pessoa, são totais e médias.")
-    }
-    /// v0.14: what saying yes actually buys. Stated as what it produces rather
-    /// than as a favour, because it is true and because a reason beats a plea.
-    var consentUnlocks: String {
-        t("It is what lets a future version compare you against real people doing your job, instead of against a table from 2024. That comparison does not exist yet, and it cannot exist without enough people.",
-          "É isto que vai permitir que uma versão futura te compare com pessoas a sério que fazem o que tu fazes, em vez de com uma tabela de 2024. Essa comparação ainda não existe, e não pode existir sem gente suficiente.")
-    }
-    var consentPointShared: String {
-        t("Shared: your pay and your profile answers. Not your município, only the region.",
-          "Partilhado: o teu salário e as respostas do perfil. O concelho não, só a região.")
-    }
-    var consentPointNotShared: String {
-        t("Not shared: your name, your email, your contacts, your location.",
-          "Não partilhado: o teu nome, o teu email, os teus contactos, a tua localização.")
-    }
-    var consentPointCode: String {
-        t("Your answers travel with a random code instead of anything that identifies you. There is nothing of yours inside it, and it is what lets you delete them later.",
-          "As tuas respostas viajam com um código aleatório em vez de qualquer coisa que te identifique. Não tem nada teu lá dentro, e é ele que te deixa apagá-las depois.")
-    }
-    var consentPointDelete: String {
-        t("You can delete everything you have sent, whenever you want, in the profile.",
-          "Podes apagar tudo o que enviaste, quando quiseres, no perfil.")
-    }
-    /// v0.14: the header over the row itself, shown inline on the screen rather
-    /// than behind a link. "Show what will be sent" is a promise best kept by
-    /// showing it without being asked twice.
-    var consentWhatIsSent: String { t("This is what would be sent", "É isto que seria enviado") }
-    var consentAccept: String {
-        t("I agree to share anonymised data", "Aceito partilhar dados anónimos")
-    }
-    var consentDecline: String { t("Don't share", "Não partilhar") }
-    var consentEitherWay: String {
-        t("The app works exactly the same either way.",
-          "A app funciona exatamente na mesma de qualquer das formas.")
-    }
-
-    // MARK: The row, in words (v0.14)
-    //
-    // Rendered by decoding the CONTRIBUTION, never by reading the store. If the
-    // coarsening drops something, this has to show it dropped; a summary written
-    // beside the payload would drift from it on the first schema change.
-
-    var contribRowCode: String { t("Code", "Código") }
-    var contribRowYear: String { t("Year", "Ano") }
-    var contribRowPay: String { t("Pay", "Salário") }
-    var contribRowNetTyped: String { t("Net you typed", "Líquido que puseste") }
-    var contribRowAjudas: String { t("Allowances", "Subsídios") }
-    var contribRowVariable: String { t("Bonus a year", "Prémios por ano") }
-    var contribRowSector: String { t("Sector", "Setor") }
-    var contribRowJob: String { t("Job", "Profissão") }
-    var contribRowTenure: String { t("Time at employer", "Antiguidade") }
-    var contribRowEmployer: String { t("Employer", "Empregador") }
-    var contribRowHours: String { t("Working time", "Tempo de trabalho") }
-    var contribRowRegion: String { t("Region", "Região") }
-    var contribRowAge: String { t("Age", "Idade") }
-    var contribRowEducation: String { t("Education", "Escolaridade") }
-    var contribRowGender: String { t("Gender", "Sexo") }
-    var contribNotAnswered: String { t("not answered", "não respondido") }
-
-    /// The band ladders in words. The raw value is the source of truth and this
-    /// only dresses it, so a band that is added to `Contribution` and not here
-    /// shows up as itself rather than silently disappearing.
-    func contribBandLabel(_ raw: String) -> String {
-        switch raw {
-        case "0": return t("none", "nenhum")
-        case "none": return t("none", "nenhuns")
-        case "1-100": return "1-100 €"
-        case "101-200": return "101-200 €"
-        case "201-400": return "201-400 €"
-        case "400+": return "400+ €"
-        case "1-1000": return "1-1 000 €"
-        case "1001-3000": return "1 001-3 000 €"
-        case "3001-6000": return "3 001-6 000 €"
-        case "6001-12000": return "6 001-12 000 €"
-        case "12000+": return "12 000+ €"
-        case "lt20": return t("under 20 h", "menos de 20 h")
-        case "20-29": return "20-29 h"
-        case "30-34": return "30-34 h"
-        case "35+": return "35+ h"
-        default: return raw
-        }
-    }
-
-    // MARK: Profile status (v0.14, replaces the toggle)
-    //
-    // Afonso asked for information rather than a setting. Withdrawal still has to
-    // be as easy as giving it (Art. 7(3)), so the stop is a plain text action
-    // rather than a switch: quiet enough to read as information, real enough to
-    // be a right.
-
-    var consentStatusOnTitle: String { t("You are sharing anonymised data", "Estás a partilhar dados anónimos") }
-    var consentStatusOffTitle: String { t("You are not sharing data", "Não estás a partilhar dados") }
-    var consentStatusOnBody: String {
-        t("Your pay and your profile answers go into the pool under a random code, and only ever come back out as totals and averages. Not your município, only the region. Never your name, your email or your location.",
-          "O teu salário e as respostas do perfil vão para o conjunto com um código aleatório, e só voltam a sair em totais e médias. O concelho não, só a região. Nunca o teu nome, o teu email ou a tua localização.")
-    }
-    var consentStatusOffBody: String {
-        t("Nothing about you goes anywhere. The app works exactly the same, and the crowd comparisons will simply have one fewer person in them.",
-          "Nada teu vai para lado nenhum. A app funciona exatamente na mesma, e as comparações vão só ter menos uma pessoa lá dentro.")
-    }
-    var consentStopSharing: String { t("Stop sharing", "Deixar de partilhar") }
-    var consentStartSharing: String { t("Start sharing", "Começar a partilhar") }
-
-    var consentCodeLabel: String { t("Your code", "O teu código") }
-    var consentCodeHint: String {
-        t("This is what links your answers to you, and it is the only thing that can. Copy it if you want to be able to ask for them to be deleted from a phone you no longer have.",
-          "É isto que liga as tuas respostas a ti, e é a única coisa que consegue. Copia-o se quiseres poder pedir para as apagar a partir de um telemóvel que já não tens.")
-    }
-    var copyWord: String { t("Copy", "Copiar") }
-    var consentCodeCopied: String { t("Copied", "Copiado") }
-    var consentDeleteButton: String { t("Delete what I sent", "Apagar o que enviei") }
-    var consentDeleteTitle: String { t("Delete everything you sent?", "Apagar tudo o que enviaste?") }
-    var consentDeleteMessage: String {
-        t("Your contributions go, your code goes with them, and sharing turns off. Your salary and your profile on this phone are untouched.",
-          "As tuas contribuições vão-se, o teu código vai com elas, e a partilha desliga-se. O teu salário e o teu perfil neste telemóvel ficam na mesma.")
-    }
-    var consentDeleteConfirm: String { t("Delete", "Apagar") }
-
-    // The preview. v0.13: a consent screen that describes the data in a paragraph
-    // asks to be trusted; one that can show you your own row does not have to.
-    var consentPreviewButton: String { t("See exactly what would be sent", "Ver exatamente o que seria enviado") }
-    var consentPreviewTitle: String { t("What would be sent", "O que seria enviado") }
-    var consentPreviewSub: String {
-        t("This is the whole thing, field by field. Nothing else leaves this phone.",
-          "É isto tudo, campo a campo. Mais nada sai deste telemóvel.")
-    }
-    var consentPreviewNothingYet: String {
-        t("Nothing has been sent, by anyone. There is nowhere to send it yet, so this is what would go the day there is.",
-          "Ainda não foi enviado nada, por ninguém. Ainda não há para onde enviar, por isso isto é o que iria no dia em que houver.")
-    }
-    var consentPreviewNoSalary: String {
-        t("Add your salary first and this fills in.",
-          "Põe primeiro o teu salário e isto preenche-se.")
-    }
-    var consentPreviewDone: String { t("Close", "Fechar") }
 }

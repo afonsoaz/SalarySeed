@@ -46,11 +46,18 @@ enum EmploymentType: String, CaseIterable, Identifiable {
 /// signals are collected, not uploaded. The reason they are collected anyway is
 /// that a job title or a contract type cannot be asked about retroactively.
 ///
-/// v0.12 added the consent flow, which is the first of the three things pooling
-/// needs. The other two, an account and a backend, do not exist, so App Privacy
-/// stays "Data Not Collected" and nothing leaves the phone whatever the flag
-/// says. Asking first and building second is the right order: consent obtained
-/// after the fact is not consent.
+/// v1.0 REMOVED THE CONSENT FLOW, and with it the only thing in this app that
+/// could ever have sent any of this anywhere.
+///
+/// v0.12 through v0.16 collected a consent decision for a salary pool, and a
+/// working backend for it was built and tested. None of it shipped: collecting
+/// pay data makes the author a data controller, and the whole apparatus that
+/// requires is out of proportion to a one-person app. The pool lives on the
+/// `pool-backend` branch if it is ever wanted.
+///
+/// So everything here stays on this phone, full stop. There is no network code
+/// in this app outside StoreKit, and App Privacy is "Data Not Collected" without
+/// qualification.
 final class SalaryStore: ObservableObject {
     @Published var amount: Double { didSet { save() } }
     @Published var kind: AmountKind { didSet { save() } }
@@ -126,21 +133,6 @@ final class SalaryStore: ObservableObject {
         }
     }
 
-    // MARK: v0.12 consent
-
-    /// Whether the user agreed to their answers being pooled anonymously.
-    ///
-    /// THREE STATES, AND THE THIRD ONE MATTERS. `nil` is "never asked", `false`
-    /// is "asked and declined", `true` is "asked and agreed". Collapsing nil and
-    /// false into one Bool would make a decline indistinguishable from a fresh
-    /// install, so the app would ask again on every launch, which is nagging, and
-    /// nagging is one of the things that makes consent not freely given.
-    ///
-    /// Nothing leaves the phone today whatever this says: there is no backend and
-    /// no network call anywhere in the app. The flag records a decision so that
-    /// pooling can only ever start from a yes, never from a default.
-    @Published var dataSharingConsent: Bool? { didSet { save() } }
-
     // MARK: v0.10 session state (deliberately not persisted)
 
     /// The Grow scenario. It has NO `didSet { save() }` and is absent from
@@ -193,10 +185,10 @@ final class SalaryStore: ObservableObject {
         // The static mirror has to be right before the first view is built, so it
         // is set here rather than waiting for the first `didSet`.
         Theme.current = accent
-        // `object(forKey:)` rather than `bool(forKey:)`: a missing key has to come
-        // back as nil, and `bool(forKey:)` turns it into false, which is a
-        // recorded refusal. See the note on the property.
-        dataSharingConsent = defaults.object(forKey: "consent.dataSharing") as? Bool
+        // v1.0: the consent keys are deliberately NOT read, and not cleared
+        // either. Nobody ever ran a build that could send anything, so there is
+        // nothing to migrate; leaving the old keys alone costs a few bytes and
+        // keeps the door open if `pool-backend` ever lands.
     }
 
     private func save() {
@@ -225,8 +217,6 @@ final class SalaryStore: ObservableObject {
         setInt(weeklyHours, forKey: "profile.weeklyHours")
         if let variableAnnual { defaults.set(variableAnnual, forKey: "profile.variableAnnual") }
         else { defaults.removeObject(forKey: "profile.variableAnnual") }
-        if let dataSharingConsent { defaults.set(dataSharingConsent, forKey: "consent.dataSharing") }
-        else { defaults.removeObject(forKey: "consent.dataSharing") }
     }
 
     private func setOptional(_ value: String?, forKey key: String) {
@@ -396,64 +386,4 @@ final class SalaryStore: ObservableObject {
         }
     }
 
-    // MARK: Data sharing (v0.13)
-
-    /// THREE ACTS, NOT TWO, and keeping them apart is the whole design.
-    ///
-    /// Granting creates the token. Revoking stops future sharing and deliberately
-    /// KEEPS the token, because "stop sending" and "delete what you sent" are
-    /// different intentions with different consequences, in exactly the sense
-    /// v0.9.4 separated recording from exploring. Forgetting is the third act:
-    /// it deletes, and only then clears the token.
-    ///
-    /// Getting that order wrong is the failure worth naming. Clearing the token
-    /// first would leave rows on a server with nothing left that can name them,
-    /// which is the precise situation the token exists to prevent.
-    func grantDataSharing() {
-        ContributionToken.ensure()
-        dataSharingConsent = true
-    }
-
-    func revokeDataSharing() {
-        dataSharingConsent = false
-    }
-
-    /// The token, when consent has ever been given. Shown in the profile so that
-    /// someone who has lost the phone can still ask for their rows to go.
-    var contributionToken: String? { ContributionToken.load() }
-
-    /// Delete everything ever sent, then forget who we were. Returns false only
-    /// when a server exists and refused, so the UI can avoid telling the user
-    /// their data is gone when it is not.
-    @discardableResult
-    func forgetContributions() -> Bool {
-        guard let token = contributionToken else {
-            dataSharingConsent = false
-            return true
-        }
-        switch ContributionService.forget(token: token) {
-        case .notConfigured:
-            // Nothing has ever been sent under this token, because there has
-            // never been anywhere to send it. Clearing it locally IS the
-            // deletion, completely, and saying so is not a convenient reading:
-            // `ContributionService.endpoint` is nil, so no row can exist.
-            ContributionToken.clear()
-            dataSharingConsent = false
-            return true
-        case .sent:
-            ContributionToken.clear()
-            dataSharingConsent = false
-            return true
-        case .notConsented, .nothingToSend, .failed:
-            return false
-        }
-    }
-
-    /// The row that would leave the phone right now, for the preview sheet.
-    /// Falls back to a placeholder code so the preview works before consent,
-    /// which is exactly when someone most wants to look at it.
-    func contributionPreview(year: Int) -> Contribution? {
-        ContributionService.payload(for: self, year: year,
-                                    token: contributionToken ?? ContributionService.placeholderToken)
-    }
 }

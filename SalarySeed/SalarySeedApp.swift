@@ -35,6 +35,10 @@ struct SalarySeedApp: App {
             .preferredColorScheme(.dark)
             // Read on every store change, so the system tint follows the accent.
             .tint(store.accent.accent)
+            // The only thing in this app that touches the network, and it talks
+            // to Apple rather than to us: the product price, the purchase and
+            // the entitlement. Nothing about a salary is transmitted anywhere,
+            // by any code path, because there is no other code path.
             .task { supporter.start(applyingTo: store) }
         }
     }
