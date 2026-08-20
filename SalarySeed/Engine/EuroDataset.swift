@@ -81,7 +81,7 @@ enum EuroSection: String, CaseIterable, Identifiable {
 
     func label(pt: Bool) -> String {
         switch self {
-        case .sB: return pt ? "Indústrias extractivas" : "Mining and quarrying"
+        case .sB: return pt ? "Indústrias extrativas" : "Mining and quarrying"
         case .sC: return pt ? "Indústria transformadora" : "Manufacturing"
         case .sD: return pt ? "Eletricidade e gás" : "Electricity and gas"
         case .sE: return pt ? "Água e saneamento" : "Water and waste"

@@ -99,7 +99,7 @@ enum Sector: String, CaseIterable, Identifiable {
     func label(pt: Bool) -> String {
         switch self {
         case .agriculture:   return pt ? "Agricultura e pescas" : "Agriculture & fishing"
-        case .extractive:    return pt ? "Indústrias extractivas" : "Mining & quarrying"
+        case .extractive:    return pt ? "Indústrias extrativas" : "Mining & quarrying"
         case .manufacturing: return pt ? "Indústria transformadora" : "Manufacturing"
         case .energy:        return pt ? "Eletricidade e gás" : "Electricity & gas"
         case .water:         return pt ? "Água e saneamento" : "Water & waste"

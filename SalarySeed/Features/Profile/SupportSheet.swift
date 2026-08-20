@@ -110,7 +110,11 @@ struct SupportSheet: View {
         }
     }
 
-    private let glyphs = ["🌱", "📈", "🇪🇺", "🎨", "🎁"]
+    /// One glyph per benefit, in the same order. `zip` truncates to the shorter
+    /// of the two, so a glyph left behind here after a benefit is cut would
+    /// silently drop the LAST benefit off the screen rather than error. v1.0.2
+    /// cut the "no ads" line and its 🌱 together for that reason.
+    private let glyphs = ["📈", "🇪🇺", "🎨", "🎁"]
 
     /// The lead is bold and in the accent so the list can be read by scanning
     /// only the first few words of each line, which is what people actually do

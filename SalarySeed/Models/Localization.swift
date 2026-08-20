@@ -67,7 +67,11 @@ struct Strings {
     var okButton: String { t("OK", "OK") }
 
     var monthsHint: String { t("14 is the norm: holiday and Christmas pay come separately. With 12, those subsidies are split across every month (duodécimos).", "14 é o normal: os subsídios de férias e Natal vêm à parte. Com 12, esses subsídios vêm repartidos por todos os meses (duodécimos).") }
-    var salaryNeeded: String { t("The salary is the one thing we need.", "O salário é a única coisa de que precisamos.") }
+    /// Shown only while the field is still empty, next to a dimmed OK. Its job is
+    /// to say why the button will not move yet. It used to say the salary was the
+    /// only thing we needed, which the seven steps after it immediately made
+    /// untrue.
+    var salaryNeeded: String { t("Type your salary to carry on.", "Escreve o teu salário para continuar.") }
 
     // v0.5 onboarding: ajudas step + one-by-one profile questions
     var onbAjudasTitle: String { t("Meal allowance or\najudas de custo?", "Subsídio de alimentação\nou ajudas de custo?") }
@@ -198,7 +202,26 @@ struct Strings {
     // percentile has a whole tab; Grow has a tinted tab item.
     var ajudasNudgeTitle: String { t("Paid partly in ajudas de custo?", "Recebes parte em ajudas de custo?") }
     var ajudasNudgeSub: String { t("See what it's costing your pension.", "Vê quanto isso custa à tua reforma.") }
-    var homeDisclaimer: String { t("Estimates based on 2026 tax tables for mainland Portugal (Continente). Not official tax advice.", "Estimativas com base nas tabelas fiscais de 2026 para o Continente. Não é aconselhamento fiscal oficial.") }
+    /// v1.0.2 made this name the region it actually used. It said "Continente"
+    /// unconditionally since v0.6, which survived v0.15 adding the two island
+    /// tables: an islander whose figures WERE computed on the Açores or Madeira
+    /// tables was told, in the only line on the screen that mentions tables, that
+    /// they were not. The app was doing the right thing and confessing to the
+    /// wrong one.
+    ///
+    /// The place is switched whole rather than interpolated from `label`, because
+    /// Portuguese needs the article and it is not the same one for all three
+    /// ("para o Continente", "para os Açores", "para a Madeira").
+    func homeDisclaimer(_ region: TaxEngine.TaxRegion) -> String {
+        let place: String
+        switch region {
+        case .continente: place = t("mainland Portugal (Continente)", "o Continente")
+        case .acores:     place = t("the Azores", "os Açores")
+        case .madeira:    place = t("Madeira", "a Madeira")
+        }
+        return t("Estimates based on 2026 tax tables for \(place). Not official tax advice.",
+                 "Estimativas com base nas tabelas fiscais de 2026 para \(place). Não é aconselhamento fiscal oficial.")
+    }
 
     // MARK: Compare
 
@@ -1041,7 +1064,7 @@ struct Strings {
     }
     var euroFootnoteGaps: String {
         t("Cyprus and Malta have no figure for mining or for electricity and gas. Length of service is in the source but is not on this screen yet.",
-          "Chipre e Malta não têm valor para as indústrias extractivas nem para a eletricidade e gás. A antiguidade existe na fonte mas ainda não está neste ecrã.")
+          "Chipre e Malta não têm valor para as indústrias extrativas nem para a eletricidade e gás. A antiguidade existe na fonte mas ainda não está neste ecrã.")
     }
 
     // MARK: v0.16 Support SalarySeed
@@ -1051,11 +1074,15 @@ struct Strings {
     // apart is how an app ends up promising different things in different
     // languages.
     //
-    // The three benefits are ordered deliberately: what it funds first, because
-    // that is the honest reason; the grandfathering second, as a commitment to
-    // the person rather than a claim about a feature that does not exist; the
-    // colours last, because they are the smallest of the three and leading with
-    // them would make the whole thing feel like it is selling paint.
+    // The benefits are ordered deliberately: the two real screens first, because
+    // they are what somebody arriving from a gate came to see; the colours next,
+    // because they are the smallest and leading with them would make the whole
+    // thing feel like it is selling paint; the grandfathering last, as a
+    // commitment to the person rather than a claim about a feature that exists.
+    //
+    // v1.0.2 CUT THE "no ads" LINE. Charging for the absence of something the app
+    // never had is the one bullet that was not a benefit, and it is the sentence
+    // a review would quote back. The body already says what the money funds.
 
     var supportButton: String { t("Support SalarySeed", "Apoia o SalarySeed") }
     var supportTitle: String { t("Support SalarySeed", "Apoia o SalarySeed") }
@@ -1067,7 +1094,7 @@ struct Strings {
     /// list is modest, saying so at length is the part that sounds defensive.
     var supportBody: String {
         t("If you like SalarySeed, help cover what it costs to build and maintain (App Store hosting, tax updates, new features). And while you are at it, you get access to a few extra tools in the app.",
-          "Se gostas do SalarySeed, ajuda a suportar os custos de desenvolvimento e manutenção da app (p.ex., alojamento na App Store, atualização de IRS, novos features). E já agora, ganhas acesso a algumas ferramentas adicionais na app.")
+          "Se gostas do SalarySeed, ajuda a suportar os custos de desenvolvimento e manutenção da app (p.ex., alojamento na App Store, atualização de IRS, novas funcionalidades). E já agora, ganhas acesso a algumas ferramentas adicionais na app.")
     }
 
     /// Each benefit is a bold accent-coloured lead and a plain rest, so the list
@@ -1075,10 +1102,7 @@ struct Strings {
     /// than marked up inside one, because the split has to survive translation
     /// and a marker inside a sentence does not.
     var supportBenefits: [(lead: String, rest: String)] {
-        [(t("No ads.", "Sem anúncios."),
-          t("You stay ad-free forever, guaranteed.",
-            "Continuas sem anúncios para sempre, garantido.")),
-         (t("Grow mode.", "Modo \"Crescer\"."),
+        [(t("Grow mode.", "Modo Crescer."),
           t("See how your salary could develop over the next 5, 10 or 20 years if you stay at the same company, based on the official average for people with more years of experience.",
             "Vê como o teu salário pode evoluir nos próximos 5, 10, ou 20 anos se te mantiveres na mesma empresa, baseado na média oficial de pessoas com mais anos de experiência.")),
          (t("EU comparison.", "Comparação na UE."),
@@ -1089,7 +1113,7 @@ struct Strings {
             "Escolhe a cor que preferes para a interface, e para o ícone da app.")),
          (t("Everything that comes later.", "Tudo o que vier depois."),
           t("If we add more features in future, even paid ones, they are yours.",
-            "Se no futuro implementarmos features adicionais, mesmo que sejam pagos, serão teus."))]
+            "Se no futuro implementarmos funcionalidades adicionais, mesmo que sejam pagas, são tuas."))]
     }
 
     func supportCTA(_ price: String) -> String {

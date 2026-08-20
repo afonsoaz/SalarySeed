@@ -451,7 +451,7 @@ struct HomeView: View {
     }
 
     private var disclaimer: some View {
-        Text(s.homeDisclaimer)
+        Text(s.homeDisclaimer(store.taxRegion))
             .font(.system(size: 10))
             .foregroundStyle(Theme.textFaint)
             .frame(maxWidth: .infinity, alignment: .center)

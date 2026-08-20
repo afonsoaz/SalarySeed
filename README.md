@@ -1,4 +1,4 @@
-# SalarySeed — v1.0.1
+# SalarySeed — v1.0.2
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
@@ -159,6 +159,16 @@ unaffected either way: the App Store trader disclosure follows from taking money
 not from taking data.
 
 ## Version history
+
+**v1.0.2** — Four copy fixes, one of which was a wrong statement about the app's own maths.
+
+The footer under Home said every figure came from the 2026 tables "for the Continente", unconditionally, and had said so since v0.6. v0.15 added real Açores and Madeira tables and did not come back for this line, so an islander whose numbers *were* computed regionally was told, in the only sentence on the screen that names a table, that they were not. It now names the region it used, with the article Portuguese needs for each. The app was doing the right thing and confessing to the wrong one.
+
+The support sheet lost its "no ads" bullet. Charging for the absence of something the app never had is not a benefit, and it was the one line on that screen a review would quote back. What the money funds is already the first thing the sheet says. The remaining bullets are things you get: Grow, the European map, the accents, and everything built later. Portuguese there also stopped saying *features* and *pagos* and started saying *funcionalidades* and *pagas*.
+
+Onboarding's salary step used to say the salary was the only thing needed, directly above a progress bar promising seven more questions. It now says what it is actually there for, which is that the button will not move until a number is typed.
+
+And *indústrias extractivas* became *extrativas*, which is the spelling every other label on the same picker had already been using.
 
 **v1.0.1** — The support payment goes to €4.99 and starts unlocking something. Grow and the European half of the map are now behind it, alongside the accents and the standing promise that everything built later is included. Portugal's map, Home and Compare stay free, because the app's own country is what the app is for.
 
