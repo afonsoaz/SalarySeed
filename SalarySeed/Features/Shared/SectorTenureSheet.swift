@@ -30,11 +30,11 @@ struct SectorTenureSheet: View {
                     .padding(.top, 10)
 
                 Text(s.sectorSheetTitle)
-                    .font(.system(size: 18, weight: .medium))
+                    .appFont(18, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                     .padding(.top, 14)
                 Text(s.sectorNote)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textFaint)
                     .padding(.top, 2)
 
@@ -52,7 +52,7 @@ struct SectorTenureSheet: View {
                 if sel != nil {
                     Divider().overlay(Theme.cardBorder).padding(.vertical, 10)
                     Text(s.tenureQuestion)
-                        .font(.system(size: 14, weight: .medium))
+                        .appFont(14, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                     tenureStepper.padding(.top, 8)
                 }
@@ -63,7 +63,7 @@ struct SectorTenureSheet: View {
                     dismiss()
                 } label: {
                     Text(s.okButton)
-                        .font(.system(size: 16, weight: .semibold))
+                        .appFont(16, weight: .semibold)
                         .foregroundStyle(Theme.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
@@ -78,7 +78,7 @@ struct SectorTenureSheet: View {
                         dismiss()
                     } label: {
                         Text(s.removeDetail)
-                            .font(.system(size: 12))
+                            .appFont(12)
                             .foregroundStyle(Theme.textSecondary)
                             .underline()
                             .frame(maxWidth: .infinity)
@@ -100,7 +100,7 @@ struct SectorTenureSheet: View {
     private var tenureStepper: some View {
         HStack {
             Text(years == 0 ? TenureBand.lt1.label(pt: s.pt) : s.yearsText(years))
-                .font(.system(size: 20, weight: .medium))
+                .appFont(20, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .contentTransition(.numericText())
             Spacer()
@@ -109,14 +109,14 @@ struct SectorTenureSheet: View {
                     if years > 0 { withAnimation(.easeOut(duration: 0.12)) { years -= 1 } }
                 } label: {
                     Image(systemName: "minus.circle")
-                        .font(.system(size: 26))
+                        .appFont(26)
                         .foregroundStyle(years > 0 ? Theme.accent : Theme.textFaint)
                 }
                 Button {
                     if years < 40 { withAnimation(.easeOut(duration: 0.12)) { years += 1 } }
                 } label: {
                     Image(systemName: "plus.circle")
-                        .font(.system(size: 26))
+                        .appFont(26)
                         .foregroundStyle(years < 40 ? Theme.accent : Theme.textFaint)
                 }
             }
@@ -129,7 +129,7 @@ struct SectorTenureSheet: View {
             withAnimation(.easeOut(duration: 0.12)) { sel = sector }
         } label: {
             Text(sector.label(pt: s.pt))
-                .font(.system(size: 12.5, weight: isSelected ? .medium : .regular))
+                .appFont(12.5, weight: isSelected ? .medium : .regular)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)

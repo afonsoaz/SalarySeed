@@ -224,7 +224,7 @@ struct RollingEuro: View {
 
     var body: some View {
         Text(eur(shown))
-            .font(.system(size: fontSize, weight: .medium))
+            .appFont(fontSize, weight: .medium)
             .foregroundStyle(color)
             .contentTransition(.numericText(value: shown))
             .minimumScaleFactor(0.6)

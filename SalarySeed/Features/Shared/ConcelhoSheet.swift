@@ -51,10 +51,10 @@ struct ConcelhoPickerList: View {
     private var searchField: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14))
+                .appFont(14)
                 .foregroundStyle(Theme.textSecondary)
             TextField(s.concelhoSearchPlaceholder, text: $query)
-                .font(.system(size: 15))
+                .appFont(15)
                 .foregroundStyle(Theme.textPrimary)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
@@ -64,7 +64,7 @@ struct ConcelhoPickerList: View {
                     dismissKeyboard()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 15))
+                        .appFont(15)
                         .foregroundStyle(Theme.textFaint)
                 }
             }
@@ -82,7 +82,7 @@ struct ConcelhoPickerList: View {
     private var resultsList: some View {
         if results.isEmpty {
             Text(s.concelhoNoResults)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.top, 20)
         } else {
@@ -115,15 +115,15 @@ struct ConcelhoPickerList: View {
             } label: {
                 HStack(spacing: 11) {
                     Image(systemName: "map")
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(Theme.accent)
                         .frame(width: 22)
                     Text(group.label)
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Image(systemName: isOpen ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 11))
+                        .appFont(11)
                         .foregroundStyle(Theme.textFaint)
                 }
                 .padding(.vertical, 12)
@@ -149,17 +149,17 @@ struct ConcelhoPickerList: View {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(item.name)
-                        .font(.system(size: 14, weight: isSelected ? .medium : .regular))
+                        .appFont(14, weight: isSelected ? .medium : .regular)
                         .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                         .multilineTextAlignment(.leading)
                     Text(subtitle(item, showDistrict: showDistrict))
-                        .font(.system(size: 10))
+                        .appFont(10)
                         .foregroundStyle(isSelected ? Theme.ink.opacity(0.7) : Theme.textFaint)
                 }
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .semibold))
+                        .appFont(12, weight: .semibold)
                         .foregroundStyle(Theme.ink)
                 }
             }
@@ -229,7 +229,7 @@ struct ConcelhoSheet: View {
                         dismiss()
                     } label: {
                         Text(s.removeDetail)
-                            .font(.system(size: 12))
+                            .appFont(12)
                             .foregroundStyle(Theme.textSecondary)
                             .underline()
                             .frame(maxWidth: .infinity)
@@ -248,7 +248,7 @@ struct ConcelhoSheet: View {
         HStack(spacing: 10) {
             SproutView(stage: store.sproutStage(withExtra: store.concelhoID == nil ? 1 : 0), size: 26)
             Text(s.concelhoSheetTitle)
-                .font(.system(size: 17, weight: .medium))
+                .appFont(17, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
         }
     }

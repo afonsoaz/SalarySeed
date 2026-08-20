@@ -1,4 +1,4 @@
-# SalarySeed — v1.0.2
+# SalarySeed — v1.0.3
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
@@ -78,7 +78,8 @@ SalarySeed/
     AccentTheme          the five accents, each carrying its own ink
     AppIcon              setAlternateIconName, and the guard that stops the alert
     AppConfig            the version, read from the bundle rather than typed
-  Theme.swift  design tokens and the OKLCH diverging ramp
+  Theme.swift  design tokens, the OKLCH diverging ramp, and .appFont, which is
+               how every point size in the app becomes the reader's point size
   PrivacyInfo.xcprivacy  the privacy manifest, checked against the build on every build
 ```
 
@@ -159,6 +160,16 @@ unaffected either way: the App Store trader disclosure follows from taking money
 not from taking data.
 
 ## Version history
+
+**v1.0.3** — The app follows the reader's text size. It never did before.
+
+SwiftUI's `.system(size:)` looks like a design size and is really a fixed point count: it ignores Dynamic Type completely. The app had 493 of them and not one `ScaledMetric`, so setting an iPhone to the largest text size and opening SalarySeed changed nothing at all, not by a pixel. For an app about pay and pensions, read by people who are older on average than a game's audience, that was the worst thing left in it.
+
+Every one of those call sites now goes through `.appFont(_:weight:)`, which asks `UIFontMetrics` what the reader's size is. At the default setting `UIFontMetrics` returns the design size unchanged, so this release is pixel-identical to v1.0.2 for anybody who never opened Settings. The scaling curve is picked from the design size, so a 10pt footnote grows proportionally more than a 34pt hero number, which is how Apple's own text styles behave and what stops captions turning into headlines.
+
+About half the work was layout, because bigger text has to go somewhere. Onboarding's plain steps scroll now instead of squeezing their own headlines into "Vamos compree…". Home's top bar becomes two rows past the accessibility sizes rather than breaking the wordmark into "Salar / ySee / d". Section labels stack above their hints instead of splitting mid-word into "DISTRIBUIÇÃ / O NACIONAL". Nothing shrinks to fit: shrinking text is the opposite of what the reader asked for.
+
+Verified by hand at `accessibility-extra-large` on onboarding, Home, Compare, the Portugal map, Profile and the support sheet. Grow, the European map and the deeper sheets have not been checked yet, and nor has anything above that size. VoiceOver is untouched and remains the accessibility work still outstanding.
 
 **v1.0.2** — Four copy fixes, one of which was a wrong statement about the app's own maths.
 

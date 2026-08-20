@@ -29,11 +29,11 @@ struct ProfilePickerSheet: View {
                     SproutView(stage: previewStage, size: 26)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(s.dimSheetTitle(dimension.id))
-                            .font(.system(size: 16, weight: .medium))
+                            .appFont(16, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         if let note = s.dimSheetNote(dimension.id) {
                             Text(note)
-                                .font(.system(size: 10))
+                                .appFont(10)
                                 .foregroundStyle(Theme.textFaint)
                         }
                     }
@@ -48,7 +48,7 @@ struct ProfilePickerSheet: View {
                 .padding(.top, 16)
 
                 Text(s.sheetPrivacy)
-                    .font(.system(size: 10))
+                    .appFont(10)
                     .foregroundStyle(Theme.textFaint)
                     .padding(.top, 16)
 
@@ -58,7 +58,7 @@ struct ProfilePickerSheet: View {
                         dismiss()
                     } label: {
                         Text(s.removeDetail)
-                            .font(.system(size: 12))
+                            .appFont(12)
                             .foregroundStyle(Theme.textSecondary)
                             .underline()
                     }
@@ -80,7 +80,7 @@ struct ProfilePickerSheet: View {
             dismiss()
         } label: {
             Text(option.label)
-                .font(.system(size: 13, weight: isSelected ? .medium : .regular))
+                .appFont(13, weight: isSelected ? .medium : .regular)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)

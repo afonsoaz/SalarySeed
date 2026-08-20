@@ -59,12 +59,34 @@ struct OnboardingView: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 header
+                // v1.0.3 MADE THE STEPS SCROLL, and it is the Dynamic Type fix
+                // rather than a layout preference.
+                //
+                // Every step is a column ending in a Spacer and a button. With no
+                // scroll view the column can never be taller than the screen, so
+                // once the reader's text no longer fits, SwiftUI takes the space
+                // back out of the Text views: the welcome headline truncated to
+                // "Vamos compree…" and the privacy line lost its last word. A
+                // ScrollView gives the column unbounded height, so the text takes
+                // the size it actually wants and the overflow becomes a scroll.
+                //
+                // `minHeight: geo.size.height` is what keeps the default look
+                // identical. Without it the column shrinks to its content and the
+                // Spacer stops pushing, which would lift every button up the
+                // screen for the readers who changed nothing.
+                // ONLY the plain columns get wrapped. Steps 5 to 8 are the four
+                // pickers, and each already owns a ScrollView around its list or
+                // grid with the buttons pinned under it. Wrapping those a second
+                // time gives the inner scroll unbounded height, so it stops
+                // scrolling and grows instead, and OK slides off the bottom of
+                // the screen. That is exactly what happened to the concelho step
+                // the first time this was written.
                 switch step {
-                case 0: welcomeStep
-                case 1: salaryStep
-                case 2: maritalStep
-                case 3: dependentsStep
-                case 4: ajudasStep
+                case 0: scrollingStep { welcomeStep }
+                case 1: scrollingStep { salaryStep }
+                case 2: scrollingStep { maritalStep }
+                case 3: scrollingStep { dependentsStep }
+                case 4: scrollingStep { ajudasStep }
                 case 5: profileStep(dimensionID: "age")
                 case 6: concelhoStep
                 case 7: profileStep(dimensionID: "education")
@@ -125,6 +147,25 @@ struct OnboardingView: View {
         store.hasOnboarded = true
     }
 
+    /// A step that is one column of text ending in a button.
+    ///
+    /// `minHeight: geo.size.height` is what keeps the default look identical to
+    /// v1.0.2. Without it the column shrinks to fit its content, the trailing
+    /// Spacer stops pushing, and every button rises up the screen for the readers
+    /// who never changed their text size. With it, the column is exactly the
+    /// screen until the text needs more, and only then does it scroll.
+    private func scrollingStep<Content: View>(@ViewBuilder _ content: () -> Content) -> some View {
+        // Built once, here, rather than inside the GeometryReader: that closure
+        // escapes, and a non-escaping @ViewBuilder parameter cannot go into it.
+        let built = content()
+        return GeometryReader { geo in
+            ScrollView {
+                built.frame(minHeight: geo.size.height, alignment: .top)
+            }
+            .scrollDismissesKeyboard(.interactively)
+        }
+    }
+
     private var header: some View {
         HStack {
             if step > 0 {
@@ -133,16 +174,16 @@ struct OnboardingView: View {
                     withAnimation { step -= 1 }
                 } label: {
                     Image(systemName: "arrow.left")
-                        .font(.system(size: 15))
+                        .appFont(15)
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .padding(.trailing, 8)
             }
             HStack(spacing: 6) {
                 Image(systemName: "leaf.fill")
-                    .font(.system(size: 14))
+                    .appFont(14)
                 Text("SalarySeed")
-                    .font(.system(size: 13, weight: .medium))
+                    .appFont(13, weight: .medium)
             }
             .foregroundStyle(Theme.accent)
             Spacer()
@@ -164,23 +205,23 @@ struct OnboardingView: View {
             .padding(.top, 26)
 
             Text(s.welcomeTitle)
-                .font(.system(size: 27, weight: .medium))
+                .appFont(27, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .padding(.top, 22)
             Text(s.welcomeSub)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3)
                 .padding(.top, 9)
 
             Text(s.welcomeAskName)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.top, 28)
             TextField(s.welcomeNamePlaceholder, text: $nameText)
                 .textInputAutocapitalization(.words)
                 .autocorrectionDisabled()
-                .font(.system(size: 24, weight: .medium))
+                .appFont(24, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .padding(.top, 6)
                 .padding(.bottom, 8)
@@ -188,11 +229,14 @@ struct OnboardingView: View {
                     Rectangle().fill(Theme.accent).frame(height: 2)
                 }
 
-            HStack(spacing: 8) {
+            // .top, because at a large text size this line wraps to three and a
+            // centred lock floats beside the middle of them.
+            HStack(alignment: .top, spacing: 8) {
                 Image(systemName: "lock")
-                    .font(.system(size: 12))
+                    .appFont(12)
                 Text(s.welcomePrivacy)
-                    .font(.system(size: 11.5))
+                    .appFont(11.5)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .foregroundStyle(Theme.textSecondary)
             .padding(.top, 20)
@@ -204,7 +248,7 @@ struct OnboardingView: View {
                 advance()
             } label: {
                 Text(s.welcomeSkip)
-                    .font(.system(size: 13))
+                    .appFont(13)
                     .foregroundStyle(Theme.textSecondary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
@@ -223,7 +267,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 22)
             Text(s.salaryQuestion(trimmedName.isEmpty ? nil : trimmedName))
-                .font(.system(size: 27, weight: .medium))
+                .appFont(27, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
 
@@ -237,14 +281,14 @@ struct OnboardingView: View {
             // everything above the OK button stays visible while typing.
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("€")
-                    .font(.system(size: 28))
+                    .appFont(28)
                     .foregroundStyle(Theme.textSecondary)
                 TextField("1500", text: $amountText)
                     .keyboardType(.numberPad)
-                    .font(.system(size: 38, weight: .medium))
+                    .appFont(38, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                 Text(entryMode == .yearly ? s.perYearSuffix : s.perMonthSuffix)
-                    .font(.system(size: 15))
+                    .appFont(15)
                     .foregroundStyle(Theme.textSecondary)
             }
             .padding(.bottom, 8)
@@ -263,7 +307,7 @@ struct OnboardingView: View {
 
             if salaryValue == nil {
                 Text(s.salaryNeeded)
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textSecondary)
                     .padding(.top, 10)
             }
@@ -282,10 +326,10 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 40)
             Text(s.onbMaritalTitle)
-                .font(.system(size: 26, weight: .medium))
+                .appFont(26, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
             Text(s.onbMaritalSub)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3)
                 .padding(.top, 8)
@@ -310,17 +354,17 @@ struct OnboardingView: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(option.label(pt: s.pt))
-                        .font(.system(size: 15, weight: .medium))
+                        .appFont(15, weight: .medium)
                         .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                     Text(option.hint(pt: s.pt))
-                        .font(.system(size: 11.5))
+                        .appFont(11.5)
                         .foregroundStyle(isSelected ? Theme.ink.opacity(0.75) : Theme.textSecondary)
                         .multilineTextAlignment(.leading)
                 }
                 Spacer(minLength: 8)
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 13, weight: .semibold))
+                        .appFont(13, weight: .semibold)
                         .foregroundStyle(Theme.ink)
                 }
             }
@@ -342,10 +386,10 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 40)
             Text(s.onbDependentsTitle)
-                .font(.system(size: 26, weight: .medium))
+                .appFont(26, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
             Text(s.onbDependentsSub)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3)
                 .padding(.top, 8)
@@ -358,11 +402,11 @@ struct OnboardingView: View {
 
                 VStack(spacing: 2) {
                     Text("\(dependentsSel)")
-                        .font(.system(size: 46, weight: .medium))
+                        .appFont(46, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                         .contentTransition(.numericText())
                     Text(s.dependentsUnit(dependentsSel))
-                        .font(.system(size: 12))
+                        .appFont(12)
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .frame(minWidth: 120)
@@ -384,7 +428,7 @@ struct OnboardingView: View {
             withAnimation(.easeOut(duration: 0.15)) { action() }
         } label: {
             Image(systemName: system)
-                .font(.system(size: 18, weight: .medium))
+                .appFont(18, weight: .medium)
                 .foregroundStyle(Theme.accent)
                 .frame(width: 52, height: 52)
                 .background(Theme.accentSoft, in: Circle())
@@ -398,25 +442,25 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 56)
             Text(s.onbAjudasTitle)
-                .font(.system(size: 28, weight: .medium))
+                .appFont(28, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
             Text(s.onbAjudasSub)
-                .font(.system(size: 13.5))
+                .appFont(13.5)
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3)
                 .padding(.top, 8)
 
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("€")
-                    .font(.system(size: 30))
+                    .appFont(30)
                     .foregroundStyle(Theme.textSecondary)
                 TextField("0", text: $ajudasText)
                     .keyboardType(.numberPad)
-                    .font(.system(size: 42, weight: .medium))
+                    .appFont(42, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                 Text(s.perMonthSuffix)
-                    .font(.system(size: 15))
+                    .appFont(15)
                     .foregroundStyle(Theme.textSecondary)
             }
             .padding(.bottom, 10)
@@ -440,16 +484,16 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 36)
             Text(s.dimSheetTitle(id))
-                .font(.system(size: 26, weight: .medium))
+                .appFont(26, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
             if let note = s.dimSheetNote(id) {
                 Text(note)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textFaint)
                     .padding(.top, 4)
             }
             Text(s.onbProfileWhy)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.top, 8)
 
@@ -504,7 +548,7 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 36)
             Text(s.concelhoQuestion)
-                .font(.system(size: 26, weight: .medium))
+                .appFont(26, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
 
             ConcelhoPickerList(selectedID: $concelhoSel, onPick: nil, s: s)
@@ -512,7 +556,7 @@ struct OnboardingView: View {
 
             if let picked = ConcelhoCatalog.concelho(concelhoSel) {
                 Text(s.concelhoDerived(picked.region.label))
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.accent)
                     .padding(.top, 8)
             }
@@ -532,11 +576,11 @@ struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 0) {
             Spacer().frame(height: 30)
             Text(s.sectorQuestion)
-                .font(.system(size: 26, weight: .medium))
+                .appFont(26, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
             Text(s.onbProfileWhy)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.top, 8)
 
@@ -551,11 +595,11 @@ struct OnboardingView: View {
                 if sectorSel != nil {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(s.tenureQuestion)
-                            .font(.system(size: 14, weight: .medium))
+                            .appFont(14, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         HStack {
                             Text(tenureYearsSel == 0 ? TenureBand.lt1.label(pt: s.pt) : s.yearsText(tenureYearsSel))
-                                .font(.system(size: 20, weight: .medium))
+                                .appFont(20, weight: .medium)
                                 .foregroundStyle(Theme.textPrimary)
                                 .contentTransition(.numericText())
                             Spacer()
@@ -589,7 +633,7 @@ struct OnboardingView: View {
             withAnimation(.easeOut(duration: 0.12)) { sectorSel = sector }
         } label: {
             Text(sector.label(pt: s.pt))
-                .font(.system(size: 12.5, weight: isSelected ? .medium : .regular))
+                .appFont(12.5, weight: isSelected ? .medium : .regular)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .multilineTextAlignment(.center)
@@ -614,7 +658,7 @@ struct OnboardingView: View {
             withAnimation(.easeOut(duration: 0.15)) { setSelection(dimensionID, option.id) }
         } label: {
             Text(option.label)
-                .font(.system(size: 13, weight: isSelected ? .medium : .regular))
+                .appFont(13, weight: isSelected ? .medium : .regular)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -636,7 +680,7 @@ struct OnboardingView: View {
     private func bigSkipButton(_ title: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 15, weight: .medium))
+                .appFont(15, weight: .medium)
                 .foregroundStyle(Theme.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
@@ -656,7 +700,7 @@ struct PrimaryButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 16, weight: .semibold))
+                .appFont(16, weight: .semibold)
                 .foregroundStyle(Theme.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
@@ -677,7 +721,7 @@ struct SegmentedPicker<Option: Identifiable & Equatable>: View {
                     withAnimation(.easeOut(duration: 0.15)) { selection = option }
                 } label: {
                     Text(label(option))
-                        .font(.system(size: 13, weight: .medium))
+                        .appFont(13, weight: .medium)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                         .background(

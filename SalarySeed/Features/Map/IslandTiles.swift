@@ -45,12 +45,12 @@ struct IslandTiles: View {
         let isHome = home == region
         return VStack(alignment: .leading, spacing: 2) {
             Text(region.label)
-                .font(.system(size: 10, weight: isHome ? .semibold : .medium))
+                .appFont(10, weight: isHome ? .semibold : .medium)
                 .foregroundStyle(isHome ? Theme.accent : Theme.textSecondary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
             Text(s.mapIslandNoData)
-                .font(.system(size: 8.5))
+                .appFont(8.5)
                 .foregroundStyle(Theme.textFaint)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)

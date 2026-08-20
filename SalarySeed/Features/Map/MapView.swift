@@ -73,10 +73,10 @@ struct MapView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text("mapSeed")
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.accent)
             Text(scope == .portugal ? s.mapTitle : s.euroTitle)
-                .font(.system(size: 22, weight: .medium))
+                .appFont(22, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
         }
         .padding(.top, 8)
@@ -92,7 +92,7 @@ struct MapView: View {
                     withAnimation(.easeOut(duration: 0.15)) { scope = option }
                 } label: {
                     Text(option.label(s))
-                        .font(.system(size: 13, weight: isOn ? .medium : .regular))
+                        .appFont(13, weight: isOn ? .medium : .regular)
                         .foregroundStyle(isOn ? Theme.ink : Theme.textPrimary)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
@@ -159,19 +159,19 @@ struct MapView: View {
         Button { showSectorSheet = true } label: {
             HStack(spacing: 10) {
                 Image(systemName: "building.2")
-                    .font(.system(size: 15))
+                    .appFont(15)
                     .foregroundStyle(Theme.accent)
                 VStack(alignment: .leading, spacing: 1) {
                     Text(store.sector?.label(pt: s.pt) ?? s.mapAllSectors)
-                        .font(.system(size: 15, weight: .medium))
+                        .appFont(15, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                     Text(store.sector == nil ? s.mapPickSector : s.mapSectorHint)
-                        .font(.system(size: 10.5))
+                        .appFont(10.5)
                         .foregroundStyle(store.sector == nil ? Theme.accent : Theme.textFaint)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textFaint)
             }
             .padding(13)
@@ -205,7 +205,7 @@ struct MapView: View {
             }
         } label: {
             Text(enabled ? label : s.mapNeedConcelho)
-                .font(.system(size: 12, weight: isOn ? .medium : .regular))
+                .appFont(12, weight: isOn ? .medium : .regular)
                 .foregroundStyle(isOn ? Theme.ink : (enabled ? Theme.textPrimary : Theme.accent))
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
@@ -236,12 +236,12 @@ struct MapView: View {
                             .stroke(Theme.textPrimary, lineWidth: 1.5)
                             .frame(width: 14, height: 10)
                         Text(s.mapYouAreHere)
-                            .font(.system(size: 9.5))
+                            .appFont(9.5)
                             .foregroundStyle(Theme.textSecondary)
                     }
                 }
                 Text(s.mapTapHint)
-                    .font(.system(size: 9.5))
+                    .appFont(9.5)
                     .foregroundStyle(Theme.textFaint)
                     .fixedSize(horizontal: false, vertical: true)
                 // v0.15: the islands sit beside the mainland rather than being
@@ -264,11 +264,11 @@ struct MapView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
                     Text(focus.district.label)
-                        .font(.system(size: 17, weight: .medium))
+                        .appFont(17, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                     if focus.district == home {
                         Text(s.mapHomeTag)
-                            .font(.system(size: 9, weight: .medium))
+                            .appFont(9, weight: .medium)
                             .foregroundStyle(Theme.ink)
                             .padding(.horizontal, 7)
                             .padding(.vertical, 2)
@@ -279,20 +279,20 @@ struct MapView: View {
                     // percentage. It used to be buried in the sentence below,
                     // which made the two numbers read as unrelated.
                     Text(eur(focus.mean))
-                        .font(.system(size: 15, weight: .medium))
+                        .appFont(15, weight: .medium)
                         .foregroundStyle(Theme.textSecondary)
                     Text(DistrictComparison.formatted(focus.pct))
-                        .font(.system(size: 19, weight: .semibold))
+                        .appFont(19, weight: .semibold)
                         .foregroundStyle(Theme.mapColor(bucket: focus.bucket))
                         .frame(minWidth: 54, alignment: .trailing)
                 }
                 Text(s.mapBaselineLine(baselineName))
-                    .font(.system(size: 11.5))
+                    .appFont(11.5)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 if let count = focus.count {
                     Text(focus.thin ? s.mapThinCell(count) : s.mapCellSize(count))
-                        .font(.system(size: 10))
+                        .appFont(10)
                         .foregroundStyle(focus.thin ? Theme.danger : Theme.textFaint)
                 }
             }
@@ -337,28 +337,28 @@ struct MapView: View {
                     .fill(Theme.mapColor(bucket: reading.bucket, thin: reading.thin))
                     .frame(width: 4, height: 22)
                 Text(reading.district.label)
-                    .font(.system(size: 13.5, weight: isHome ? .semibold : .regular))
+                    .appFont(13.5, weight: isHome ? .semibold : .regular)
                     .foregroundStyle(Theme.textPrimary)
                     .lineLimit(1)
                 if isHome {
                     Image(systemName: "location.fill")
-                        .font(.system(size: 8))
+                        .appFont(8)
                         .foregroundStyle(Theme.accent)
                 }
                 if reading.thin {
                     Text(s.mapThinTag)
-                        .font(.system(size: 8.5))
+                        .appFont(8.5)
                         .foregroundStyle(Theme.danger)
                 }
                 Spacer(minLength: 6)
                 // v0.9.3: amount and percentage on one line, both right-aligned
                 // in fixed columns so they line up down the whole list.
                 Text(eur(reading.mean))
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textSecondary)
                     .frame(minWidth: 62, alignment: .trailing)
                 Text(DistrictComparison.formatted(reading.pct))
-                    .font(.system(size: 13, weight: .medium))
+                    .appFont(13, weight: .medium)
                     .foregroundStyle(Theme.mapColor(bucket: reading.bucket))
                     .frame(minWidth: 46, alignment: .trailing)
             }
@@ -376,22 +376,22 @@ struct MapView: View {
     private var footnotes: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(s.mapNoTenureNote)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
             Text(s.mapScopeNote)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
             Text(s.mapIslandNote)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
             Text(DistrictDataset.referenceLabel)
-                .font(.system(size: 9.5))
+                .appFont(9.5)
                 .foregroundStyle(Theme.textFaint)
             Text(s.mapGeoCredit)
-                .font(.system(size: 9.5))
+                .appFont(9.5)
                 .foregroundStyle(Theme.textFaint)
         }
         .padding(.top, 2)

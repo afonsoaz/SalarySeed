@@ -112,7 +112,7 @@ struct MapLegend: View {
                 .fill(Theme.mapColor(bucket: bucket))
                 .frame(width: 14, height: 10)
             Text(label)
-                .font(.system(size: 9.5))
+                .appFont(9.5)
                 .foregroundStyle(Theme.textSecondary)
         }
     }

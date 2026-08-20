@@ -132,11 +132,11 @@ struct GrowView: View {
             HStack(spacing: 6) {
                 SproutView(stage: store.sproutStage, size: 16)
                 Text(s.growTitle)
-                    .font(.system(size: 20, weight: .medium))
+                    .appFont(20, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
             }
             Text(s.growSub(ctx.sector.label(pt: s.pt), years: Int(ctx.startTenure)))
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -167,7 +167,7 @@ struct GrowView: View {
                 projectionFigure(label: s.growToday, value: eur(today),
                                  tint: Theme.textPrimary, big: false)
                 Image(systemName: "arrow.right")
-                    .font(.system(size: 13, weight: .medium))
+                    .appFont(13, weight: .medium)
                     .foregroundStyle(Theme.textFaint)
                     .padding(.bottom, 8)
                 projectionFigure(label: s.growInYearsStaying(horizon), value: eur(stayEnd),
@@ -178,24 +178,24 @@ struct GrowView: View {
                 Divider().overlay(Theme.cardBorder)
                 VStack(alignment: .leading, spacing: 6) {
                     Text(s.growWithYourChanges)
-                        .font(.system(size: 11, weight: .medium))
+                        .appFont(11, weight: .medium)
                         .foregroundStyle(Theme.accent)
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text(eur(scenarioEnd))
-                            .font(.system(size: 32, weight: .medium))
+                            .appFont(32, weight: .medium)
                             .foregroundStyle(Theme.accent)
                             .contentTransition(.numericText())
                             .minimumScaleFactor(0.7)
                             .lineLimit(1)
                         Text(s.growVsStaying(signedEur(scenarioEnd - stayEnd)))
-                            .font(.system(size: 12))
+                            .appFont(12)
                             .foregroundStyle(scenarioEnd >= stayEnd ? Theme.accent : Theme.danger)
                     }
                     deltaLine(from: today, to: scenarioEnd, tint: Theme.textFaint)
                 }
             }
             Text(s.growProjectionUnit(store.growScenario.inTodaysMoney))
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -208,12 +208,12 @@ struct GrowView: View {
     private func projectionFigure(label: String, value: String, tint: Color, big: Bool) -> some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(label)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
             Text(value)
-                .font(.system(size: big ? 34 : 22, weight: .medium))
+                .appFont(big ? 34 : 22, weight: .medium)
                 .foregroundStyle(tint)
                 .contentTransition(.numericText())
                 .minimumScaleFactor(0.6)
@@ -225,7 +225,7 @@ struct GrowView: View {
     private func deltaLine(from: Double, to: Double, tint: Color) -> some View {
         let pct = from > 0 ? (to - from) / from * 100 : 0
         return Text(s.growVsToday(signedEur(to - from), String(format: "%+.1f%%", pct)))
-            .font(.system(size: 11))
+            .appFont(11)
             .foregroundStyle(tint)
     }
 
@@ -278,7 +278,7 @@ struct GrowView: View {
                 }
             } label: {
                 Text(store.growScenario.inTodaysMoney ? s.growReal : s.growNominal)
-                    .font(.system(size: 11, weight: .medium))
+                    .appFont(11, weight: .medium)
                     .foregroundStyle(store.growScenario.inTodaysMoney ? Theme.ink : Theme.textSecondary)
                     .padding(.horizontal, 11)
                     .padding(.vertical, 8)
@@ -297,7 +297,7 @@ struct GrowView: View {
             Spacer()
             Text(s.growYears(horizon))
         }
-        .font(.system(size: 10))
+        .appFont(10)
         .foregroundStyle(Theme.textFaint)
     }
 
@@ -312,13 +312,9 @@ struct GrowView: View {
         let shown = move ?? stay
         let f = moneyScale(scrubYear)
         return VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                SectionLabel(scrubYear == 0 ? s.growToday : s.growYears(scrubYear))
-                Spacer()
+            SectionHeader(scrubYear == 0 ? s.growToday : s.growYears(scrubYear)) {
                 if let p = shown, p.tenure >= 0 {
-                    Text(s.growTenureAt(Int(p.tenure)))
-                        .font(.system(size: 10))
-                        .foregroundStyle(Theme.textFaint)
+                    SectionHint(s.growTenureAt(Int(p.tenure)))
                 }
             }
             HStack(spacing: 10) {
@@ -330,13 +326,13 @@ struct GrowView: View {
             }
             if let move, let stay, abs(move.gross - stay.gross) > 0.5 {
                 Text(s.growScrubVsStay(signedEur((move.gross - stay.gross) * f)))
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(move.gross >= stay.gross ? Theme.accent : Theme.danger)
             }
             if scrubYear == 0 {
                 Button { askingSalaryChange = true } label: {
                     Text(s.growEditToday)
-                        .font(.system(size: 12, weight: .medium))
+                        .appFont(12, weight: .medium)
                         .foregroundStyle(Theme.accent)
                 }
             }
@@ -353,10 +349,10 @@ struct GrowView: View {
     private func figure(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textSecondary)
             Text(value)
-                .font(.system(size: 15, weight: .medium))
+                .appFont(15, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
@@ -379,25 +375,25 @@ struct GrowView: View {
         let positive = result.stayAnnual > 0.0005
         return VStack(alignment: .leading, spacing: 6) {
             Text(s.growBreakEvenTitle)
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(String(format: "%+.1f%%", result.stayAnnual * 100))
-                    .font(.system(size: 32, weight: .medium))
+                    .appFont(32, weight: .medium)
                     .foregroundStyle(positive ? Theme.accent : Theme.danger)
                     .contentTransition(.numericText())
                 Text(s.growPerYearOfTenure)
-                    .font(.system(size: 13))
+                    .appFont(13)
                     .foregroundStyle(Theme.textSecondary)
             }
             Text(positive
                  ? s.growBreakEvenBody(String(format: "%+.1f%%", result.breakEven * 100), years: years)
                  : s.growBreakEvenFlat(ctx.sector.label(pt: s.pt)))
-                .font(.system(size: 11.5))
+                .appFont(11.5)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             Text(s.growBreakEvenNote)
-                .font(.system(size: 10.5))
+                .appFont(10.5)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -418,11 +414,11 @@ struct GrowView: View {
                 SectionLabel(s.growCumulativeTitle(horizon))
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(signedEur(delta * months))
-                        .font(.system(size: 26, weight: .medium))
+                        .appFont(26, weight: .medium)
                         .foregroundStyle(ahead ? Theme.accent : Theme.danger)
                         .contentTransition(.numericText())
                     Text(ahead ? s.growCumulativeAhead : s.growCumulativeBehind)
-                        .font(.system(size: 12))
+                        .appFont(12)
                         .foregroundStyle(Theme.textSecondary)
                 }
                 HStack(spacing: 10) {
@@ -431,7 +427,7 @@ struct GrowView: View {
                     figure(s.growLegendMove, eur(move.cumulativeGross * months))
                 }
                 Text(result.crossoverYear.map { s.growCrossover($0) } ?? s.growNoCrossover(horizon))
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textFaint)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -445,21 +441,21 @@ struct GrowView: View {
         Button { showLevers = true } label: {
             HStack(spacing: 12) {
                 Image(systemName: "slider.horizontal.3")
-                    .font(.system(size: 18))
+                    .appFont(18)
                     .foregroundStyle(Theme.ink)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.growLeversButton)
-                        .font(.system(size: 14, weight: .semibold))
+                        .appFont(14, weight: .semibold)
                         .foregroundStyle(Theme.ink)
                     Text(activeLeversLine)
-                        .font(.system(size: 11))
+                        .appFont(11)
                         .foregroundStyle(Theme.ink.opacity(0.75))
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .appFont(12, weight: .semibold)
                     .foregroundStyle(Theme.ink.opacity(0.6))
             }
             .padding(14)
@@ -499,7 +495,7 @@ struct GrowView: View {
                                  delta: bar.delta, peak: peak)
                 }
                 Text(s.growWaterfallNote)
-                    .font(.system(size: 10.5))
+                    .appFont(10.5)
                     .foregroundStyle(Theme.textFaint)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -512,7 +508,7 @@ struct GrowView: View {
     private func waterfallRow(label: String, value: String, delta: Double?, peak: Double) -> some View {
         HStack(spacing: 10) {
             Text(label)
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textPrimary)
                 .frame(width: 96, alignment: .leading)
                 .lineLimit(1)
@@ -527,7 +523,7 @@ struct GrowView: View {
             }
             .frame(height: 16)
             Text(value)
-                .font(.system(size: 12, weight: .medium))
+                .appFont(12, weight: .medium)
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 62, alignment: .trailing)
                 .lineLimit(1)
@@ -548,7 +544,7 @@ struct GrowView: View {
             line(store.growScenario.bracketsIndexed ? s.growAssumptionBracketsOn : s.growAssumptionBracketsOff)
             line(s.growAssumptionNothingSaved)
             Text(CohortEngine.sourceLine)
-                .font(.system(size: 9.5))
+                .appFont(9.5)
                 .foregroundStyle(Theme.textFaint)
                 .padding(.top, 4)
         }
@@ -591,11 +587,11 @@ struct GrowView: View {
     private func line(_ text: String) -> some View {
         HStack(alignment: .top, spacing: 6) {
             Image(systemName: "info.circle")
-                .font(.system(size: 9))
+                .appFont(9)
                 .foregroundStyle(Theme.textFaint)
                 .frame(width: 12)
             Text(text)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -608,17 +604,17 @@ struct GrowView: View {
         VStack(spacing: 16) {
             SproutView(stage: max(1, store.sproutStage), size: 64)
             Text(s.growEmptyTitle)
-                .font(.system(size: 20, weight: .medium))
+                .appFont(20, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
             Text(s.growEmptySub)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             Button { showSectorTenure = true } label: {
                 Text(s.growEmptyButton)
-                    .font(.system(size: 15, weight: .semibold))
+                    .appFont(15, weight: .semibold)
                     .foregroundStyle(Theme.ink)
                     .padding(.horizontal, 22)
                     .padding(.vertical, 13)

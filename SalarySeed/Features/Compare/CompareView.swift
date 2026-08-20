@@ -65,10 +65,10 @@ struct CompareView: View {
         if store.outsideGEPScope {
             VStack(alignment: .leading, spacing: 3) {
                 Text(s.publicCaveatTitle)
-                    .font(.system(size: 12, weight: .medium))
+                    .appFont(12, weight: .medium)
                     .foregroundStyle(Theme.danger)
                 Text(s.publicCaveatBody)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -90,7 +90,7 @@ struct CompareView: View {
     private var islandCaveat: some View {
         if let region = store.region, region == .acores || region == .madeira {
             Text(s.islandNoCohortNote)
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.danger)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -106,7 +106,7 @@ struct CompareView: View {
             // caveat that changes how you read the whole page cannot be the
             // quietest text on it.
             Text(s.partTimeNote)
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.danger)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -116,17 +116,17 @@ struct CompareView: View {
         HStack(alignment: .bottom) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("compareSeed")
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.accent)
                 Text(s.compareTitle)
-                    .font(.system(size: 22, weight: .medium))
+                    .appFont(22, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
             }
             Spacer()
             HStack(spacing: 6) {
                 SproutView(stage: store.sproutStage, size: 22)
                 Text(s.profileProgressCount(store.profileFilledCount, store.signalTotal))
-                    .font(.system(size: 10))
+                    .appFont(10)
                     .foregroundStyle(Theme.textFaint)
             }
             .padding(.bottom, 2)
@@ -137,22 +137,22 @@ struct CompareView: View {
     private var percentileHero: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(s.allPortugal)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
             Text(String(format: "%.0f%%", store.percentile))
-                .font(.system(size: 44, weight: .medium))
+                .appFont(44, weight: .medium)
                 .foregroundStyle(Theme.accent)
             Text(s.earnLessThanYou)
-                .font(.system(size: 14))
+                .appFont(14)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             Text(s.grossVsGross)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .padding(.top, 4)
             if store.breakdown.ajudasMonthly > 0 {
                 Text(s.ajudasExcludedNote)
-                    .font(.system(size: 10))
+                    .appFont(10)
                     .foregroundStyle(Theme.danger.opacity(0.85))
             }
         }
@@ -216,20 +216,20 @@ struct CompareView: View {
         Button { showSectorSheet = true } label: {
             HStack(spacing: 12) {
                 Image(systemName: "building.2")
-                    .font(.system(size: 18))
+                    .appFont(18)
                     .foregroundStyle(Theme.textSecondary)
                     .frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.sectorRowTitle)
-                        .font(.system(size: 14, weight: .medium))
+                        .appFont(14, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                     Text(s.sectorAddHint)
-                        .font(.system(size: 11))
+                        .appFont(11)
                         .foregroundStyle(Theme.accent)
                 }
                 Spacer()
                 Text(s.addPill)
-                    .font(.system(size: 11, weight: .medium))
+                    .appFont(11, weight: .medium)
                     .foregroundStyle(Theme.ink)
                     .padding(.horizontal, 9)
                     .padding(.vertical, 4)
@@ -250,20 +250,20 @@ struct CompareView: View {
         Button { open(dim) } label: {
             HStack(spacing: 12) {
                 Image(systemName: dim.icon)
-                    .font(.system(size: 18))
+                    .appFont(18)
                     .foregroundStyle(Theme.textSecondary)
                     .frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.dimRowTitle(dim.id))
-                        .font(.system(size: 14, weight: .medium))
+                        .appFont(14, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                     Text(s.dimAdd(dim.id))
-                        .font(.system(size: 11))
+                        .appFont(11)
                         .foregroundStyle(Theme.accent)
                 }
                 Spacer()
                 Text(s.addPill)
-                    .font(.system(size: 11, weight: .medium))
+                    .appFont(11, weight: .medium)
                     .foregroundStyle(Theme.ink)
                     .padding(.horizontal, 9)
                     .padding(.vertical, 4)
@@ -277,7 +277,7 @@ struct CompareView: View {
 
     private var sourceNote: some View {
         Text(s.compareSourceNote)
-            .font(.system(size: 10))
+            .appFont(10)
             .foregroundStyle(Theme.textFaint)
             .lineSpacing(2)
     }
@@ -315,12 +315,8 @@ private struct InteractiveDistribution: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                SectionLabel(s.natDistribution)
-                Spacer()
-                Text(scrubbing ? s.releaseToReset : s.exploreByPercentile)
-                    .font(.system(size: 10))
-                    .foregroundStyle(Theme.textFaint)
+            SectionHeader(s.natDistribution) {
+                SectionHint(scrubbing ? s.releaseToReset : s.exploreByPercentile)
             }
 
             readout
@@ -357,16 +353,16 @@ private struct InteractiveDistribution: View {
             .frame(height: 82)
 
             HStack {
-                Text("€600").font(.system(size: 10)).foregroundStyle(Theme.textFaint)
+                Text("€600").appFont(10).foregroundStyle(Theme.textFaint)
                 Spacer()
-                Text("€10k+").font(.system(size: 10)).foregroundStyle(Theme.textFaint)
+                Text("€10k+").appFont(10).foregroundStyle(Theme.textFaint)
             }
 
             // The percentile slider: the thing you drag.
             percentileSlider
 
             Text(s.exploreHint)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
         }
         .padding(16)
@@ -409,11 +405,11 @@ private struct InteractiveDistribution: View {
             .frame(height: 24)
 
             HStack {
-                Text(s.lowestEarners).font(.system(size: 10)).foregroundStyle(Theme.textFaint)
+                Text(s.lowestEarners).appFont(10).foregroundStyle(Theme.textFaint)
                 Spacer()
-                Text(s.youMarker).font(.system(size: 10)).foregroundStyle(Theme.textSecondary)
+                Text(s.youMarker).appFont(10).foregroundStyle(Theme.textSecondary)
                 Spacer()
-                Text(s.highestEarners).font(.system(size: 10)).foregroundStyle(Theme.textFaint)
+                Text(s.highestEarners).appFont(10).foregroundStyle(Theme.textFaint)
             }
         }
     }
@@ -428,15 +424,15 @@ private struct InteractiveDistribution: View {
     private var readout: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(s.percentileEarns(s.ordinalPercentile(Int(activePct.rounded()))))
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
             HStack(alignment: .firstTextBaseline, spacing: 5) {
                 Text(eur(activeSalary))
-                    .font(.system(size: 30, weight: .medium))
+                    .appFont(30, weight: .medium)
                     .foregroundStyle(Theme.accent)
                     .contentTransition(.numericText())
                 Text(s.perMonthSuffix)
-                    .font(.system(size: 14))
+                    .appFont(14)
                     .foregroundStyle(Theme.textSecondary)
             }
         }
@@ -461,20 +457,20 @@ private struct LayerCard: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(s.dimRowTitle(dimension.id))
-                            .font(.system(size: 12))
+                            .appFont(12)
                             .foregroundStyle(Theme.textSecondary)
                         HStack(spacing: 5) {
                             Text(s.cohortWord(dimension.id, option.label))
-                                .font(.system(size: 14, weight: .medium))
+                                .appFont(14, weight: .medium)
                                 .foregroundStyle(Theme.textPrimary)
                             Image(systemName: "pencil")
-                                .font(.system(size: 10))
+                                .appFont(10)
                                 .foregroundStyle(Theme.textFaint)
                         }
                     }
                     Spacer()
                     Text("\(result.percentile)%")
-                        .font(.system(size: 24, weight: .medium))
+                        .appFont(24, weight: .medium)
                         .foregroundStyle(Theme.accent)
                 }
             }
@@ -484,7 +480,7 @@ private struct LayerCard: View {
                 .padding(.top, 12)
 
             Text(caption)
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.leading)
                 .padding(.top, 10)
@@ -492,9 +488,9 @@ private struct LayerCard: View {
             if result.thin || result.edge {
                 HStack(spacing: 4) {
                     Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 9))
+                        .appFont(9)
                     Text(result.thin ? s.thinChip : s.edgeChip)
-                        .font(.system(size: 10))
+                        .appFont(10)
                 }
                 .foregroundStyle(Theme.segEmployeeSS)
                 .padding(.horizontal, 7)
@@ -505,7 +501,7 @@ private struct LayerCard: View {
             }
 
             Text(CohortEngine.sourceLine)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .padding(.top, 6)
         }
@@ -544,21 +540,21 @@ private struct SectorCard: View {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(s.sectorKicker)
-                            .font(.system(size: 12))
+                            .appFont(12)
                             .foregroundStyle(Theme.textSecondary)
                         HStack(spacing: 5) {
                             Text(cohortName)
-                                .font(.system(size: 14, weight: .medium))
+                                .appFont(14, weight: .medium)
                                 .foregroundStyle(Theme.textPrimary)
                                 .fixedSize(horizontal: false, vertical: true)
                             Image(systemName: "pencil")
-                                .font(.system(size: 10))
+                                .appFont(10)
                                 .foregroundStyle(Theme.textFaint)
                         }
                     }
                     Spacer(minLength: 8)
                     Text("\(result.percentile)%")
-                        .font(.system(size: 24, weight: .medium))
+                        .appFont(24, weight: .medium)
                         .foregroundStyle(Theme.accent)
                 }
             }
@@ -568,14 +564,14 @@ private struct SectorCard: View {
                 .padding(.top, 12)
 
             Text(caption)
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.leading)
                 .padding(.top, 10)
 
             if tenureYears == nil {
                 Text(s.tenureAddHint)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.accent)
                     .padding(.top, 6)
             }
@@ -583,9 +579,9 @@ private struct SectorCard: View {
             if result.edge {
                 HStack(spacing: 4) {
                     Image(systemName: "exclamationmark.triangle")
-                        .font(.system(size: 9))
+                        .appFont(9)
                     Text(s.edgeChip)
-                        .font(.system(size: 10))
+                        .appFont(10)
                 }
                 .foregroundStyle(Theme.segEmployeeSS)
                 .padding(.horizontal, 7)
@@ -596,7 +592,7 @@ private struct SectorCard: View {
             }
 
             Text(CohortEngine.sourceLine)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .padding(.top, 6)
         }
@@ -643,15 +639,15 @@ private struct PercentileSlider: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(s.percentileEarns(s.ordinalPercentile(Int(activePct.rounded()))))
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textSecondary)
                 Spacer(minLength: 6)
                 Text(eur(activeSalary))
-                    .font(.system(size: 16, weight: .medium))
+                    .appFont(16, weight: .medium)
                     .foregroundStyle(Theme.accent)
                     .contentTransition(.numericText())
                 Text(s.perMonthSuffix)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textSecondary)
             }
 
@@ -738,20 +734,20 @@ struct LockedRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.system(size: 18))
+                .appFont(18)
                 .foregroundStyle(Theme.textSecondary)
                 .frame(width: 28)
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 14, weight: .medium))
+                    .appFont(14, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                 Text(unlock)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.accent)
             }
             Spacer()
             Image(systemName: "lock.fill")
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textFaint)
         }
         .padding(14)

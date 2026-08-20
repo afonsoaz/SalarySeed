@@ -111,16 +111,16 @@ struct SupportLock<Content: View>: View {
     private var card: some View {
         VStack(spacing: 0) {
             Image(systemName: "lock.fill")
-                .font(.system(size: 17, weight: .medium))
+                .appFont(17, weight: .medium)
                 .foregroundStyle(Theme.accent)
             Text(title)
-                .font(.system(size: 19, weight: .medium))
+                .appFont(19, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 12)
             Text(blurb)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .lineSpacing(3)
@@ -128,7 +128,7 @@ struct SupportLock<Content: View>: View {
                 .padding(.top, 8)
             Button { showSupport = true } label: {
                 Text(s.lockButton)
-                    .font(.system(size: 15, weight: .semibold))
+                    .appFont(15, weight: .semibold)
                     .foregroundStyle(Theme.ink)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
@@ -136,7 +136,7 @@ struct SupportLock<Content: View>: View {
             }
             .padding(.top, 20)
             Text(s.supportOneOff)
-                .font(.system(size: 10.5))
+                .appFont(10.5)
                 .foregroundStyle(Theme.textFaint)
                 .padding(.top, 9)
         }

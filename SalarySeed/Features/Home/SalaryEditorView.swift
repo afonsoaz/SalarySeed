@@ -34,14 +34,14 @@ struct SalaryEditorView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
                     Text(s.editorTitle)
-                        .font(.system(size: 20, weight: .medium))
+                        .appFont(20, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                         .padding(.top, 24)
 
                     // Monthly vs yearly: how the number below is read.
                     VStack(alignment: .leading, spacing: 8) {
                         Text(s.editorPeriodLabel)
-                            .font(.system(size: 13, weight: .medium))
+                            .appFont(13, weight: .medium)
                             .foregroundStyle(Theme.textSecondary)
                         SegmentedPicker(options: SalaryInputPeriod.allCases, selection: periodBinding) {
                             $0.label(pt: s.pt)
@@ -49,20 +49,20 @@ struct SalaryEditorView: View {
                     }
 
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text("€").font(.system(size: 24)).foregroundStyle(Theme.textSecondary)
+                        Text("€").appFont(24).foregroundStyle(Theme.textSecondary)
                         TextField(s.editorPlaceholder, text: $amountText)
                             .keyboardType(.numberPad)
-                            .font(.system(size: 34, weight: .medium))
+                            .appFont(34, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         Text(inputPeriod == .yearly ? s.perYearSuffix : s.perMonthSuffix)
-                            .font(.system(size: 14)).foregroundStyle(Theme.textSecondary)
+                            .appFont(14).foregroundStyle(Theme.textSecondary)
                     }
                     .padding(.bottom, 10)
                     .overlay(alignment: .bottom) { Rectangle().fill(Theme.accent).frame(height: 2) }
 
                     if inputPeriod == .yearly {
                         Text(s.editorYearlyNote(Int(schedule.months)))
-                            .font(.system(size: 11))
+                            .appFont(11)
                             .foregroundStyle(Theme.textSecondary)
                             .lineSpacing(2)
                             .padding(.top, -12)
@@ -73,27 +73,27 @@ struct SalaryEditorView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         SegmentedPicker(options: PaySchedule.allCases, selection: $schedule) { $0.label(pt: s.pt) }
                         Text(s.monthsHint)
-                            .font(.system(size: 11))
+                            .appFont(11)
                             .foregroundStyle(Theme.textSecondary)
                             .lineSpacing(2)
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
                         Text(s.editorAjudasLabel)
-                            .font(.system(size: 13, weight: .medium))
+                            .appFont(13, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text("€").font(.system(size: 18)).foregroundStyle(Theme.textSecondary)
+                            Text("€").appFont(18).foregroundStyle(Theme.textSecondary)
                             TextField("0", text: $ajudasText)
                                 .keyboardType(.numberPad)
-                                .font(.system(size: 24, weight: .medium))
+                                .appFont(24, weight: .medium)
                                 .foregroundStyle(Theme.textPrimary)
-                            Text(s.perMonthSuffix).font(.system(size: 13)).foregroundStyle(Theme.textSecondary)
+                            Text(s.perMonthSuffix).appFont(13).foregroundStyle(Theme.textSecondary)
                         }
                         .padding(.bottom, 8)
                         .overlay(alignment: .bottom) { Rectangle().fill(Theme.accent).frame(height: 2) }
                         Text(s.editorAjudasNote)
-                            .font(.system(size: 11))
+                            .appFont(11)
                             .foregroundStyle(Theme.textSecondary)
                             .lineSpacing(2)
                     }

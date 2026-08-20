@@ -29,7 +29,7 @@ struct BreakdownBar: View {
                 legend(s.legendEmployerSS, Theme.segEmployerSS)
             }
             Text(s.shareOfCost)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
         }
     }
@@ -43,7 +43,7 @@ struct BreakdownBar: View {
     private func legend(_ label: String, _ color: Color) -> some View {
         HStack(spacing: 4) {
             RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 8, height: 8)
-            Text(label).font(.system(size: 10)).foregroundStyle(Theme.textSecondary)
+            Text(label).appFont(10).foregroundStyle(Theme.textSecondary)
         }
     }
 }

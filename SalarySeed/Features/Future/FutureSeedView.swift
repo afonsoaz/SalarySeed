@@ -25,14 +25,14 @@ struct FutureSeedView: View {
 
                     VStack(alignment: .leading, spacing: 6) {
                         Text(s.futureQuestion)
-                            .font(.system(size: 15, weight: .medium))
+                            .appFont(15, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         HStack(alignment: .firstTextBaseline, spacing: 6) {
                             Text(eur(offBookMonthly))
-                                .font(.system(size: 38, weight: .medium))
+                                .appFont(38, weight: .medium)
                                 .foregroundStyle(Theme.segIRS)
                             Text(s.perMonthShort)
-                                .font(.system(size: 14))
+                                .appFont(14)
                                 .foregroundStyle(Theme.textSecondary)
                         }
                         Slider(value: $offBookMonthly, in: 0...1_500, step: 50)
@@ -66,16 +66,16 @@ struct FutureSeedView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("futureSeed")
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.accent)
                 Text(s.futureTitle)
-                    .font(.system(size: 22, weight: .medium))
+                    .appFont(22, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
             }
             Spacer()
             Button { dismiss() } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 24))
+                    .appFont(24)
                     .foregroundStyle(Theme.textSecondary)
             }
         }
@@ -85,10 +85,10 @@ struct FutureSeedView: View {
     private var tradeOffCard: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(s.tradeOffTitle)
-                .font(.system(size: 13, weight: .medium))
+                .appFont(13, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
             Text(s.tradeOffBody(eur(offBookMonthly)))
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
         }
         .padding(14)
@@ -99,7 +99,7 @@ struct FutureSeedView: View {
 
     private var disclaimer: some View {
         Text(s.futureDisclaimer)
-            .font(.system(size: 10))
+            .appFont(10)
             .foregroundStyle(Theme.textFaint)
     }
 }

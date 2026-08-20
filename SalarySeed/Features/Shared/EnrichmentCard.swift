@@ -19,22 +19,22 @@ struct EnrichmentCard: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 9) {
                 Image(systemName: signal.icon)
-                    .font(.system(size: 13))
+                    .appFont(13)
                     .foregroundStyle(Theme.accent)
                 Text(s.enrichKicker)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.accent)
                 Spacer()
                 SproutView(stage: store.sproutStage(withExtra: 1), size: 20)
             }
 
             Text(s.enrichQuestion(signal.rawValue))
-                .font(.system(size: 16, weight: .medium))
+                .appFont(16, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .padding(.top, 8)
 
             Text(s.enrichWhy(signal.rawValue))
-                .font(.system(size: 11.5))
+                .appFont(11.5)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 4)
@@ -43,12 +43,12 @@ struct EnrichmentCard: View {
 
             HStack {
                 Text(s.enrichProgress(store.enrichmentAnswered, EnrichmentSignal.ordered.count))
-                    .font(.system(size: 10))
+                    .appFont(10)
                     .foregroundStyle(Theme.textFaint)
                 Spacer()
                 Button(action: onSkip) {
                     Text(s.enrichSkip)
-                        .font(.system(size: 11))
+                        .appFont(11)
                         .foregroundStyle(Theme.textSecondary)
                         .underline()
                 }
@@ -100,7 +100,7 @@ struct EnrichmentCard: View {
             // the question rather than the way to answer it.
             Button { onOpenSheet(signal) } label: {
                 Text(s.enrichOpenLabel(signal.rawValue))
-                    .font(.system(size: 14, weight: .semibold))
+                    .appFont(14, weight: .semibold)
                     .foregroundStyle(Theme.ink)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -114,7 +114,7 @@ struct EnrichmentCard: View {
             withAnimation(.easeOut(duration: 0.14)) { action() }
         } label: {
             Text(label)
-                .font(.system(size: 12.5))
+                .appFont(12.5)
                 .foregroundStyle(Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
@@ -134,11 +134,11 @@ struct EnrichmentCard: View {
         } label: {
             HStack {
                 Text(label)
-                    .font(.system(size: 13))
+                    .appFont(13)
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 10))
+                    .appFont(10)
                     .foregroundStyle(Theme.textFaint)
             }
             .padding(.vertical, 11)

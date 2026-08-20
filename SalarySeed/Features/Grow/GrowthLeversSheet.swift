@@ -58,10 +58,10 @@ struct GrowthLeversSheet: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(s.growLeversTitle)
-                .font(.system(size: 20, weight: .medium))
+                .appFont(20, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
             Text(s.growLeversSub)
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -104,7 +104,7 @@ struct GrowthLeversSheet: View {
                 }
             }
             Text(s.growCadenceNote)
-                .font(.system(size: 10.5))
+                .appFont(10.5)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -137,13 +137,13 @@ struct GrowthLeversSheet: View {
                 SectionLabel(s.growLeverExpected)
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(signedEur(steps.first?.uplift ?? 0))
-                        .font(.system(size: 30, weight: .medium))
+                        .appFont(30, weight: .medium)
                         .foregroundStyle(scenario.movePremium > 0 ? Theme.accent : Theme.textSecondary)
                         .contentTransition(.numericText())
                         .minimumScaleFactor(0.7)
                         .lineLimit(1)
                     Text(s.growPerMoveSuffix)
-                        .font(.system(size: 12))
+                        .appFont(12)
                         .foregroundStyle(Theme.textSecondary)
                 }
                 Slider(value: $scenario.movePremium, in: 0...0.6, step: 0.01).tint(Theme.accent)
@@ -163,19 +163,19 @@ struct GrowthLeversSheet: View {
                 ForEach(steps) { step in
                     HStack(spacing: 6) {
                         Text(s.growYears(step.year))
-                            .font(.system(size: 11))
+                            .appFont(11)
                             .foregroundStyle(Theme.textFaint)
                             .frame(width: 62, alignment: .leading)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                         Text(s.growStepArrow(eur(step.from), eur(step.to)))
-                            .font(.system(size: 11.5))
+                            .appFont(11.5)
                             .foregroundStyle(Theme.textSecondary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.75)
                         Spacer(minLength: 6)
                         Text(signedEur(step.uplift))
-                            .font(.system(size: 12, weight: .medium))
+                            .appFont(12, weight: .medium)
                             .foregroundStyle(step.uplift >= 0 ? Theme.accent : Theme.danger)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
@@ -208,11 +208,11 @@ struct GrowthLeversSheet: View {
             Text(beats
                  ? s.growMoveBeats(pct(moving - staying))
                  : s.growMoveLoses(pct(staying - moving)))
-                .font(.system(size: 11.5))
+                .appFont(11.5)
                 .foregroundStyle(beats ? Theme.accent : Theme.danger)
                 .fixedSize(horizontal: false, vertical: true)
             Text(s.growPremiumNote(scenario.horizon))
-                .font(.system(size: 10.5))
+                .appFont(10.5)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -221,11 +221,11 @@ struct GrowthLeversSheet: View {
     private func rateRow(label: String, value: Double, tint: Color) -> some View {
         HStack {
             Text(label)
-                .font(.system(size: 11.5))
+                .appFont(11.5)
                 .foregroundStyle(Theme.textSecondary)
             Spacer(minLength: 8)
             Text(String(format: "%+.1f%%", value * 100))
-                .font(.system(size: 13, weight: .medium))
+                .appFont(13, weight: .medium)
                 .foregroundStyle(tint)
         }
     }
@@ -247,7 +247,7 @@ struct GrowthLeversSheet: View {
                           changed: scenario.sector != nil && scenario.sector != ctx.sector)
             }
             Text(s.growSectorNote)
-                .font(.system(size: 10.5))
+                .appFont(10.5)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -268,7 +268,7 @@ struct GrowthLeversSheet: View {
                           changed: scenario.district != nil && scenario.district != ctx.homeDistrict)
             }
             Text(s.growRegionNote)
-                .font(.system(size: 10.5))
+                .appFont(10.5)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -285,15 +285,15 @@ struct GrowthLeversSheet: View {
             } label: {
                 HStack(spacing: 8) {
                     Text(s.growMoreTitle)
-                        .font(.system(size: 14, weight: .medium))
+                        .appFont(14, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                     Text(s.growLeverFiscal)
-                        .font(.system(size: 11))
+                        .appFont(11)
                         .foregroundStyle(Theme.textFaint)
                         .lineLimit(1)
                     Spacer(minLength: 6)
                     Image(systemName: showMore ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 11, weight: .semibold))
+                        .appFont(11, weight: .semibold)
                         .foregroundStyle(Theme.textSecondary)
                 }
                 .padding(.horizontal, 14)
@@ -320,10 +320,10 @@ struct GrowthLeversSheet: View {
             Toggle(isOn: $scenario.bracketsIndexed) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.growBracketsTitle)
-                        .font(.system(size: 13))
+                        .appFont(13)
                         .foregroundStyle(Theme.textPrimary)
                     Text(s.growBracketsHint)
-                        .font(.system(size: 10.5))
+                        .appFont(10.5)
                         .foregroundStyle(Theme.textFaint)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -341,16 +341,16 @@ struct GrowthLeversSheet: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 Text(title)
-                    .font(.system(size: 13))
+                    .appFont(13)
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
                 Text(String(format: "%.1f%%", value.wrappedValue * 100))
-                    .font(.system(size: 13, weight: .medium))
+                    .appFont(13, weight: .medium)
                     .foregroundStyle(Theme.accent)
             }
             Slider(value: value, in: range, step: 0.005).tint(Theme.accent)
             Text(hint)
-                .font(.system(size: 10.5))
+                .appFont(10.5)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -364,7 +364,7 @@ struct GrowthLeversSheet: View {
             dismiss()
         } label: {
             Text(s.growLeversDone)
-                .font(.system(size: 15, weight: .semibold))
+                .appFont(15, weight: .semibold)
                 .foregroundStyle(Theme.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 14)
@@ -377,7 +377,7 @@ struct GrowthLeversSheet: View {
             withAnimation(.easeOut(duration: 0.12)) { action() }
         } label: {
             Text(label)
-                .font(.system(size: 13, weight: on ? .medium : .regular))
+                .appFont(13, weight: on ? .medium : .regular)
                 .foregroundStyle(on ? Theme.ink : Theme.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
@@ -391,12 +391,12 @@ struct GrowthLeversSheet: View {
     private func pickerRow(value: String, changed: Bool) -> some View {
         HStack {
             Text(value)
-                .font(.system(size: 14))
+                .appFont(14)
                 .foregroundStyle(changed ? Theme.accent : Theme.textPrimary)
                 .lineLimit(1)
             Spacer(minLength: 8)
             Image(systemName: "chevron.up.chevron.down")
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.textFaint)
         }
         .padding(.horizontal, 14)

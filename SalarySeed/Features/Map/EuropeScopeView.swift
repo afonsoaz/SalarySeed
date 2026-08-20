@@ -67,7 +67,7 @@ struct EuropeScopeView: View {
             sectionLine
             EuropeGrid(readings: readings, pt: s.pt, selected: $selected)
             Text(s.euroTapHint)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
             EuroLegend(s: s)
             focusCard
@@ -93,7 +93,7 @@ struct EuropeScopeView: View {
             }
             if purchasingPower {
                 Text(s.euroPppExplainer)
-                    .font(.system(size: 10.5))
+                    .appFont(10.5)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -105,7 +105,7 @@ struct EuropeScopeView: View {
             withAnimation(.easeOut(duration: 0.15)) { action() }
         } label: {
             Text(label)
-                .font(.system(size: 12, weight: on ? .medium : .regular))
+                .appFont(12, weight: on ? .medium : .regular)
                 .foregroundStyle(on ? Theme.ink : Theme.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
@@ -125,12 +125,12 @@ struct EuropeScopeView: View {
             let shared = EuroComparison.sectorsSharing(section)
             VStack(alignment: .leading, spacing: 3) {
                 Text(s.euroSectionLine(section.label(pt: s.pt)))
-                    .font(.system(size: 11.5))
+                    .appFont(11.5)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 if shared.count > 1 {
                     Text(s.euroCollapsed(shared.map { $0.label(pt: s.pt) }.joined(separator: ", ")))
-                        .font(.system(size: 10))
+                        .appFont(10)
                         .foregroundStyle(Theme.textFaint)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -146,12 +146,12 @@ struct EuropeScopeView: View {
             VStack(alignment: .leading, spacing: 7) {
                 HStack(spacing: 8) {
                     Text(focus.country.label(pt: s.pt))
-                        .font(.system(size: 17, weight: .medium))
+                        .appFont(17, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                         .lineLimit(1)
                     if focus.isPortugal {
                         Text(s.euroReferenceTag)
-                            .font(.system(size: 9, weight: .medium))
+                            .appFont(9, weight: .medium)
                             .foregroundStyle(Theme.ink)
                             .padding(.horizontal, 7)
                             .padding(.vertical, 2)
@@ -160,7 +160,7 @@ struct EuropeScopeView: View {
                     Spacer(minLength: 6)
                     if let pct = focus.pct, let bucket = focus.bucket {
                         Text(EuroComparison.formatted(pct))
-                            .font(.system(size: 19, weight: .semibold))
+                            .appFont(19, weight: .semibold)
                             .foregroundStyle(Theme.mapColor(bucket: bucket))
                     }
                 }
@@ -179,7 +179,7 @@ struct EuropeScopeView: View {
     private func focusBody(_ focus: EuroReading) -> some View {
         if focus.isPortugal {
             Text(s.euroPortugalBody)
-                .font(.system(size: 11.5))
+                .appFont(11.5)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         } else if focus.hasData {
@@ -191,18 +191,18 @@ struct EuropeScopeView: View {
                 comparisonRow(focus)
                 if let moved = focus.yourSalary {
                     Text(s.euroYourSalaryLine(eur(moved), purchasingPower: purchasingPower))
-                        .font(.system(size: 12.5))
+                        .appFont(12.5)
                         .foregroundStyle(Theme.textPrimary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Text(s.euroNotAJob)
-                    .font(.system(size: 10))
+                    .appFont(10)
                     .foregroundStyle(Theme.textFaint)
                     .fixedSize(horizontal: false, vertical: true)
             }
         } else {
             Text(s.euroNoDataBody(focus.country.label(pt: s.pt)))
-                .font(.system(size: 11.5))
+                .appFont(11.5)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -225,7 +225,7 @@ struct EuropeScopeView: View {
                                             String(format: "%.0f%%", abs(pct)),
                                             eur(abs(mine - pt)),
                                             higher: pct >= 0))
-                        .font(.system(size: 12))
+                        .appFont(12)
                         .foregroundStyle(Theme.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -236,11 +236,11 @@ struct EuropeScopeView: View {
     private func euroFigure(_ label: String, _ value: String, _ tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(1)
             Text(value)
-                .font(.system(size: 16, weight: .medium))
+                .appFont(16, weight: .medium)
                 .foregroundStyle(tint)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
@@ -253,10 +253,10 @@ struct EuropeScopeView: View {
         if let rank = EuroComparison.portugalRank(in: readings) {
             HStack(spacing: 7) {
                 Image(systemName: "flag")
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.accent)
                 Text(s.euroRank(rank.place, of: rank.outOf, purchasingPower: purchasingPower))
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -295,21 +295,21 @@ struct EuropeScopeView: View {
                     .fill(reading.bucket.map { Theme.mapColor(bucket: $0) } ?? Theme.textFaint.opacity(0.4))
                     .frame(width: 4, height: 22)
                 Text(reading.country.label(pt: s.pt))
-                    .font(.system(size: 13.5, weight: reading.isPortugal ? .semibold : .regular))
+                    .appFont(13.5, weight: reading.isPortugal ? .semibold : .regular)
                     .foregroundStyle(reading.hasData ? Theme.textPrimary : Theme.textFaint)
                     .lineLimit(1)
                 if reading.isPortugal {
                     Image(systemName: "location.fill")
-                        .font(.system(size: 8))
+                        .appFont(8)
                         .foregroundStyle(Theme.accent)
                 }
                 Spacer(minLength: 6)
                 Text(reading.mean.map { eur($0) } ?? s.euroDash)
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textSecondary)
                     .frame(minWidth: 62, alignment: .trailing)
                 Text(reading.pct.map { EuroComparison.formatted($0) } ?? s.euroDash)
-                    .font(.system(size: 13, weight: .medium))
+                    .appFont(13, weight: .medium)
                     .foregroundStyle(reading.bucket.map { Theme.mapColor(bucket: $0) } ?? Theme.textFaint)
                     .frame(minWidth: 46, alignment: .trailing)
             }
@@ -325,16 +325,16 @@ struct EuropeScopeView: View {
     private func prompt(title: String, body: String, action: String?) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.system(size: 16, weight: .medium))
+                .appFont(16, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
             Text(body)
-                .font(.system(size: 12.5))
+                .appFont(12.5)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             if let action {
                 Button(action: onPickSector) {
                     Text(action)
-                        .font(.system(size: 14, weight: .semibold))
+                        .appFont(14, weight: .semibold)
                         .foregroundStyle(Theme.ink)
                         .padding(.horizontal, 18)
                         .padding(.vertical, 11)
@@ -354,7 +354,7 @@ struct EuropeScopeView: View {
             note(s.euroFootnoteScope)
             note(s.euroFootnoteGaps)
             Text(EuroDataset.sourceLine)
-                .font(.system(size: 9.5))
+                .appFont(9.5)
                 .foregroundStyle(Theme.textFaint)
         }
         .padding(.top, 2)
@@ -362,7 +362,7 @@ struct EuropeScopeView: View {
 
     private func note(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 10))
+            .appFont(10)
             .foregroundStyle(Theme.textFaint)
             .fixedSize(horizontal: false, vertical: true)
     }

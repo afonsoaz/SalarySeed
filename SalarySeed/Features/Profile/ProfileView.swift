@@ -29,10 +29,10 @@ struct ProfileView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("profileSeed")
-                            .font(.system(size: 12))
+                            .appFont(12)
                             .foregroundStyle(Theme.accent)
                         Text(s.profileTitle(store.displayName))
-                            .font(.system(size: 22, weight: .medium))
+                            .appFont(22, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                     }
                     .padding(.top, 8)
@@ -48,7 +48,7 @@ struct ProfileView: View {
                     appSection
 
                     Text(s.profileFooter)
-                        .font(.system(size: 10))
+                        .appFont(10)
                         .foregroundStyle(Theme.textFaint)
                 }
                 .padding(.horizontal, 20)
@@ -132,14 +132,14 @@ struct ProfileView: View {
             Button { showSupport = true } label: {
                 HStack(spacing: 10) {
                     Image(systemName: "heart.fill")
-                        .font(.system(size: 13))
+                        .appFont(13)
                         .foregroundStyle(Theme.accent)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(s.supportThanksTitle)
-                            .font(.system(size: 13, weight: .medium))
+                            .appFont(13, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         Text(s.supportThanksBody)
-                            .font(.system(size: 10.5))
+                            .appFont(10.5)
                             .foregroundStyle(Theme.textFaint)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -154,19 +154,19 @@ struct ProfileView: View {
             Button { showSupport = true } label: {
                 HStack(spacing: 12) {
                     Image(systemName: "heart.fill")
-                        .font(.system(size: 18))
+                        .appFont(18)
                         .foregroundStyle(Theme.ink)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(s.supportButton)
-                            .font(.system(size: 16, weight: .semibold))
+                            .appFont(16, weight: .semibold)
                             .foregroundStyle(Theme.ink)
                         Text(s.supportOneOff)
-                            .font(.system(size: 11))
+                            .appFont(11)
                             .foregroundStyle(Theme.ink.opacity(0.75))
                     }
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
+                        .appFont(13, weight: .semibold)
                         .foregroundStyle(Theme.ink.opacity(0.6))
                 }
                 .padding(16)
@@ -185,11 +185,11 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
                 Text(s.supportColourTitle)
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textSecondary)
                 if !supporter.isSupporter {
                     Image(systemName: "lock.fill")
-                        .font(.system(size: 9))
+                        .appFont(9)
                         .foregroundStyle(Theme.textFaint)
                 }
                 Spacer(minLength: 0)
@@ -200,7 +200,7 @@ struct ProfileView: View {
                 }
             }
             Text(supporter.isSupporter ? s.supportIconNote : s.supportColourLocked)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -226,7 +226,7 @@ struct ProfileView: View {
                 .overlay(Circle().stroke(Theme.textPrimary.opacity(isOn ? 0.9 : 0), lineWidth: 2))
                 .overlay(
                     Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .bold))
+                        .appFont(12, weight: .bold)
                         .foregroundStyle(theme.ink)
                         .opacity(isOn && supporter.isSupporter ? 1 : 0)
                 )
@@ -270,7 +270,7 @@ struct ProfileView: View {
             ) { activeSignalSheet = .variablePay }
 
             Text(s.collectedNotComparedNote)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -303,29 +303,29 @@ struct ProfileView: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.system(size: 18))
+                    .appFont(18)
                     .foregroundStyle(value == nil ? Theme.textSecondary : Theme.accent)
                     .frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 14, weight: .medium))
+                        .appFont(14, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                     Text(value ?? hint)
-                        .font(.system(size: 11))
+                        .appFont(11)
                         .foregroundStyle(value == nil ? Theme.accent : Theme.textSecondary)
                         .multilineTextAlignment(.leading)
                 }
                 Spacer()
                 if value == nil {
                     Text(s.addPill)
-                        .font(.system(size: 11, weight: .medium))
+                        .appFont(11, weight: .medium)
                         .foregroundStyle(Theme.ink)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
                         .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
                 } else {
                     Image(systemName: "pencil")
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(Theme.accent)
                 }
             }
@@ -349,7 +349,7 @@ struct ProfileView: View {
                 // dependants row underneath and the section look misaligned.
                 HStack {
                     Text(s.maritalLabel)
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Picker(s.maritalLabel, selection: $store.maritalSituation) {
@@ -368,7 +368,7 @@ struct ProfileView: View {
 
                 HStack {
                     Text(s.dependentsLabel)
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     HStack(spacing: 16) {
@@ -376,18 +376,18 @@ struct ProfileView: View {
                             if store.dependents > 0 { store.dependents -= 1 }
                         } label: {
                             Image(systemName: "minus.circle")
-                                .font(.system(size: 20))
+                                .appFont(20)
                                 .foregroundStyle(store.dependents > 0 ? Theme.accent : Theme.textFaint)
                         }
                         Text("\(store.dependents)")
-                            .font(.system(size: 16, weight: .medium))
+                            .appFont(16, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                             .frame(minWidth: 18)
                         Button {
                             if store.dependents < 12 { store.dependents += 1 }
                         } label: {
                             Image(systemName: "plus.circle")
-                                .font(.system(size: 20))
+                                .appFont(20)
                                 .foregroundStyle(Theme.accent)
                         }
                     }
@@ -405,14 +405,14 @@ struct ProfileView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
                 Image(systemName: "leaf.fill")
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.accent)
                 Text(s.irsJovemTitle)
-                    .font(.system(size: 14, weight: .medium))
+                    .appFont(14, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
             }
             Text(s.irsJovemSub)
-                .font(.system(size: 11.5))
+                .appFont(11.5)
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(2)
 
@@ -420,12 +420,12 @@ struct ProfileView: View {
             Button { showJovemAssessor = true } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "sparkles")
-                        .font(.system(size: 13))
+                        .appFont(13)
                     Text(s.irsJovemCheck)
-                        .font(.system(size: 13, weight: .medium))
+                        .appFont(13, weight: .medium)
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 11))
+                        .appFont(11)
                 }
                 .foregroundStyle(Theme.accent)
                 .padding(.vertical, 11)
@@ -438,7 +438,7 @@ struct ProfileView: View {
 
             // Manual fallback: set the exemption by hand.
             Text(s.irsJovemManual)
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.textFaint)
                 .padding(.top, 4)
 
@@ -449,7 +449,7 @@ struct ProfileView: View {
             }
 
             Text(s.irsJovemNote)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .lineSpacing(2)
         }
@@ -470,7 +470,7 @@ struct ProfileView: View {
             withAnimation(.easeOut(duration: 0.15)) { store.irsJovemExemption = option.value }
         } label: {
             Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .appFont(12, weight: .medium)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textSecondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 9)
@@ -499,14 +499,14 @@ struct ProfileView: View {
             SproutView(stage: store.sproutStage, size: 64, sways: true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(done ? s.profileDoneTitle : s.profileProgressTitle)
-                    .font(.system(size: 13))
+                    .appFont(13)
                     .foregroundStyle(done ? Theme.accent : Theme.textSecondary)
                 Text(s.profileProgressCount(filled, total))
-                    .font(.system(size: 19, weight: .medium))
+                    .appFont(19, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                     .contentTransition(.numericText())
                 Text(done ? s.profileDoneSub : s.profileProgressSub)
-                    .font(.system(size: 11.5))
+                    .appFont(11.5)
                     .foregroundStyle(done ? Theme.accent : Theme.textSecondary)
                     .lineSpacing(2)
                     .fixedSize(horizontal: false, vertical: true)
@@ -527,15 +527,15 @@ struct ProfileView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
                     Text(s.yourSalary)
-                        .font(.system(size: 12))
+                        .appFont(12)
                         .foregroundStyle(Theme.textSecondary)
                     Text("\(eur(store.amount)) \(store.kind.label(pt: s.pt).lowercased()) · \(store.schedule.label(pt: s.pt))")
-                        .font(.system(size: 16, weight: .medium))
+                        .appFont(16, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                 }
                 Spacer()
                 Image(systemName: "pencil")
-                    .font(.system(size: 14))
+                    .appFont(14)
                     .foregroundStyle(Theme.accent)
             }
             .padding(16)
@@ -546,14 +546,14 @@ struct ProfileView: View {
     private var nameCard: some View {
         HStack {
             Text(s.nameLabel)
-                .font(.system(size: 14))
+                .appFont(14)
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             TextField(s.namePlaceholder, text: $store.name)
                 .textInputAutocapitalization(.words)
                 .autocorrectionDisabled()
                 .multilineTextAlignment(.trailing)
-                .font(.system(size: 14, weight: .medium))
+                .appFont(14, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
         }
         .padding(14)
@@ -564,7 +564,7 @@ struct ProfileView: View {
     private var languageCard: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(s.languageLabel)
-                .font(.system(size: 14))
+                .appFont(14)
                 .foregroundStyle(Theme.textPrimary)
             SegmentedPicker(options: AppLanguage.allCases, selection: $store.language) {
                 $0.label(pt: s.pt)
@@ -580,20 +580,20 @@ struct ProfileView: View {
             if let sector = store.sector {
                 HStack(spacing: 12) {
                     Image(systemName: "building.2")
-                        .font(.system(size: 18))
+                        .appFont(18)
                         .foregroundStyle(Theme.accent)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(s.sectorRowTitle)
-                            .font(.system(size: 14, weight: .medium))
+                            .appFont(14, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         Text(sectorSubtitle(sector))
-                            .font(.system(size: 11))
+                            .appFont(11)
                             .foregroundStyle(Theme.textSecondary)
                     }
                     Spacer()
                     Image(systemName: "pencil")
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(Theme.accent)
                 }
                 .padding(14)
@@ -601,20 +601,20 @@ struct ProfileView: View {
             } else {
                 HStack(spacing: 12) {
                     Image(systemName: "building.2")
-                        .font(.system(size: 18))
+                        .appFont(18)
                         .foregroundStyle(Theme.textSecondary)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(s.sectorRowTitle)
-                            .font(.system(size: 14, weight: .medium))
+                            .appFont(14, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         Text(s.sectorAddHint)
-                            .font(.system(size: 11))
+                            .appFont(11)
                             .foregroundStyle(Theme.accent)
                     }
                     Spacer()
                     Text(s.addPill)
-                        .font(.system(size: 11, weight: .medium))
+                        .appFont(11, weight: .medium)
                         .foregroundStyle(Theme.ink)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
@@ -649,20 +649,20 @@ struct ProfileView: View {
             if let option = dim.selectedOption(in: store, pt: s.pt) {
                 HStack(spacing: 12) {
                     Image(systemName: dim.icon)
-                        .font(.system(size: 18))
+                        .appFont(18)
                         .foregroundStyle(Theme.accent)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(dim.usesConcelhoPicker ? s.concelhoRowTitle : s.dimShort(dim.id))
-                            .font(.system(size: 14, weight: .medium))
+                            .appFont(14, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         Text(dim.usesConcelhoPicker ? concelhoSubtitle(option.label) : option.label)
-                            .font(.system(size: 11))
+                            .appFont(11)
                             .foregroundStyle(Theme.textSecondary)
                     }
                     Spacer()
                     Image(systemName: "pencil")
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(Theme.accent)
                 }
                 .padding(14)
@@ -670,20 +670,20 @@ struct ProfileView: View {
             } else {
                 HStack(spacing: 12) {
                     Image(systemName: dim.icon)
-                        .font(.system(size: 18))
+                        .appFont(18)
                         .foregroundStyle(Theme.textSecondary)
                         .frame(width: 28)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(dim.usesConcelhoPicker ? s.concelhoRowTitle : s.dimShort(dim.id))
-                            .font(.system(size: 14, weight: .medium))
+                            .appFont(14, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         Text(dim.usesConcelhoPicker ? s.concelhoAddHint : s.dimProfileHint(dim.id))
-                            .font(.system(size: 11))
+                            .appFont(11)
                             .foregroundStyle(Theme.accent)
                     }
                     Spacer()
                     Text(s.addPill)
-                        .font(.system(size: 11, weight: .medium))
+                        .appFont(11, weight: .medium)
                         .foregroundStyle(Theme.ink)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 4)
@@ -704,11 +704,11 @@ struct InfoRow: View {
     var body: some View {
         HStack {
             Text(label)
-                .font(.system(size: 14))
+                .appFont(14)
                 .foregroundStyle(Theme.textPrimary)
             Spacer()
             Text(value)
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.trailing)
         }

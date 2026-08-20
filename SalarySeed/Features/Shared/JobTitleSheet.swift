@@ -39,10 +39,10 @@ struct JobTitleSheet: View {
                     SproutView(stage: store.sproutStage(withExtra: store.jobTitleID == nil ? 1 : 0), size: 26)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(s.jobSheetTitle)
-                            .font(.system(size: 17, weight: .medium))
+                            .appFont(17, weight: .medium)
                             .foregroundStyle(Theme.textPrimary)
                         Text(s.jobNotCompared)
-                            .font(.system(size: 10))
+                            .appFont(10)
                             .foregroundStyle(Theme.textFaint)
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -66,7 +66,7 @@ struct JobTitleSheet: View {
                         dismiss()
                     } label: {
                         Text(s.removeDetail)
-                            .font(.system(size: 12))
+                            .appFont(12)
                             .foregroundStyle(Theme.textSecondary)
                             .underline()
                             .frame(maxWidth: .infinity)
@@ -84,10 +84,10 @@ struct JobTitleSheet: View {
     private var searchField: some View {
         HStack(spacing: 8) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 14))
+                .appFont(14)
                 .foregroundStyle(Theme.textSecondary)
             TextField(s.jobSearchPlaceholder, text: $query)
-                .font(.system(size: 15))
+                .appFont(15)
                 .foregroundStyle(Theme.textPrimary)
                 .autocorrectionDisabled()
                 .textInputAutocapitalization(.never)
@@ -97,7 +97,7 @@ struct JobTitleSheet: View {
                     dismissKeyboard()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 15))
+                        .appFont(15)
                         .foregroundStyle(Theme.textFaint)
                 }
             }
@@ -115,7 +115,7 @@ struct JobTitleSheet: View {
     private var resultsList: some View {
         if results.isEmpty {
             Text(s.jobNoResults)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .padding(.top, 20)
         } else {
@@ -148,15 +148,15 @@ struct JobTitleSheet: View {
             } label: {
                 HStack(spacing: 11) {
                     Image(systemName: family.icon)
-                        .font(.system(size: 15))
+                        .appFont(15)
                         .foregroundStyle(Theme.accent)
                         .frame(width: 24)
                     Text(family.label(pt: s.pt))
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(Theme.textPrimary)
                     Spacer()
                     Image(systemName: isOpen ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 11))
+                        .appFont(11)
                         .foregroundStyle(Theme.textFaint)
                 }
                 .padding(.vertical, 12)
@@ -182,19 +182,19 @@ struct JobTitleSheet: View {
             HStack(spacing: 10) {
                 VStack(alignment: .leading, spacing: 1) {
                     Text(title.label(pt: s.pt))
-                        .font(.system(size: 14, weight: isSelected ? .medium : .regular))
+                        .appFont(14, weight: isSelected ? .medium : .regular)
                         .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                         .multilineTextAlignment(.leading)
                     if showFamily {
                         Text(title.family.label(pt: s.pt))
-                            .font(.system(size: 10))
+                            .appFont(10)
                             .foregroundStyle(isSelected ? Theme.ink.opacity(0.7) : Theme.textFaint)
                     }
                 }
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .semibold))
+                        .appFont(12, weight: .semibold)
                         .foregroundStyle(Theme.ink)
                 }
             }

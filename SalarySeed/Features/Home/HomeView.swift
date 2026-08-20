@@ -8,6 +8,8 @@ import SwiftUI
 /// questions to the tabs that own them instead of previewing them badly.
 struct HomeView: View {
     @EnvironmentObject private var store: SalaryStore
+    /// Drives the two-row top bar. See `topBar`.
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var period: ResultPeriod = .m14
     @State private var pickedInitial = false
     @State private var showEditor = false
@@ -90,35 +92,68 @@ struct HomeView: View {
         }
     }
 
+    /// v1.0.3: three things share this row, and at an accessibility text size
+    /// they stop fitting. The 188pt picker is the immovable one, so the wordmark
+    /// was the part that got squeezed: it wrapped to "Salar / ySee / d" while the
+    /// three segments overlapped each other. Rather than shrink any of them, the
+    /// row becomes two rows past the accessibility threshold, and the picker,
+    /// which is the only thing here anybody taps repeatedly, gets a full width of
+    /// its own. Below that threshold nothing changes at all.
     private var topBar: some View {
-        HStack {
-            HStack(spacing: 6) {
-                // the brand mark is alive: it grows with the profile (sproutStage 1 to 5)
-                SproutView(stage: store.sproutStage, size: 18)
-                Text("SalarySeed").font(.system(size: 13, weight: .medium))
-            }
-            .foregroundStyle(Theme.accent)
-            Spacer()
-            SegmentedPicker(options: ResultPeriod.allCases, selection: $period) {
-                $0.label(s)
-            }
-            .frame(width: 188)
-            Button { askingSalaryChange = true } label: {
-                Image(systemName: "pencil.circle.fill")
-                    .font(.system(size: 24))
-                    .foregroundStyle(Theme.textSecondary)
+        Group {
+            if typeSize.isAccessibilitySize {
+                VStack(spacing: 10) {
+                    HStack {
+                        brandMark
+                        Spacer()
+                        editSalaryButton
+                    }
+                    periodPicker
+                }
+            } else {
+                HStack {
+                    brandMark
+                    Spacer()
+                    periodPicker.frame(width: 188)
+                    editSalaryButton
+                }
             }
         }
         .padding(.top, 8)
     }
 
+    private var brandMark: some View {
+        HStack(spacing: 6) {
+            // the brand mark is alive: it grows with the profile (sproutStage 1 to 5)
+            SproutView(stage: store.sproutStage, size: 18)
+            // One line always. It is a wordmark, and a wordmark that wraps is a
+            // typo as far as the reader is concerned.
+            Text("SalarySeed").appFont(13, weight: .medium).lineLimit(1)
+        }
+        .foregroundStyle(Theme.accent)
+    }
+
+    private var periodPicker: some View {
+        SegmentedPicker(options: ResultPeriod.allCases, selection: $period) {
+            $0.label(s)
+        }
+    }
+
+    private var editSalaryButton: some View {
+        Button { askingSalaryChange = true } label: {
+            Image(systemName: "pencil.circle.fill")
+                .appFont(24)
+                .foregroundStyle(Theme.textSecondary)
+        }
+    }
+
     private var greeting: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(s.hey(store.displayName))
-                .font(.system(size: 20, weight: .medium))
+                .appFont(20, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
             Text(s.greetSub)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
         }
     }
@@ -128,7 +163,7 @@ struct HomeView: View {
             HStack(spacing: 14) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("\(s.grossWord) / \(s.periodSuffix(period.modeIndex))")
-                        .font(.system(size: 12))
+                        .appFont(12)
                         .foregroundStyle(Theme.textSecondary)
                     RollingEuro(value: b.grossMonthly * factor, color: Theme.textPrimary, fontSize: 30)
                 }
@@ -138,7 +173,7 @@ struct HomeView: View {
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("\(s.netWord) / \(s.periodSuffix(period.modeIndex))")
-                        .font(.system(size: 12))
+                        .appFont(12)
                         .foregroundStyle(Theme.textSecondary)
                     HStack(alignment: .firstTextBaseline, spacing: 5) {
                         RollingEuro(value: b.netMonthly * factor, color: Theme.accent, fontSize: 30)
@@ -150,7 +185,7 @@ struct HomeView: View {
             // A short note on what the 12x / 14x monthly view means.
             if let cap = s.resultCaption(period.modeIndex) {
                 Text(cap)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textFaint)
             }
             // Net above is from the salary alone. Ajudas de custo show as their own line,
@@ -159,7 +194,7 @@ struct HomeView: View {
                 let ajudasPart = isAnnual ? b.ajudasYearly : b.ajudasMonthly
                 let pocket = b.netMonthly * factor + ajudasPart
                 Text(s.heroAjudas(eur(ajudasPart), total: eur(pocket)))
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textSecondary)
             }
         }
@@ -170,9 +205,9 @@ struct HomeView: View {
         Button { askingSalaryChange = true } label: {
             HStack(spacing: 8) {
                 Image(systemName: "pencil")
-                    .font(.system(size: 13))
+                    .appFont(13)
                 Text(s.updateSalaryButton)
-                    .font(.system(size: 14, weight: .medium))
+                    .appFont(14, weight: .medium)
             }
             .foregroundStyle(Theme.accent)
             .frame(maxWidth: .infinity)
@@ -185,14 +220,14 @@ struct HomeView: View {
     private var efficiencyCard: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(s.effLine1)
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
             HStack(alignment: .firstTextBaseline, spacing: 5) {
                 Text(eur(b.efficiency * 100))
-                    .font(.system(size: 22, weight: .medium))
+                    .appFont(22, weight: .medium)
                     .foregroundStyle(Theme.accent)
                 Text(s.effLine2)
-                    .font(.system(size: 13))
+                    .appFont(13)
                     .foregroundStyle(Theme.textSecondary)
             }
         }
@@ -207,12 +242,8 @@ struct HomeView: View {
     /// Your side: total discounts split into IRS and employee SS, with effective rates.
     private var detailsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                SectionLabel(s.theDetails)
-                Spacer()
-                Text(s.perPeriod(yearly: isAnnual))
-                    .font(.system(size: 10))
-                    .foregroundStyle(Theme.textFaint)
+            SectionHeader(s.theDetails) {
+                SectionHint(s.perPeriod(yearly: isAnnual))
             }
 
             DetailTreeCard(
@@ -280,12 +311,8 @@ struct HomeView: View {
         let refund = balance >= 0
         let accent = evenish ? Theme.textSecondary : (refund ? Theme.accent : Theme.danger)
         return VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                SectionLabel(s.annualTitle)
-                Spacer()
-                Text(s.perPeriod(yearly: true))
-                    .font(.system(size: 10))
-                    .foregroundStyle(Theme.textFaint)
+            SectionHeader(s.annualTitle) {
+                SectionHint(s.perPeriod(yearly: true))
             }
 
             HStack(spacing: 10) {
@@ -297,25 +324,25 @@ struct HomeView: View {
             if noIRS {
                 HStack(spacing: 6) {
                     Image(systemName: "leaf.circle.fill")
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(Theme.accent)
                     Text(s.annualNoIRS)
-                        .font(.system(size: 13, weight: .medium))
+                        .appFont(13, weight: .medium)
                         .foregroundStyle(Theme.accent)
                 }
                 Text(b.annualIRSWithheld >= 1 ? s.annualNoIRSRefund(eur(b.annualIRSWithheld)) : s.annualNoIRSSub)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textSecondary)
                     .lineSpacing(2)
             } else {
                 HStack(spacing: 6) {
                     Image(systemName: evenish ? "equal.circle.fill" : (refund ? "arrow.down.left.circle.fill" : "arrow.up.right.circle.fill"))
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(accent)
                     Text(evenish
                          ? s.annualEven
                          : (refund ? s.annualRefund(eur(abs(balance))) : s.annualToPay(eur(abs(balance)))))
-                        .font(.system(size: 13, weight: .medium))
+                        .appFont(13, weight: .medium)
                         .foregroundStyle(accent)
                 }
 
@@ -375,11 +402,11 @@ struct HomeView: View {
     private func assumptionLine(icon: String, text: String, tint: Color) -> some View {
         HStack(alignment: .top, spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 9))
+                .appFont(9)
                 .foregroundStyle(tint)
                 .frame(width: 12)
             Text(text)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(tint == Theme.accent ? Theme.textSecondary : Theme.textFaint)
                 .lineSpacing(2)
                 .fixedSize(horizontal: false, vertical: true)
@@ -389,10 +416,10 @@ struct HomeView: View {
     private func settlementFigure(label: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.textSecondary)
             Text(value)
-                .font(.system(size: 18, weight: .medium))
+                .appFont(18, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
@@ -426,22 +453,22 @@ struct HomeView: View {
         Button { showExplorer = true } label: {
             HStack(spacing: 12) {
                 Image(systemName: "slider.horizontal.below.square.filled.and.square")
-                    .font(.system(size: 20))
+                    .appFont(20)
                     .foregroundStyle(Theme.ink)
                     .frame(width: 28)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.explorerNudgeTitle)
-                        .font(.system(size: 14, weight: .semibold))
+                        .appFont(14, weight: .semibold)
                         .foregroundStyle(Theme.ink)
                     Text(s.explorerNudgeSub)
-                        .font(.system(size: 11))
+                        .appFont(11)
                         .foregroundStyle(Theme.ink.opacity(0.75))
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 0)
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
+                    .appFont(12, weight: .semibold)
                     .foregroundStyle(Theme.ink.opacity(0.6))
             }
             .padding(14)
@@ -452,7 +479,7 @@ struct HomeView: View {
 
     private var disclaimer: some View {
         Text(s.homeDisclaimer(store.taxRegion))
-            .font(.system(size: 10))
+            .appFont(10)
             .foregroundStyle(Theme.textFaint)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.top, 4)
@@ -466,9 +493,54 @@ struct SectionLabel: View {
     init(_ text: String) { self.text = text }
     var body: some View {
         Text(text.uppercased())
-            .font(.system(size: 11, weight: .medium))
+            .appFont(11, weight: .medium)
             .kerning(0.5)
             .foregroundStyle(Theme.textFaint)
+    }
+}
+
+/// A section label with a small hint opposite it: "DETALHE … por mês".
+///
+/// v1.0.3. At an accessibility text size the two halves stop fitting on one
+/// line, and SwiftUI breaks the LABEL rather than the hint, mid-word, because an
+/// uppercased single word is the thing it is willing to wrap: the distribution
+/// header read "DISTRIBUIÇÃ / O NACIONAL". Past the threshold they become two
+/// lines, label first, which is the order they are read in anyway.
+struct SectionHeader<Hint: View>: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
+    private let label: String
+    private let hint: Hint
+
+    init(_ label: String, @ViewBuilder hint: () -> Hint) {
+        self.label = label
+        self.hint = hint()
+    }
+
+    var body: some View {
+        if typeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 4) {
+                SectionLabel(label)
+                hint
+            }
+        } else {
+            HStack {
+                SectionLabel(label)
+                Spacer()
+                hint
+            }
+        }
+    }
+}
+
+/// The house style for a section hint, so the four callers cannot drift apart.
+struct SectionHint: View {
+    let text: String
+    init(_ text: String) { self.text = text }
+    var body: some View {
+        Text(text)
+            .appFont(10)
+            .foregroundStyle(Theme.textFaint)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -479,10 +551,10 @@ struct DetailCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(label)
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.textSecondary)
             Text(value)
-                .font(.system(size: 16, weight: .medium))
+                .appFont(16, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
@@ -503,20 +575,20 @@ struct NudgeCard: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.system(size: 26))
+                    .appFont(26)
                     .foregroundStyle(Theme.accent)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 14, weight: .medium))
+                        .appFont(14, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                     Text(subtitle)
-                        .font(.system(size: 12))
+                        .appFont(12)
                         .foregroundStyle(Theme.textSecondary)
                         .multilineTextAlignment(.leading)
                 }
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textFaint)
             }
             .padding(14)

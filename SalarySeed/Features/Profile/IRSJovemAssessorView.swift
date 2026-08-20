@@ -32,7 +32,7 @@ struct IRSJovemAssessorView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     header
                     Text(s.jovemAssessIntro)
-                        .font(.system(size: 13))
+                        .appFont(13)
                         .foregroundStyle(Theme.textSecondary)
                         .lineSpacing(3)
 
@@ -48,7 +48,7 @@ struct IRSJovemAssessorView: View {
                         }
                     } label: {
                         Text(s.jovemSeeResult)
-                            .font(.system(size: 15, weight: .medium))
+                            .appFont(15, weight: .medium)
                             .foregroundStyle(Theme.ink)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 15)
@@ -58,7 +58,7 @@ struct IRSJovemAssessorView: View {
                     if showResult { resultCard }
 
                     Text(s.jovemDisclaimer)
-                        .font(.system(size: 10))
+                        .appFont(10)
                         .foregroundStyle(Theme.textFaint)
                         .lineSpacing(2)
                 }
@@ -71,16 +71,16 @@ struct IRSJovemAssessorView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("IRS Jovem")
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.accent)
                 Text(s.jovemAssessTitle)
-                    .font(.system(size: 22, weight: .medium))
+                    .appFont(22, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
             }
             Spacer()
             Button { dismiss() } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 24))
+                    .appFont(24)
                     .foregroundStyle(Theme.textSecondary)
             }
         }
@@ -92,11 +92,11 @@ struct IRSJovemAssessorView: View {
     private var ageCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(s.jovemAgeQ)
-                .font(.system(size: 14, weight: .medium))
+                .appFont(14, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
             stepperRow(value: $age, range: 16...70, unit: s.pt ? "anos" : "years")
             Text(s.jovemAgeHint)
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.textSecondary)
         }
         .padding(14)
@@ -106,11 +106,11 @@ struct IRSJovemAssessorView: View {
     private var firstYearCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(s.jovemFirstYearQ)
-                .font(.system(size: 14, weight: .medium))
+                .appFont(14, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
             stepperRow(value: $firstYear, range: 2000...TaxEngine.taxYear, unit: "")
             Text(s.jovemFirstYearHint)
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(2)
         }
@@ -121,7 +121,7 @@ struct IRSJovemAssessorView: View {
     private func yesNoCard(title: String, selection: Binding<YesNo>) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
-                .font(.system(size: 14, weight: .medium))
+                .appFont(14, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
             SegmentedPicker(options: YesNo.allCases, selection: selection) {
@@ -136,7 +136,7 @@ struct IRSJovemAssessorView: View {
         HStack {
             // verbatim: keep the year as "2021", not the locale-grouped "2 021".
             Text(verbatim: unit.isEmpty ? "\(value.wrappedValue)" : "\(value.wrappedValue) \(unit)")
-                .font(.system(size: 20, weight: .medium))
+                .appFont(20, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .contentTransition(.numericText())
             Spacer()
@@ -147,7 +147,7 @@ struct IRSJovemAssessorView: View {
                     }
                 } label: {
                     Image(systemName: "minus.circle")
-                        .font(.system(size: 24))
+                        .appFont(24)
                         .foregroundStyle(value.wrappedValue > range.lowerBound ? Theme.accent : Theme.textFaint)
                 }
                 Button {
@@ -156,7 +156,7 @@ struct IRSJovemAssessorView: View {
                     }
                 } label: {
                     Image(systemName: "plus.circle")
-                        .font(.system(size: 24))
+                        .appFont(24)
                         .foregroundStyle(value.wrappedValue < range.upperBound ? Theme.accent : Theme.textFaint)
                 }
             }
@@ -172,33 +172,33 @@ struct IRSJovemAssessorView: View {
             if a.eligible {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text("\(Int(a.exemption * 100))%")
-                        .font(.system(size: 40, weight: .medium))
+                        .appFont(40, weight: .medium)
                         .foregroundStyle(Theme.accent)
                     Text(s.jovemExemptThisYear)
-                        .font(.system(size: 14))
+                        .appFont(14)
                         .foregroundStyle(Theme.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if let n = a.benefitYear {
                     Text(s.jovemBenefitYear(n))
-                        .font(.system(size: 13))
+                        .appFont(13)
                         .foregroundStyle(Theme.textPrimary)
                 }
                 Text(s.jovemCapLine(eur(a.annualCap), monthly: eur(a.annualCap / months)))
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textSecondary)
                     .lineSpacing(2)
             } else {
                 HStack(spacing: 8) {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 20))
+                        .appFont(20)
                         .foregroundStyle(Theme.danger)
                     Text(s.jovemNotEligible)
-                        .font(.system(size: 16, weight: .medium))
+                        .appFont(16, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                 }
                 Text(reasonText(a.reason))
-                    .font(.system(size: 13))
+                    .appFont(13)
                     .foregroundStyle(Theme.textSecondary)
                     .lineSpacing(2)
             }
@@ -209,9 +209,9 @@ struct IRSJovemAssessorView: View {
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: applied ? "checkmark.circle.fill" : "arrow.down.circle")
-                        .font(.system(size: 15))
+                        .appFont(15)
                     Text(applied ? s.jovemApplied : s.jovemApply)
-                        .font(.system(size: 14, weight: .medium))
+                        .appFont(14, weight: .medium)
                 }
                 .foregroundStyle(applied ? Theme.accent : Theme.ink)
                 .frame(maxWidth: .infinity)

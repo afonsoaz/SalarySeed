@@ -41,12 +41,12 @@ struct VariablePaySheet: View {
                     .padding(.top, 10)
 
                 Text(s.variableSheetTitle)
-                    .font(.system(size: 18, weight: .medium))
+                    .appFont(18, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                     .padding(.top, 14)
 
                 Text(s.enrichWhy("variablePay"))
-                    .font(.system(size: 11.5))
+                    .appFont(11.5)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 6)
@@ -54,7 +54,7 @@ struct VariablePaySheet: View {
                 amountBlock.padding(.top, 20)
 
                 Text(s.variableTaxNote)
-                    .font(.system(size: 10.5))
+                    .appFont(10.5)
                     .foregroundStyle(Theme.textFaint)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 16)
@@ -65,7 +65,7 @@ struct VariablePaySheet: View {
                     dismiss()
                 } label: {
                     Text(s.okButton)
-                        .font(.system(size: 16, weight: .semibold))
+                        .appFont(16, weight: .semibold)
                         .foregroundStyle(Theme.ink)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 15)
@@ -79,7 +79,7 @@ struct VariablePaySheet: View {
                     dismiss()
                 } label: {
                     Text(s.variableNone)
-                        .font(.system(size: 13))
+                        .appFont(13)
                         .foregroundStyle(Theme.textSecondary)
                         .underline()
                         .frame(maxWidth: .infinity)
@@ -105,15 +105,15 @@ struct VariablePaySheet: View {
     private var amountBlock: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(s.variableFieldLabel)
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
 
             HStack(spacing: 6) {
                 Text("€")
-                    .font(.system(size: 26, weight: .light))
+                    .appFont(26, weight: .light)
                     .foregroundStyle(Theme.textSecondary)
                 TextField("0", text: $text)
-                    .font(.system(size: 32, weight: .medium))
+                    .appFont(32, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                     .keyboardType(.decimalPad)
                     .focused($focused)
@@ -127,7 +127,7 @@ struct VariablePaySheet: View {
 
             if parsed > 0 {
                 Text(s.variableYearly(eur(parsed)))
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.accent)
                     .padding(.top, 8)
             }

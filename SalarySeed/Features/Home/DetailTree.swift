@@ -37,17 +37,17 @@ struct DetailTreeCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(title)
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.textSecondary)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(total)
-                    .font(.system(size: 24, weight: .medium))
+                    .appFont(24, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
                 if let totalCaption {
                     Text(totalCaption)
-                        .font(.system(size: 11))
+                        .appFont(11)
                         .foregroundStyle(Theme.textFaint)
                 }
             }
@@ -71,19 +71,19 @@ struct DetailTreeCard: View {
                 .stroke(Theme.accent.opacity(0.45), style: StrokeStyle(lineWidth: 1.5, lineCap: .round))
                 .frame(width: 16)
             Text(child.label)
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
                 .lineLimit(2)
             Spacer(minLength: 8)
             VStack(alignment: .trailing, spacing: 1) {
                 Text(child.value)
-                    .font(.system(size: 15, weight: .medium))
+                    .appFont(15, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
                 if let caption = child.caption {
                     Text(caption)
-                        .font(.system(size: 10))
+                        .appFont(10)
                         .foregroundStyle(Theme.textFaint)
                 }
             }
@@ -125,22 +125,22 @@ struct AjudasCard: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.danger)
                 Text(title)
-                    .font(.system(size: 11, weight: .medium))
+                    .appFont(11, weight: .medium)
                     .foregroundStyle(Theme.danger)
             }
             Text(value)
-                .font(.system(size: 24, weight: .medium))
+                .appFont(24, weight: .medium)
                 .foregroundStyle(Theme.danger)
             if let yearlyLine {
                 Text(yearlyLine)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.danger.opacity(0.8))
             }
             Text(body_)
-                .font(.system(size: 12))
+                .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(2)
                 .padding(.top, 4)

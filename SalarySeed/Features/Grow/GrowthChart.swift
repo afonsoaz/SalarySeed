@@ -216,7 +216,7 @@ struct GrowthLegend: View {
         HStack(spacing: 5) {
             RoundedRectangle(cornerRadius: 1).fill(color).frame(width: 14, height: 2)
             Text(text)
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.textSecondary)
         }
     }

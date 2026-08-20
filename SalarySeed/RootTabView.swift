@@ -82,11 +82,11 @@ private struct CustomTabBar: View {
         } label: {
             VStack(spacing: 3) {
                 Image(systemName: item.icon)
-                    .font(.system(size: 18))
+                    .appFont(18)
                 Text(item.title)
                     // v0.10: five tabs instead of four, so the label gets a
                     // point less and is allowed to shrink rather than truncate.
-                    .font(.system(size: 9.5, weight: .medium))
+                    .appFont(9.5, weight: .medium)
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
             }

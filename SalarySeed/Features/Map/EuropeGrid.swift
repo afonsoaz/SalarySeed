@@ -99,7 +99,7 @@ struct EuropeGrid: View {
                 .overlay(border(country: country, selected: isSelected))
                 .overlay(
                     Text(country.code)
-                        .font(.system(size: 12, weight: country == .portugal ? .bold : .medium))
+                        .appFont(12, weight: country == .portugal ? .bold : .medium)
                         .minimumScaleFactor(0.7)
                         .foregroundStyle(label(reading))
                 )
@@ -160,14 +160,14 @@ struct EuroLegend: View {
                 Spacer()
                 Text(s.euroLegendAbove)
             }
-            .font(.system(size: 9))
+            .appFont(9)
             .foregroundStyle(Theme.textSecondary)
             HStack(spacing: 5) {
                 RoundedRectangle(cornerRadius: 2)
                     .stroke(Theme.textFaint, style: StrokeStyle(lineWidth: 1, dash: [3, 2]))
                     .frame(width: 14, height: 10)
                 Text(s.euroLegendNoData)
-                    .font(.system(size: 9))
+                    .appFont(9)
                     .foregroundStyle(Theme.textSecondary)
             }
         }

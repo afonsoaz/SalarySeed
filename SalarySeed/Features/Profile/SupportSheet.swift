@@ -19,6 +19,10 @@ struct SupportSheet: View {
     @EnvironmentObject private var store: SalaryStore
     @EnvironmentObject private var supporter: SupporterStore
     @Environment(\.dismiss) private var dismiss
+    /// Read here, not just inside `.appFont`, because `benefit` builds a `Font`
+    /// by hand and this is what makes the sheet redraw when the reader's text
+    /// size changes.
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     /// What the accent was when the sheet opened, so a preview can be undone.
     @State private var accentOnOpen: AccentTheme?
@@ -79,12 +83,12 @@ struct SupportSheet: View {
                 Spacer()
             }
             Text(s.supportTitle)
-                .font(.system(size: 26, weight: .medium))
+                .appFont(26, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 20)
             Text(s.supportBody)
-                .font(.system(size: 13.5))
+                .appFont(13.5)
                 .foregroundStyle(Theme.textSecondary)
                 .lineSpacing(3.5)
                 .fixedSize(horizontal: false, vertical: true)
@@ -125,11 +129,15 @@ struct SupportSheet: View {
     private func benefit(_ glyph: String, lead: String, rest: String) -> some View {
         HStack(alignment: .top, spacing: 11) {
             Text(glyph)
-                .font(.system(size: 17))
+                .appFont(17)
                 .frame(width: 24, alignment: .leading)
-            (Text(lead).font(.system(size: 13.5, weight: .semibold)).foregroundColor(Theme.accent)
+            // The only place in the app that cannot use `.appFont`. That modifier
+            // returns a View, and `Text + Text` needs both halves to still be
+            // `Text`, so these two take the scaled size as a plain `Font`. Same
+            // metrics, same result, spelled out because concatenation forces it.
+            (Text(lead).font(.system(size: Theme.scaled(13.5, typeSize), weight: .semibold)).foregroundColor(Theme.accent)
              + Text(" ")
-             + Text(rest).font(.system(size: 13.5)).foregroundColor(Theme.textSecondary))
+             + Text(rest).font(.system(size: Theme.scaled(13.5, typeSize))).foregroundColor(Theme.textSecondary))
                 .lineSpacing(2.5)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -140,7 +148,7 @@ struct SupportSheet: View {
     private var swatches: some View {
         VStack(alignment: .leading, spacing: 9) {
             Text(s.supportColourTitle)
-                .font(.system(size: 11, weight: .medium))
+                .appFont(11, weight: .medium)
                 .foregroundStyle(Theme.textSecondary)
             HStack(spacing: 10) {
                 ForEach(AccentTheme.allCases) { theme in
@@ -148,7 +156,7 @@ struct SupportSheet: View {
                 }
             }
             Text(supporter.isSupporter ? s.supportIconNote : s.supportColourLocked)
-                .font(.system(size: 10.5))
+                .appFont(10.5)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -175,7 +183,7 @@ struct SupportSheet: View {
                 )
                 .overlay(
                     Image(systemName: "checkmark")
-                        .font(.system(size: 13, weight: .bold))
+                        .appFont(13, weight: .bold)
                         .foregroundStyle(theme.ink)
                         .opacity(isOn ? 1 : 0)
                 )
@@ -190,7 +198,7 @@ struct SupportSheet: View {
     private var errorLine: some View {
         if let code = supporter.lastError, let text = s.supportError(code) {
             Text(text)
-                .font(.system(size: 11.5))
+                .appFont(11.5)
                 .foregroundStyle(Theme.danger)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 16)
@@ -211,16 +219,16 @@ struct SupportSheet: View {
     private var thanks: some View {
         VStack(spacing: 12) {
             Text(s.supportThanksTitle)
-                .font(.system(size: 17, weight: .medium))
+                .appFont(17, weight: .medium)
                 .foregroundStyle(Theme.accent)
             Text(s.supportThanksBody)
-                .font(.system(size: 12.5))
+                .appFont(12.5)
                 .foregroundStyle(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
             Button { commitAndClose() } label: {
                 Text(s.closeButton)
-                    .font(.system(size: 15, weight: .semibold))
+                    .appFont(15, weight: .semibold)
                     .foregroundStyle(Theme.ink)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 14)
@@ -245,7 +253,7 @@ struct SupportSheet: View {
                         Text(s.supportPriceLoading)
                     }
                 }
-                .font(.system(size: 16, weight: .semibold))
+                .appFont(16, weight: .semibold)
                 .foregroundStyle(Theme.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 16)
@@ -258,7 +266,7 @@ struct SupportSheet: View {
 
             if supporter.product == nil {
                 Text(s.supportUnavailable)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textFaint)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
@@ -269,15 +277,15 @@ struct SupportSheet: View {
                     Task { await supporter.restore(applyingTo: store) }
                 } label: {
                     Text(s.supportRestore)
-                        .font(.system(size: 12, weight: .medium))
+                        .appFont(12, weight: .medium)
                         .foregroundStyle(Theme.textSecondary)
                         .underline()
                 }
                 Text("·")
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textFaint)
                 Text(s.supportOneOff)
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textFaint)
             }
             .frame(maxWidth: .infinity)

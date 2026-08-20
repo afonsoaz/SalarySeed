@@ -87,7 +87,7 @@ struct SalaryExplorerSheet: View {
                         promoteBlock.padding(.top, 20)
                     } else {
                         Text(s.explorerEmpty)
-                            .font(.system(size: 12))
+                            .appFont(12)
                             .foregroundStyle(Theme.textFaint)
                             .padding(.top, 24)
                     }
@@ -116,7 +116,7 @@ struct SalaryExplorerSheet: View {
 
     private var headerBlock: some View {
         Text(s.explorerTitle)
-            .font(.system(size: 20, weight: .medium))
+            .appFont(20, weight: .medium)
             .foregroundStyle(Theme.textPrimary)
     }
 
@@ -124,15 +124,15 @@ struct SalaryExplorerSheet: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 6) {
                 Text("€")
-                    .font(.system(size: 26, weight: .light))
+                    .appFont(26, weight: .light)
                     .foregroundStyle(Theme.textSecondary)
                 TextField("0", text: $text)
-                    .font(.system(size: 34, weight: .medium))
+                    .appFont(34, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                     .keyboardType(.decimalPad)
                     .focused($focused)
                 Text(store.schedule.label(pt: s.pt))
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textFaint)
             }
             Rectangle().fill(Theme.cardBorder).frame(height: 1)
@@ -151,7 +151,7 @@ struct SalaryExplorerSheet: View {
             withAnimation(.easeOut(duration: 0.12)) { kind = option }
         } label: {
             Text(option.label(pt: s.pt))
-                .font(.system(size: 13, weight: isOn ? .medium : .regular))
+                .appFont(13, weight: isOn ? .medium : .regular)
                 .foregroundStyle(isOn ? Theme.ink : Theme.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 10)
@@ -172,11 +172,11 @@ struct SalaryExplorerSheet: View {
                 // and the sentence. Without it the card read "62 of people in
                 // Portugal earn less than this".
                 Text("\(Int(pct.rounded()))%")
-                    .font(.system(size: 40, weight: .semibold))
+                    .appFont(40, weight: .semibold)
                     .foregroundStyle(Theme.accent)
                     .contentTransition(.numericText())
                 Text(s.explorerPercentileSuffix)
-                    .font(.system(size: 13))
+                    .appFont(13)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -198,10 +198,10 @@ struct SalaryExplorerSheet: View {
     private func figure(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.system(size: 10))
+                .appFont(10)
                 .foregroundStyle(Theme.textSecondary)
             Text(value)
-                .font(.system(size: 15, weight: .medium))
+                .appFont(15, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .minimumScaleFactor(0.7)
                 .lineLimit(1)
@@ -231,7 +231,7 @@ struct SalaryExplorerSheet: View {
 
             if store.sector == nil && CompareDimension.all.allSatisfy({ $0.selectedOption(in: store, pt: s.pt) == nil }) {
                 Text(s.explorerNoCohorts)
-                    .font(.system(size: 11))
+                    .appFont(11)
                     .foregroundStyle(Theme.textFaint)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -242,12 +242,12 @@ struct SalaryExplorerSheet: View {
         let result = CohortEngine.result(grossMonthly: breakdown.grossMonthly, cell: cell)
         return HStack(spacing: 10) {
             Text(name)
-                .font(.system(size: 13))
+                .appFont(13)
                 .foregroundStyle(Theme.textPrimary)
                 .lineLimit(1)
             Spacer(minLength: 6)
             Text(s.explorerPercentileShort(result.percentile))
-                .font(.system(size: 13, weight: .medium))
+                .appFont(13, weight: .medium)
                 .foregroundStyle(Theme.accent)
         }
         .padding(.vertical, 9)
@@ -285,7 +285,7 @@ struct SalaryExplorerSheet: View {
                             action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 14, weight: .semibold))
+                .appFont(14, weight: .semibold)
                 .foregroundStyle(primary ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .lineLimit(2)

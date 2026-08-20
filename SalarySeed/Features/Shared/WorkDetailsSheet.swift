@@ -35,7 +35,7 @@ struct WorkDetailsSheet: View {
                         .padding(.top, 10)
 
                     Text(s.workSheetTitle)
-                        .font(.system(size: 18, weight: .medium))
+                        .appFont(18, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                         .padding(.top, 14)
 
@@ -46,7 +46,7 @@ struct WorkDetailsSheet: View {
                     timeSection
 
                     Text(s.collectedNotComparedNote)
-                        .font(.system(size: 10))
+                        .appFont(10)
                         .foregroundStyle(Theme.textFaint)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 16)
@@ -72,7 +72,7 @@ struct WorkDetailsSheet: View {
     private var employerSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(s.employerSheetTitle)
-                .font(.system(size: 14, weight: .medium))
+                .appFont(14, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
 
             VStack(spacing: 7) {
@@ -91,7 +91,7 @@ struct WorkDetailsSheet: View {
     private var timeSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(s.scheduleAddHint)
-                .font(.system(size: 14, weight: .medium))
+                .appFont(14, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
 
             HStack(spacing: 8) {
@@ -103,7 +103,7 @@ struct WorkDetailsSheet: View {
 
             if schedule != nil {
                 Text(s.hoursQuestion)
-                    .font(.system(size: 12))
+                    .appFont(12)
                     .foregroundStyle(Theme.textSecondary)
                     .padding(.top, 14)
                 stepper(value: $hours, min: 1, max: 60, text: s.hoursText(hours))
@@ -118,7 +118,7 @@ struct WorkDetailsSheet: View {
             dismiss()
         } label: {
             Text(s.saveButton)
-                .font(.system(size: 16, weight: .semibold))
+                .appFont(16, weight: .semibold)
                 .foregroundStyle(Theme.ink)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 15)
@@ -137,10 +137,10 @@ struct WorkDetailsSheet: View {
     private var caveatBox: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(s.publicCaveatTitle)
-                .font(.system(size: 12, weight: .medium))
+                .appFont(12, weight: .medium)
                 .foregroundStyle(Theme.danger)
             Text(s.publicCaveatBody)
-                .font(.system(size: 11))
+                .appFont(11)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -160,14 +160,14 @@ struct WorkDetailsSheet: View {
         } label: {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: isSelected ? "largecircle.fill.circle" : "circle")
-                    .font(.system(size: 16))
+                    .appFont(16)
                     .foregroundStyle(isSelected ? Theme.accent : Theme.textFaint)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(kind.label(pt: s.pt))
-                        .font(.system(size: 14, weight: isSelected ? .medium : .regular))
+                        .appFont(14, weight: isSelected ? .medium : .regular)
                         .foregroundStyle(Theme.textPrimary)
                     Text(kind.hint(pt: s.pt))
-                        .font(.system(size: 10.5))
+                        .appFont(10.5)
                         .foregroundStyle(Theme.textFaint)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
@@ -196,7 +196,7 @@ struct WorkDetailsSheet: View {
             }
         } label: {
             Text(option.label(pt: s.pt))
-                .font(.system(size: 13, weight: isSelected ? .medium : .regular))
+                .appFont(13, weight: isSelected ? .medium : .regular)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 11)
@@ -214,7 +214,7 @@ struct WorkDetailsSheet: View {
     private func stepper(value: Binding<Int>, min lower: Int, max upper: Int, text: String) -> some View {
         HStack {
             Text(text)
-                .font(.system(size: 19, weight: .medium))
+                .appFont(19, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .contentTransition(.numericText())
             Spacer()
@@ -225,7 +225,7 @@ struct WorkDetailsSheet: View {
                     }
                 } label: {
                     Image(systemName: "minus.circle")
-                        .font(.system(size: 26))
+                        .appFont(26)
                         .foregroundStyle(value.wrappedValue > lower ? Theme.accent : Theme.textFaint)
                 }
                 Button {
@@ -234,7 +234,7 @@ struct WorkDetailsSheet: View {
                     }
                 } label: {
                     Image(systemName: "plus.circle")
-                        .font(.system(size: 26))
+                        .appFont(26)
                         .foregroundStyle(value.wrappedValue < upper ? Theme.accent : Theme.textFaint)
                 }
             }
@@ -260,12 +260,12 @@ struct GenderSheet: View {
                     .padding(.top, 10)
 
                 Text(s.genderSheetTitle)
-                    .font(.system(size: 18, weight: .medium))
+                    .appFont(18, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
                     .padding(.top, 14)
 
                 Text(s.enrichWhy("gender"))
-                    .font(.system(size: 11.5))
+                    .appFont(11.5)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 6)
@@ -278,7 +278,7 @@ struct GenderSheet: View {
                 .padding(.top, 16)
 
                 Text(s.sheetPrivacy)
-                    .font(.system(size: 10))
+                    .appFont(10)
                     .foregroundStyle(Theme.textFaint)
                     .padding(.top, 14)
 
@@ -288,7 +288,7 @@ struct GenderSheet: View {
                         dismiss()
                     } label: {
                         Text(s.removeDetail)
-                            .font(.system(size: 12))
+                            .appFont(12)
                             .foregroundStyle(Theme.textSecondary)
                             .underline()
                     }
@@ -310,7 +310,7 @@ struct GenderSheet: View {
             dismiss()
         } label: {
             Text(option.label(pt: s.pt))
-                .font(.system(size: 14, weight: isSelected ? .medium : .regular))
+                .appFont(14, weight: isSelected ? .medium : .regular)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 12)

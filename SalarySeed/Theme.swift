@@ -159,3 +159,102 @@ func eur(_ value: Double, decimals: Int = 0) -> String {
     f.minimumFractionDigits = decimals
     return f.string(from: NSNumber(value: value)) ?? "€\(Int(value))"
 }
+
+// MARK: Dynamic Type (v1.0.3)
+//
+// WHY THIS EXISTS. SwiftUI's `.system(size:)` is a FIXED size. It is not a
+// design-size that grows with the reader's setting, it is a point count, and it
+// ignores Dynamic Type completely. The app had 493 of them, zero `ScaledMetric`,
+// and it did not move a single pixel between the smallest text setting and the
+// largest. For an app about pay and pensions, whose readers skew older than a
+// game's, that was the biggest thing wrong with it.
+//
+// `UIFontMetrics` is the public API that turns a design size into the reader's
+// size. At the default setting it returns the design size UNCHANGED, so nobody
+// who never opened Settings sees anything move: the design Afonso tuned is still
+// exactly the design, and this only does something once somebody asks it to.
+//
+// THE BAND MATTERS. Metrics scale differently per text style: a caption grows
+// proportionally far more than a large title, which is the curve that stops 10pt
+// footnotes from turning into headlines while a 34pt hero number runs off the
+// screen. Choosing the band from the design size gets that curve without asking
+// 493 call sites to name a text style they should not have to think about.
+
+extension Theme {
+
+    /// The reader's size for a design size. Deterministic: the type size is passed
+    /// in rather than read from the ambient trait collection, so the same inputs
+    /// always give the same answer and nothing depends on when it is called.
+    static func scaled(_ size: CGFloat, _ typeSize: DynamicTypeSize) -> CGFloat {
+        UIFontMetrics(forTextStyle: band(for: size))
+            .scaledValue(for: size,
+                         compatibleWith: UITraitCollection(preferredContentSizeCategory: category(for: typeSize)))
+    }
+
+    /// Design size to text style. The boundaries are Apple's own default sizes for
+    /// each style, so a 17pt label is scaled on the body curve because 17 IS body.
+    private static func band(for size: CGFloat) -> UIFont.TextStyle {
+        switch size {
+        case ..<11.5: return .caption2
+        case ..<12.5: return .caption1
+        case ..<13.5: return .footnote
+        case ..<15.5: return .subheadline
+        case ..<16.5: return .callout
+        case ..<19:   return .body
+        case ..<21:   return .title3
+        case ..<26:   return .title2
+        case ..<32:   return .title1
+        default:      return .largeTitle
+        }
+    }
+
+    /// SwiftUI's size to UIKit's. A plain one-to-one mapping; it exists because
+    /// `UIFontMetrics` speaks UIKit and the environment speaks SwiftUI.
+    private static func category(for typeSize: DynamicTypeSize) -> UIContentSizeCategory {
+        switch typeSize {
+        case .xSmall:                    return .extraSmall
+        case .small:                     return .small
+        case .medium:                    return .medium
+        case .large:                     return .large
+        case .xLarge:                    return .extraLarge
+        case .xxLarge:                   return .extraExtraLarge
+        case .xxxLarge:                  return .extraExtraExtraLarge
+        case .accessibility1:            return .accessibilityMedium
+        case .accessibility2:            return .accessibilityLarge
+        case .accessibility3:            return .accessibilityExtraLarge
+        case .accessibility4:            return .accessibilityExtraExtraLarge
+        case .accessibility5:            return .accessibilityExtraExtraExtraLarge
+        @unknown default:                return .large
+        }
+    }
+}
+
+/// The replacement for `.font(.system(size:))`, applied at all 493 call sites.
+///
+/// It has to read `dynamicTypeSize` from the environment rather than let
+/// `UIFontMetrics` consult the trait collection on its own, and the reason is the
+/// same one `SalarySeedApp` gives for the accent: SwiftUI only redraws a view
+/// when something the view actually READ has changed. A metrics call reaching
+/// past SwiftUI into UIKit changes nothing it can see, so the new size would sit
+/// there until some unrelated edit happened to redraw. Reading the environment
+/// value is what registers the dependency, and passing it on to `Theme.scaled` is
+/// what keeps it honest: the value is used, so it cannot be quietly dropped.
+private struct AppFont: ViewModifier {
+    @Environment(\.dynamicTypeSize) private var typeSize
+    let size: CGFloat
+    let weight: Font.Weight
+
+    func body(content: Content) -> some View {
+        // The ONE `.system(size:)` left in the app on purpose: this is the thing
+        // every other call site now goes through, so it has to end here.
+        content.font(.system(size: Theme.scaled(size, typeSize), weight: weight))
+    }
+}
+
+extension View {
+    /// A design size that follows the reader's text size. Same call shape as the
+    /// `.font(.system(size:weight:))` it replaced, so the diff is a rename.
+    func appFont(_ size: CGFloat, weight: Font.Weight = .regular) -> some View {
+        modifier(AppFont(size: size, weight: weight))
+    }
+}
