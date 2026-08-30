@@ -1,4 +1,4 @@
-# SalarySeed — v1.0.3
+# SalarySeed — v1.0.4
 
 An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
 
@@ -18,7 +18,9 @@ Salary_App/                    <- the git repo root
   SalarySeed.storekit          <- the fake store, for running the purchase in the simulator
   Info.plist                   <- ONLY the keys Xcode cannot generate. See the comment in it
   tools/                       <- the Python that generated the bundled datasets,
-                                  and check_privacy_manifest.sh, which runs on every build
+                                  check_privacy_manifest.sh, which runs on every build,
+                                  and verify_tax_engine.py, which checks the tax tables
+                                  against the AT workbooks they came from
   README.md  app-concept.md    <- this file and the design doc
   PRIVACY.md                   <- the privacy policy. Needs a contact line and a host
   _archive/                    <- not part of the app, gitignored
@@ -160,6 +162,16 @@ unaffected either way: the App Store trader disclosure follows from taking money
 not from taking data.
 
 ## Version history
+
+**v1.0.4** — The tax engine gets a test, and four things that were wrong get fixed.
+
+There is no test target in this project, so the part of the app where being wrong matters most had never been checked by anything but reading. `tools/verify_tax_engine.py` now does it, and it passes. It parses the withholding tables straight out of `TaxEngine.swift`, so it checks the code that ships rather than a copy that can drift. It round-trips the Açores and Madeira tables against the AT workbooks they were generated from, every bracket and rate and parcela and formula. It replays the workbooks' own published effective-rate column back through the engine's arithmetic, 63 independent points, which tests the formula and not just the transcription. And it checks the four things no source document can tell you: that net never falls as gross rises, that each region's minimum wage withholds nothing, that the annual médias agree with their normal rates, and that net to gross inverts exactly.
+
+All of it passes. Continente is the gap: its table comes from a Despacho and there is no workbook for it here, so it is covered by the invariants and by nothing else.
+
+Two claims turned out to be wrong. A comment said the Açores table was exactly 0.70 of the Continente one on all twelve rates; it is eleven of twelve, and on the twelfth AT rounded the other way. And the settlement note said your real deductions "can shift" the result, which was far too mild: on a salary between about €1,100 and €1,900 the withholding runs slightly *under* the real IRS, so the refund the card shows exists entirely because the app assumed €1,000 of deductions on your behalf. Collect none and you owe money instead. The note now says that.
+
+Two more Dynamic Type breaks surfaced on the two screens that had never been looked at, because they sit behind the support payment: Grow truncated "Daqui a 10 anos, se fi…" and broke "Custa à empresa" mid-word, and the European map shortened Portugal to "Portu…". All three now reflow instead. Plus the Portuguese opening line stopped saying *compreender*, which nobody says out loud, and one pair of straight quotes became proper ones.
 
 **v1.0.3** — The app follows the reader's text size. It never did before.
 

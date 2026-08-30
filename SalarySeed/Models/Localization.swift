@@ -50,7 +50,7 @@ struct Strings {
 
     // MARK: Onboarding
 
-    var welcomeTitle: String { t("Let's understand\nwhat you earn.", "Vamos compreender\nquanto ganhas.") }
+    var welcomeTitle: String { t("Let's work out\nwhat you earn.", "Vamos perceber\nquanto ganhas.") }
     var welcomeSub: String { t("Type one number and see what you really earn, what you cost, and how you compare.", "Escreve um número e vê quanto ganhas na verdade, quanto custas e como te comparas.") }
     var welcomeAskName: String { t("What's your name?", "Como te chamas?") }
     var welcomeNamePlaceholder: String { t("Your first name", "O teu primeiro nome") }
@@ -156,9 +156,17 @@ struct Strings {
     func annualNoIRSRefund(_ amount: String) -> String {
         t("You get back the \(amount) withheld during the year.", "Recebes de volta os \(amount) retidos durante o ano.")
     }
+    /// v1.0.4 stopped calling this a shift.
+    ///
+    /// The €1,000 assumed just above is not a rounding detail, it decides the sign.
+    /// On a salary between about €1,100 and €1,900 the withholding is very slightly
+    /// short of the real IRS, so somebody who collects no deductions at all ends the
+    /// year owing money, and the whole refund on this card exists because the app
+    /// assumed the deductions for them. "Your real deductions can shift it" was true
+    /// and far too mild for a number that goes from plus several hundred to minus.
     var annualNote: String {
-        t("Estimate on the 2026 brackets. Your real deductions can shift it.",
-          "Estimativa nos escalões de 2026. As tuas deduções reais podem mudar isto.")
+        t("Estimate on the 2026 brackets. With fewer deductions than the €1,000 above, this drops, and it can turn into an amount to pay.",
+          "Estimativa nos escalões de 2026. Com menos deduções do que os 1000 € acima, isto baixa e pode passar a valor a pagar.")
     }
 
     // v0.9.4: the two assumptions behind the settlement, always stated.
@@ -963,8 +971,8 @@ struct Strings {
     }
 
     func euroSectionLine(_ section: String) -> String {
-        t("Compared as \"\(section)\", the closest activity Eurostat publishes.",
-          "Comparado como \"\(section)\", a atividade mais próxima que o Eurostat publica.")
+        t("Compared as \u{201C}\(section)\u{201D}, the closest activity Eurostat publishes.",
+          "Comparado como \u{AB}\(section)\u{BB}, a atividade mais próxima que o Eurostat publica.")
     }
     func euroCollapsed(_ sectors: String) -> String {
         t("Eurostat groups these together, so this number covers all of them: \(sectors).",

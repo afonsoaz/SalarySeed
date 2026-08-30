@@ -154,8 +154,13 @@ enum TaxEngine {
         /// thresholds left at the national values. One number instead of eighteen,
         /// and it is the rule the law states rather than a table to keep in sync.
         ///
-        /// Verified two ways. The Açores withholding table is EXACTLY 0.70 of the
-        /// Continente table on all twelve rates, which is arithmetic, not opinion.
+        /// Verified two ways. The Açores withholding table is 0.70 of the Continente
+        /// table on eleven of its twelve rates to the last published digit, and on
+        /// the twelfth AT rounded the other way: 0.70 × 0.3969 = 0.27783, and the
+        /// workbook prints 0.2779. The table follows the workbook, because the
+        /// workbook is the law and the multiplication is only the reason behind it.
+        /// (An earlier version of this comment claimed all twelve were exact. They
+        /// are not, and the one that is not is worth 0.0001 of a rate.)
         /// And AT Madeira's own January 2026 fiscal agenda says Madeira applies
         /// "o diferencial fiscal máximo de 30%" across all nine brackets. Note
         /// Madeira's withholding table is NOT 0.70 of Continente's, and that is

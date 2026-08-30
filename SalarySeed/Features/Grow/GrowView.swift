@@ -35,6 +35,8 @@ import SwiftUI
 struct GrowView: View {
     @EnvironmentObject private var store: SalaryStore
     @EnvironmentObject private var supporter: SupporterStore
+    /// Drives the two rows that stack past the accessibility text sizes.
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var scrubYear = 0
     @State private var showLevers = false
     @State private var showSectorTenure = false
@@ -163,15 +165,32 @@ struct GrowView: View {
             // Bottom-aligned, not centred: the two labels are different lengths
             // ("Today" against "In 10 years, staying put"), so centring would
             // leave the two figures sitting at different heights.
-            HStack(alignment: .bottom, spacing: 12) {
-                projectionFigure(label: s.growToday, value: eur(today),
-                                 tint: Theme.textPrimary, big: false)
-                Image(systemName: "arrow.right")
-                    .appFont(13, weight: .medium)
-                    .foregroundStyle(Theme.textFaint)
-                    .padding(.bottom, 8)
-                projectionFigure(label: s.growInYearsStaying(horizon), value: eur(stayEnd),
-                                 tint: Theme.textPrimary, big: true)
+            // v1.0.4: side by side normally, stacked past the accessibility
+            // sizes. "Daqui a 10 anos, se ficares" needs four lines in half a
+            // screen width at that point, and the label was capped at two, so it
+            // truncated to "Daqui a 10 anos, se fi...". The arrow turns with the
+            // stack so it still reads as today leading to later.
+            if typeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 8) {
+                    projectionFigure(label: s.growToday, value: eur(today),
+                                     tint: Theme.textPrimary, big: false)
+                    Image(systemName: "arrow.down")
+                        .appFont(13, weight: .medium)
+                        .foregroundStyle(Theme.textFaint)
+                    projectionFigure(label: s.growInYearsStaying(horizon), value: eur(stayEnd),
+                                     tint: Theme.textPrimary, big: true)
+                }
+            } else {
+                HStack(alignment: .bottom, spacing: 12) {
+                    projectionFigure(label: s.growToday, value: eur(today),
+                                     tint: Theme.textPrimary, big: false)
+                    Image(systemName: "arrow.right")
+                        .appFont(13, weight: .medium)
+                        .foregroundStyle(Theme.textFaint)
+                        .padding(.bottom, 8)
+                    projectionFigure(label: s.growInYearsStaying(horizon), value: eur(stayEnd),
+                                     tint: Theme.textPrimary, big: true)
+                }
             }
             deltaLine(from: today, to: stayEnd, tint: Theme.textSecondary)
             if changed {
@@ -210,7 +229,9 @@ struct GrowView: View {
             Text(label)
                 .appFont(10)
                 .foregroundStyle(Theme.textSecondary)
-                .lineLimit(2)
+                // Two lines is right at the default size and a guillotine past the
+                // accessibility ones, where the same label needs four.
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
                 .fixedSize(horizontal: false, vertical: true)
             Text(value)
                 .appFont(big ? 34 : 22, weight: .medium)
@@ -317,12 +338,24 @@ struct GrowView: View {
                     SectionHint(s.growTenureAt(Int(p.tenure)))
                 }
             }
-            HStack(spacing: 10) {
-                figure(s.growScrubGross, eur((shown?.gross ?? 0) * f))
-                divider
-                figure(s.growScrubNet, eur((shown?.net ?? 0) * f))
-                divider
-                figure(s.growScrubEmployer, eur((shown?.employerCost ?? 0) * f))
+            // Three figures across a phone is already tight; past the
+            // accessibility sizes "Custa à empresa" broke mid-word into
+            // "Custa à empres / a". One per row from there, dividers dropped
+            // because a vertical stack does not need them.
+            if typeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 10) {
+                    figure(s.growScrubGross, eur((shown?.gross ?? 0) * f))
+                    figure(s.growScrubNet, eur((shown?.net ?? 0) * f))
+                    figure(s.growScrubEmployer, eur((shown?.employerCost ?? 0) * f))
+                }
+            } else {
+                HStack(spacing: 10) {
+                    figure(s.growScrubGross, eur((shown?.gross ?? 0) * f))
+                    divider
+                    figure(s.growScrubNet, eur((shown?.net ?? 0) * f))
+                    divider
+                    figure(s.growScrubEmployer, eur((shown?.employerCost ?? 0) * f))
+                }
             }
             if let move, let stay, abs(move.gross - stay.gross) > 0.5 {
                 Text(s.growScrubVsStay(signedEur((move.gross - stay.gross) * f)))

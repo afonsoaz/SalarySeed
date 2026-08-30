@@ -148,7 +148,10 @@ struct EuropeScopeView: View {
                     Text(focus.country.label(pt: s.pt))
                         .appFont(17, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
-                        .lineLimit(1)
+                        // v1.0.4: was lineLimit(1), which turned Portugal into
+                        // "Portu..." at an accessibility text size, on the one card
+                        // whose whole job is to name the country you tapped.
+                        .fixedSize(horizontal: false, vertical: true)
                     if focus.isPortugal {
                         Text(s.euroReferenceTag)
                             .appFont(9, weight: .medium)

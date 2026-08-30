@@ -1,6 +1,6 @@
 # SalarySeed privacy policy
 
-*Last updated: 14 August 2026. Applies to SalarySeed v1.0.0 for iOS.*
+*Last updated: 29 August 2026. Applies to SalarySeed v1.0.4 for iOS.*
 
 ## The whole of it
 
