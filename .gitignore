@@ -33,3 +33,12 @@ app-concept.md
 # workbooks the datasets were generated from, and dead directories that can be
 # looked at but not deleted from here.
 _archive/
+
+# Real payslips, used to test the payslip reader by hand and with
+# tools/payslip_probe. They are somebody's actual pay and must never be
+# committed. The reader's own fixtures live in the Swift source instead, so a
+# fresh clone loses only the ability to re-run the probe, not the checks.
+payslip_examples/
+
+# tools/payslip_probe build output
+.build/

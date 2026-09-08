@@ -16,6 +16,7 @@ struct HomeView: View {
     @State private var showFutureSeed = false
     // v0.9.4
     @State private var showExplorer = false
+    @State private var showPayslip = false
     @State private var askingSalaryChange = false
 
     /// v0.8: three ways to read the result. Two are monthly (the yearly pay spread
@@ -61,6 +62,7 @@ struct HomeView: View {
                     detailsSection
                     annualSettlementCard
                     nudges
+                    payslipSection
                     disclaimer
                 }
                 .padding(.horizontal, 20)
@@ -77,6 +79,7 @@ struct HomeView: View {
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showFutureSeed) { FutureSeedView() }
             .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
+            .fullScreenCover(isPresented: $showPayslip) { PayslipCheckFlow() }
             .salaryChangeConfirmation(
                 isPresented: $askingSalaryChange,
                 s: s,
@@ -431,6 +434,26 @@ struct HomeView: View {
     // one-line echo of a whole tab: compareSeed does this properly, with the
     // cohorts, the caveats and the distribution behind it. Two screens saying
     // the same thing meant one of them was always the worse version.
+
+    /// v1.1: the payslip checker's entry point.
+    ///
+    /// Its own section rather than a card inside `nudges`, which is headed
+    /// "what if" and holds hypotheticals. Checking a payslip is the opposite of
+    /// a hypothetical: it is the one thing on this screen about something that
+    /// already happened.
+    ///
+    /// Not accented. `explorerButton` is the one accent card on Home and two of
+    /// them would fight for the same attention.
+    private var payslipSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(s.payslipSection)
+            NudgeCard(
+                icon: "doc.text.magnifyingglass",
+                title: s.payslipNudgeTitle,
+                subtitle: s.payslipNudgeSub
+            ) { showPayslip = true }
+        }
+    }
 
     private var nudges: some View {
         VStack(alignment: .leading, spacing: 10) {

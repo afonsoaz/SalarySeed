@@ -45,6 +45,16 @@
 	     preferences live in this app's own UserDefaults and go when the app is
 	     deleted.
 
+	     v1.1 added the payslip checker, and this array did NOT change. A payslip
+	     is read into memory, checked and discarded when the screen closes: it is
+	     never written to disk, never uploaded, and no figure from it is stored
+	     next to the salary or the profile. PDFKit, Vision, PhotosPicker and the
+	     document picker are none of them required-reason APIs, and nothing in
+	     that feature reads a file timestamp or the disk's free space, so
+	     NSPrivacyAccessedAPITypes above did not change either. If a payslip
+	     history is ever added, both of those stop being true in the same commit,
+	     and so do the App Privacy answers in App Store Connect.
+
 	     A contribution pool was built and tested and is NOT in this build. It
 	     lives on the pool-backend branch. If it ever ships, this array stops
 	     being correct and App Store Connect's App Privacy answers change in the

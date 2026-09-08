@@ -1,6 +1,6 @@
 # SalarySeed privacy policy
 
-*Last updated: 29 August 2026. Applies to SalarySeed v1.0.4 for iOS.*
+*Last updated: 30 August 2026. Applies to SalarySeed v1.1 for iOS.*
 
 ## The whole of it
 
@@ -37,6 +37,24 @@ payment detail. What we receive from Apple is an anonymous monthly sales total.
 Apple's own handling of that purchase is covered by Apple's privacy policy, not
 this one.
 
+## Payslips
+
+The payslip checker reads a PDF or a photograph that you choose, and tells you
+whether it adds up. All of that happens on your iPhone.
+
+The file is read into memory, checked, and gone. It is never uploaded, it is
+never written to disk by the app, and it is not kept: there is no payslip
+history, and closing the screen discards both the file and everything read from
+it. Open the checker again and it starts from nothing.
+
+The text is recognised on the device by Apple's own Vision framework, which is
+part of iOS and does not go online either. Nothing about the payslip, and no
+figure taken from it, is stored alongside your salary or your profile.
+
+Choosing a file does not hand over your photo library or your documents. Both
+pickers run outside the app, in Apple's own interface, and give the app only the
+one item you picked. That is why the app still asks for no permissions at all.
+
 ## What the app does not do
 
 - No account, no sign-in, no email address.
@@ -45,8 +63,10 @@ this one.
   frameworks and has no dependencies.
 - No location access. The app asks which município you live in and never asks
   your device where it is.
-- No access to contacts, photos, calendar, health data or any other permission.
-  The app requests no permissions at all.
+- No access to your photo library, contacts, calendar, health data or any other
+  permission. The app requests no permissions at all. When you check a payslip you
+  hand it one file through Apple's own picker, which runs outside the app; the app
+  never sees anything else, and does not keep the one thing it is given.
 
 ## Children
 

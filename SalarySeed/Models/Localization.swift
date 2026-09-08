@@ -1205,6 +1205,300 @@ struct Strings {
           "Nada deste ecrã fica guardado. O teu salário e o teu perfil ficam intactos.")
     }
 
+
+    // MARK: v1.1 Payslip checker
+
+    var payslipSection: String { t("Your payslip", "O teu recibo") }
+    var payslipNudgeTitle: String { t("Check a payslip", "Confere um recibo") }
+    var payslipNudgeSub: String {
+        t("Import a PDF or a photo. It is read here on your phone.",
+          "Importa um PDF ou uma foto. É lido aqui no teu telemóvel.")
+    }
+
+    // The source step.
+    var payslipTitle: String { t("Check your payslip", "Confere o teu recibo") }
+    var payslipSourceIntro: String {
+        t("The file is read on your phone. Nothing is sent anywhere and nothing is saved. Close this screen and it is gone.",
+          "O ficheiro é lido no teu telemóvel. Não é enviado para lado nenhum nem fica guardado. Fechas este ecrã e desaparece.")
+    }
+    var payslipPickFile: String { t("Choose a file", "Escolher ficheiro") }
+    var payslipPickPhoto: String { t("Choose a photo", "Escolher foto") }
+    var payslipSourceHint: String {
+        t("A PDF from your employer works best: the text is exact and nothing has to be recognised. A photo works too.",
+          "Um PDF da entidade patronal é o melhor: o texto é exato e não é preciso reconhecer nada. Uma foto também serve.")
+    }
+    var payslipReading: String { t("Reading your payslip", "A ler o teu recibo") }
+
+    // The review step, shown only when something needs you.
+    var payslipReviewTitle: String { t("Check what we read", "Confere o que lemos") }
+    /// The review screen's opening line for a photograph. See
+    /// `payslipReviewSubUnclear` for the other case.
+    var payslipReviewSub: String {
+        t("This came from a photo, so some figures may have been misread. Correct anything that is wrong before we check it.",
+          "Isto veio de uma foto, por isso pode haver valores mal lidos. Corrige o que estiver errado antes de verificarmos.")
+    }
+    var payslipReviewDisputed: String {
+        t("We are not sure what this line is.", "Não temos a certeza do que é esta linha.")
+    }
+    /// The review screen's opening line when the file was NOT a photograph.
+    ///
+    /// v1.1a: there used to be one subtitle, and it said "this came from a
+    /// photo". A PDF that carried its own text still stops here when a token
+    /// on it could not be read, and one of the two real payslips does exactly
+    /// that, so the screen opened by telling the reader their PDF was a
+    /// photograph. Two causes, two sentences.
+    var payslipReviewSubUnclear: String {
+        t("Some figures on this payslip could not be read cleanly. Correct anything that is wrong, and leave a figure empty to skip the checks that need it.",
+          "Alguns valores deste recibo não foram lidos com clareza. Corrige o que estiver errado e deixa um valor vazio para saltar as verificações que precisam dele.")
+    }
+    var payslipReviewConfirm: String { t("Check it", "Verificar") }
+    /// VoiceOver only. The border and the red outline say "we are unsure of
+    /// this one" to a sighted reader and to nobody else, so the field says it.
+    var payslipReviewA11yHint: String {
+        t("We are not sure we read this figure correctly. Edit it, or clear it to skip the checks that need it.",
+          "Não temos a certeza de ter lido bem este valor. Corrige-o, ou apaga-o para saltar as verificações que precisam dele.")
+    }
+    var payslipReviewA11yUnnamed: String {
+        t("Unnamed line", "Linha sem nome")
+    }
+
+    // The results.
+    var payslipWrongLabel: String { t("What is wrong", "O que está errado") }
+    var payslipMentionLabel: String { t("Worth knowing", "Vale a pena saber") }
+    var payslipCorrectLabel: String { t("What checks out", "O que bate certo") }
+    var payslipNothingWrong: String {
+        t("Nothing on this payslip contradicts itself.",
+          "Nada neste recibo se contradiz.")
+    }
+    var payslipLowConfidence: String {
+        t("Read from a photo, so check this against the paper.",
+          "Lido de uma foto, por isso confirma no papel.")
+    }
+    func payslipReadAs(_ value: String) -> String {
+        t("Payslip says \(value)", "O recibo diz \(value)")
+    }
+    func payslipExpected(_ value: String) -> String {
+        t("Should be \(value)", "Devia ser \(value)")
+    }
+    func payslipOutBy(_ value: String) -> String {
+        t("out by \(value)", "diferença de \(value)")
+    }
+
+    /// What was not checked, and why. Said out loud rather than left out: a
+    /// check that quietly did not happen reads as a check that passed.
+    var payslipNotCheckedLabel: String { t("Not checked", "Não verificámos") }
+    func payslipSkipReason(_ reason: PayslipSkipReason) -> String {
+        switch reason {
+        case .missingFigure:
+            return t("we could not find one of the figures it needs",
+                     "não encontrámos um dos valores necessários")
+        case .subsidiesPaidSeparately:
+            return t("this payslip pays the holiday or Christmas subsidy on its own line, and the tax engine treats those as part of the yearly schedule instead",
+                     "este recibo paga o subsídio de férias ou de Natal em linha própria, e o motor fiscal trata-os como parte do esquema anual")
+        case .taxBaseNotGross:
+            return t("the IRS was withheld on a different amount from the gross pay, so the engine would be answering another question",
+                     "o IRS foi retido sobre um valor diferente do vencimento, por isso o motor estaria a responder a outra pergunta")
+        case .profileIncomplete:
+            return t("we do not know enough about you yet", "ainda não sabemos o suficiente sobre ti")
+        }
+    }
+
+    /// The name of each check, as a short phrase.
+    func payslipCheckName(_ check: PayslipCheck) -> String {
+        switch check {
+        case .earningsSum:    return t("The pay adds up", "As remunerações somam")
+        case .deductionsSum:  return t("The deductions add up", "Os descontos somam")
+        case .netIdentity:    return t("The net is right", "O líquido está certo")
+        case .ssRate:         return t("Segurança Social", "Segurança Social")
+        case .statedRate:     return t("The printed rate", "A taxa indicada")
+        case .irsWithholding: return t("IRS withheld", "IRS retido")
+        case .netMonthly:     return t("Net pay", "Valor líquido")
+        case .minWage:        return t("Minimum wage", "Salário mínimo")
+        case .jovemApplied:   return t("IRS Jovem", "IRS Jovem")
+        case .regionTable:    return t("Tax tables used", "Tabelas usadas")
+        }
+    }
+
+    /// One line saying what happened, for a check that passed.
+    func payslipCheckPassed(_ check: PayslipCheck, value: String, other: String) -> String {
+        switch check {
+        case .earningsSum:
+            return t("Every payment line adds up to the \(value) total.",
+                     "Todas as linhas de remuneração somam o total de \(value).")
+        case .deductionsSum:
+            return t("Every deduction adds up to the \(value) total.",
+                     "Todos os descontos somam o total de \(value).")
+        case .netIdentity:
+            return t("Gross minus deductions is exactly the \(value) you were paid.",
+                     "O ilíquido menos os descontos dá exatamente os \(value) que recebeste.")
+        case .ssRate:
+            return t("Charged at the rate of 11,00% on \(other), which gives \(value).",
+                     "Descontada à taxa de 11,00% sobre \(other), o que dá \(value).")
+        case .statedRate:
+            return t("The rate printed on the line gives exactly \(value).",
+                     "A taxa indicada na linha dá exatamente \(value).")
+        case .irsWithholding:
+            return t("The \(value) withheld matches the 2026 tables for your situation.",
+                     "Os \(value) retidos batem certo com as tabelas de 2026 para a tua situação.")
+        case .netMonthly:
+            return t("The \(value) you were paid matches what we compute.",
+                     "Os \(value) que recebeste batem certo com o que calculámos.")
+        case .minWage:
+            return t("Your pay of \(value) is above the \(other) minimum wage.",
+                     "O teu vencimento de \(value) está acima do salário mínimo de \(other).")
+        case .jovemApplied:
+            return t("The withholding looks like IRS Jovem is being applied.",
+                     "A retenção parece indicar que o IRS Jovem está a ser aplicado.")
+        case .regionTable:
+            return t("The withholding matches the tables for \(other).",
+                     "A retenção bate certo com as tabelas para \(other).")
+        }
+    }
+
+    /// One line saying what happened, for a check that did not pass.
+    func payslipCheckFailed(_ check: PayslipCheck, value: String, other: String, gap: String) -> String {
+        switch check {
+        case .earningsSum:
+            return t("The payment lines come to \(value), but the total says \(other), \(gap).",
+                     "As linhas de remuneração dão \(value), mas o total diz \(other), \(gap).")
+        case .deductionsSum:
+            return t("The deductions come to \(value), but the total says \(other), \(gap).",
+                     "Os descontos dão \(value), mas o total diz \(other), \(gap).")
+        case .netIdentity:
+            return t("Gross minus deductions gives \(other), but the payslip pays \(value).",
+                     "O ilíquido menos os descontos dá \(other), mas o recibo paga \(value).")
+        case .ssRate:
+            return t("At the rate of 11,00% on \(other) this should be \(gap). The payslip deducts \(value).",
+                     "À taxa de 11,00% sobre \(other) isto devia ser \(gap). O recibo desconta \(value).")
+        case .statedRate:
+            return t("The rate printed on the line gives \(other), not the \(value) charged.",
+                     "A taxa indicada na linha dá \(other), e não os \(value) cobrados.")
+        case .irsWithholding:
+            return t("We compute \(other) for your situation. The payslip withholds \(value).",
+                     "Calculamos \(other) para a tua situação. O recibo retém \(value).")
+        case .netMonthly:
+            return t("We compute \(other). The payslip pays \(value).",
+                     "Calculamos \(other). O recibo paga \(value).")
+        case .minWage:
+            return t("Your pay of \(value) is below the \(other) minimum wage. Part time or an incomplete month would explain it.",
+                     "O teu vencimento de \(value) está abaixo do salário mínimo de \(other). Part-time ou um mês incompleto explicam isso.")
+        case .jovemApplied:
+            return t("The withholding matches what you would pay without IRS Jovem. Worth asking about.",
+                     "A retenção corresponde ao que pagarias sem IRS Jovem. Vale a pena perguntar.")
+        case .regionTable:
+            return t("The withholding matches the tables for \(other), not the ones for where you live.",
+                     "A retenção bate certo com as tabelas para \(other), e não com as do sítio onde vives.")
+        }
+    }
+
+    /// Why the check matters. One plain sentence, shown under the finding.
+    func payslipCheckWhy(_ check: PayslipCheck) -> String {
+        switch check {
+        case .earningsSum, .deductionsSum:
+            return t("When the lines do not add up to the total, either a line is wrong or we misread one.",
+                     "Quando as linhas não somam o total, ou há uma linha errada ou lemos mal alguma.")
+        case .netIdentity:
+            return t("This is the arithmetic the whole payslip rests on.",
+                     "É a conta em que assenta o recibo todo.")
+        case .ssRate:
+            return t("The employee rate is 11,00%, and it builds your pension and your entitlements.",
+                     "A taxa do trabalhador é de 11,00%, e é o que constrói a tua pensão e os teus direitos.")
+        case .statedRate:
+            return t("A rate printed next to a figure should produce that figure.",
+                     "Uma taxa indicada ao lado de um valor deve dar esse valor.")
+        case .irsWithholding, .netMonthly:
+            return t("Compared against the 2026 withholding tables for your household.",
+                     "Comparado com as tabelas de retenção de 2026 para o teu agregado.")
+        case .minWage:
+            return t("The minimum wage is set per region and applies to a full month.",
+                     "O salário mínimo é definido por região e aplica-se a um mês completo.")
+        case .jovemApplied:
+            return t("IRS Jovem lowers the withholding, and it has to be asked for.",
+                     "O IRS Jovem baixa a retenção, e tem de ser pedido.")
+        case .regionTable:
+            return t("Continente, Açores and Madeira withhold at different rates.",
+                     "O Continente, os Açores e a Madeira retêm a taxas diferentes.")
+        }
+    }
+
+    /// What a line is, in a word or two, for the review screen.
+    func payslipConceptName(_ concept: PayslipConcept) -> String {
+        switch concept {
+        case .baseSalary:       return t("Base salary", "Vencimento base")
+        case .mealAllowance:    return t("Meal allowance", "Subsídio de alimentação")
+        case .overtime:         return t("Overtime", "Trabalho suplementar")
+        case .holidaySubsidy:   return t("Holiday subsidy", "Subsídio de férias")
+        case .christmasSubsidy: return t("Christmas subsidy", "Subsídio de Natal")
+        case .seniorityBonus:   return t("Seniority", "Diuturnidades")
+        case .bonus:            return t("Bonus", "Prémio")
+        case .ajudas:           return t("Ajudas de custo", "Ajudas de custo")
+        case .otherEarning:     return t("Other payment", "Outra remuneração")
+        case .irs:              return t("IRS", "IRS")
+        case .employeeSS:       return t("Segurança Social", "Segurança Social")
+        case .unionDues:        return t("Union dues", "Quota sindical")
+        case .inKindDeduction:  return t("Paid in kind", "Desconto em espécie")
+        case .otherDeduction:   return t("Other deduction", "Outro desconto")
+        case .totalEarnings:    return t("Total pay", "Total ilíquido")
+        case .totalDeductions:  return t("Total deductions", "Total descontos")
+        case .netPay:           return t("Net pay", "Líquido a receber")
+        case .employerSS:       return t("Employer contribution", "Contribuição da entidade")
+        case .taxBase:          return t("IRS base", "Base de IRS")
+        case .ssBase:           return t("Contribution base", "Base de incidência")
+        }
+    }
+
+    /// A region named the way a sentence would name it.
+    func payslipRegionName(_ region: TaxEngine.TaxRegion) -> String {
+        switch region {
+        case .continente: return t("mainland Portugal", "o Continente")
+        case .acores:     return t("the Azores", "os Açores")
+        case .madeira:    return t("Madeira", "a Madeira")
+        }
+    }
+
+    // What the app assumed, said out loud.
+    func payslipAssumptions(_ region: TaxEngine.TaxRegion, months: String) -> String {
+        let place: String
+        switch region {
+        case .continente: place = t("mainland Portugal", "o Continente")
+        case .acores:     place = t("the Azores", "os Açores")
+        case .madeira:    place = t("Madeira", "a Madeira")
+        }
+        return t("Checked against the 2026 tables for \(place), on a \(months) month year, using the profile you gave us.",
+                 "Verificado com as tabelas de 2026 para \(place), num ano de \(months) meses, com o perfil que nos deste.")
+    }
+    var payslipDisclaimer: String {
+        t("This reads what is printed and checks whether it agrees with itself and with the 2026 tables. It is not tax advice, and it cannot see anything your payslip does not say.",
+          "Isto lê o que está impresso e verifica se bate certo consigo mesmo e com as tabelas de 2026. Não é aconselhamento fiscal, e não vê nada que o teu recibo não diga.")
+    }
+
+    // When it cannot be read.
+    var payslipUnreadableTitle: String { t("We could not read this", "Não conseguimos ler isto") }
+    func payslipUnreadable(_ why: PayslipUnreadable) -> String {
+        switch why {
+        case .unsupportedFile:
+            return t("This file is not a PDF or an image we can open.",
+                     "Este ficheiro não é um PDF nem uma imagem que consigamos abrir.")
+        case .encryptedPDF:
+            return t("This PDF is locked with a password.",
+                     "Este PDF está protegido com palavra-passe.")
+        case .noTextFound:
+            return t("We found no text on the page.",
+                     "Não encontrámos texto nenhum na página.")
+        case .tooFewNumbers:
+            return t("We found text, but almost no amounts.",
+                     "Encontrámos texto, mas quase nenhuns valores.")
+        case .notAPayslip:
+            return t("We found amounts, but nothing that names anything a payslip names.",
+                     "Encontrámos valores, mas nada que tenha o nome do que vem num recibo.")
+        }
+    }
+    var payslipUnreadableHelp: String {
+        t("Two things that usually fix it. Export the PDF from your employer's portal rather than photographing a screen. If you are photographing paper, flatten it and fill the frame.",
+          "Duas coisas que costumam resolver. Exporta o PDF do portal da entidade patronal em vez de fotografar um ecrã. Se estás a fotografar papel, alisa-o e enche o enquadramento.")
+    }
+    var payslipTryAgain: String { t("Try another file", "Tentar outro ficheiro") }
+
     /// v1.0: the support sheet's Close button.
     ///
     /// It used to be `consentPreviewDone`, borrowed from a screen it had nothing

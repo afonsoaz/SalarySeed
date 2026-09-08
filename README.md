@@ -1,6 +1,6 @@
-# SalarySeed — v1.0.4
+# SalarySeed — v1.1
 
-An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union.
+An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union. It will also read your payslip and tell you whether it adds up.
 
 **Every figure comes from published, openly licensed data**, and there is no other kind. GEP and INE for Portugal, Eurostat for Europe, the AT workbooks for tax. No crowdsourced number, no recruiter survey, no estimate from another app. If a figure is on screen, a public table stands behind it, and where no such table exists the app says so instead of drawing something.
 
@@ -19,8 +19,12 @@ Salary_App/                    <- the git repo root
   Info.plist                   <- ONLY the keys Xcode cannot generate. See the comment in it
   tools/                       <- the Python that generated the bundled datasets,
                                   check_privacy_manifest.sh, which runs on every build,
-                                  and verify_tax_engine.py, which checks the tax tables
-                                  against the AT workbooks they came from
+                                  verify_tax_engine.py, which checks the tax tables
+                                  against the AT workbooks they came from,
+                                  verify_payslip_reader.py, which does the same job
+                                  for the payslip reader, and
+                                  payslip_probe/, which compiles the reader and runs
+                                  it over a real payslip
   README.md  app-concept.md    <- this file and the design doc
   PRIVACY.md                   <- the privacy policy. Needs a contact line and a host
   _archive/                    <- not part of the app, gitignored
@@ -48,6 +52,52 @@ No dependencies, no account, no backend. Every figure is on-device: bundled data
 | **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. For supporters. |
 | **Profile** | The inputs behind all of it, each with what it unlocks, and at the top the one place the app asks for money. |
 
+## The payslip checker
+
+New in v1.1, reached from a card on Home. You give it a PDF or a photograph of a
+recibo de vencimento and it tells you what is wrong, what checks out, and what is
+worth knowing. Free, and entirely on the device.
+
+It reads a PDF's own text layer where there is one, which is exact and needs no
+recognition at all, and falls back to Vision for a photograph. Then it does
+something more useful than reading: **no name reaches a verdict the arithmetic
+has not agreed with**. Segurança Social is whatever figure is 11% of a base,
+whatever the payslip happens to call it, and a run of lines has to reach its
+printed total before the app will believe the total or the lines. That is what
+catches a misread digit, and it is why a photographed payslip can be trusted at
+all.
+
+Be precise about the order, because it is the feature. Labels are read first:
+the lexicon picks which lines belong to a side. What the arithmetic has is the
+veto, and a run that misses its total is reported as a gap rather than quietly
+accepted. v1.1a corrected three comments that claimed labels played no part,
+which was flattering and wrong.
+
+Three rules keep it honest, and they are the point of the feature:
+
+- **A check that cannot run says so.** On both of the real payslips it was built
+  against, four or five of the ten checks do not run, because `TaxEngine` models a
+  month as gross times a schedule and neither payslip is shaped like that. The
+  screen names each one and why.
+- **A figure we had to guess at cannot accuse anybody.** Anything resting on a
+  low-confidence reading can reach "worth knowing" and never "wrong".
+- **A total has to be a total of something.** A payslip carries several figures
+  that satisfy earnings minus deductions equals net, including year-to-date
+  summaries. One that its own lines do not add up to is not believed.
+
+Nothing is stored. The file is read into memory, checked, and discarded when the
+screen closes, and leaving mid-read cancels the recognition rather than letting
+it finish over a screen that has gone. See [`PRIVACY.md`](PRIVACY.md).
+
+`tools/payslip_probe` compiles the reader's own Engine sources into a command
+line tool and prints what they decide about a real file: every line with the
+concept, provenance and confidence it was given, the facts, and the verdict. It
+is a dump rather than a pass/fail, because there is no answer key for a payslip
+and the useful thing is the diff across a change. Real payslips are somebody's
+actual pay, so they are gitignored and a fresh clone has nothing to point it at.
+That is why `verify_payslip_reader.py`, and not the probe, is what runs before a
+release.
+
 ## Data
 
 Everything is published, openly licensed, and bundled. Nothing is scraped, and no crowdsourced or recruiter figure is embedded anywhere.
@@ -73,8 +123,18 @@ SalarySeed/
     EuroDataset          Eurostat SES: 17 NACE sections x 27 countries + price levels
     EuroComparison       the European map's ratios, ranks and colour buckets
     GrowthEngine         the projection: anchoring, stay and move paths, rates
+    PayslipText          homoglyph, separator and label normalisation
+    PayslipNumber        per-token money parsing, integer cents, never Double
+    PayslipLayout        fragments to rows and money columns, geometry only
+    PayslipLexicon       what a line is, by expanded token set rather than substring
+    PayslipDocument      a reading, and the gate that says this is not a payslip
+    PayslipClassifier    the three numeric identities: net, 11%, column sums
+    PayslipFacts         what was read and how sure we are of each figure
+    PayslipReconciler    facts against TaxEngine, into findings
+    PayslipFinding       the findings model and the one function that tiers them
   Features/    one folder per screen
     Shared/SupportLock     the real screen, blurred, where Grow and the Europe map live
+    Payslip/               the checker: PDF and Vision extraction, then the flow
   Models/      SalaryStore (the single source of truth), Localization, catalogues
     SupporterStore       StoreKit 2: the product, the entitlement, restore, refunds
     AccentTheme          the five accents, each carrying its own ink
@@ -106,9 +166,9 @@ These are not aspirations. Each one is enforced somewhere, and most were learned
 - **Show the thing, then ask.** The accent swatches are live before paying: tapping one recolours the whole app behind the sheet, and closing without buying puts it back. A locked feature you cannot see is a claim; one you can see is an offer.
 - **The receipt is the truth, never the cache.** `UserDefaults` mirrors the entitlement only so the first frame does not flicker. `Transaction.currentEntitlements` overwrites it on every launch and `Transaction.updates` overwrites it on every refund, so a paid flag can never outlive the payment.
 
-## Verifying changes without a compiler
+## Verifying changes
 
-Much of this app was built where no Swift toolchain was available, so correctness comes from a repeatable kit rather than from a build. It has caught a real bug in every version since v0.9.
+Much of this app was built where no Swift toolchain was available, so correctness came from a repeatable kit rather than from a build. That era is over and the compiler now covers steps 1 to 4, 11, 12 and 16. The rest are the checks a build still cannot do, and the list has caught a real bug in every version since v0.9. Steps 26 to 30 are what v1.1 added, and every one of them came from running the app rather than reading it.
 
 1. Brace, paren and bracket balance, with strings, comments and interpolation stripped first.
 2. ViewBuilder direct-child counts.
@@ -132,9 +192,14 @@ Much of this app was built where no Swift toolchain was available, so correctnes
 20. **Check that every name in a build setting exists on disk, and spelt the same.** `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES`, the `.appiconset` folder names and `AccentTheme.alternateIconName` have to agree three ways. Two of the three are strings no compiler ever reads, and the failure is a silent no-op at runtime.
 21. **Check that a plist key Xcode was asked to generate actually arrived.** `INFOPLIST_KEY_` only maps the key names Xcode knows: `ITSAppUsesNonExemptEncryption` lands as a real boolean and `CFBundleLocalizations` is dropped on the floor with no warning at all. Anything set that way has to be read back out of the BUILT `Info.plist`, not out of the build settings. v1.0 checked before writing rather than after, which is the only reason there is a separate `Info.plist` in the repo.
 22. **`onChange` does not fire for the value a view already has.** A trigger written as `onChange(of: scenePhase)` alone runs on backgrounding and returning and never on a cold launch, so v1.0's first send schedule only worked for people who had already been in the app. Nothing failed: the profile card looked healthy and did nothing. Any recurring trigger needs its `.task` counterpart, and the way to find out is step 9.
-23. **`JSONEncoder` does not write keys in the order your `encode(to:)` calls them.** It fills a dictionary and serialises that, so the order is arbitrary and differs between calls. Anything that compares, signs or hashes encoded bytes needs `.sortedKeys`. Without it v1.1 re-uploaded an unchanged row on every launch, twice, for every user: the correct single document existed with the correct values, the app said "sent", and nothing anywhere looked wrong. Found only by logging what the server actually received.
+23. **`JSONEncoder` does not write keys in the order your `encode(to:)` calls them.** It fills a dictionary and serialises that, so the order is arbitrary and differs between calls. Anything that compares, signs or hashes encoded bytes needs `.sortedKeys`. Without it the pool re-uploaded an unchanged row on every launch, twice, for every user: the correct single document existed with the correct values, the app said "sent", and nothing anywhere looked wrong. Found only by logging what the server actually received.
 24. **Firebase `onRequest` parses the body before your handler sees it.** Adding `express.json()` or `express.raw()` gets an already-consumed stream and leaves the body empty, so every request 400s including valid ones. The original bytes are on `req.rawBody`, and those are the ones a signature must be checked against; reconstructing them with `JSON.stringify` produces different bytes and fails every signature for reasons no log explains.
 25. **When something is created for later use and the creation can fail, check the caller checked.** Especially Keychain writes, which fail silently and return a status nobody reads. The case that taught this created a durable identifier, ignored the failure, and left the app showing a confident status card over a feature that could not work.
+26. **Code that makes a judgement rather than restating a table cannot be checked by restating it in Python.** Steps 5 and 15 work because a table has a source to be compared against. The payslip layout, reader, classifier and reconciler decide things about a page, and a Python twin of a judgement is a second opinion, not a check. Compile the real thing and run it: `tools/payslip_probe`. Everything under `Engine/` imports only Foundation, so this is always possible, and it found six bugs the script could not have.
+27. **A comment that claims a safety property is load-bearing, and a flattering one is worse than none.** Three comments in the payslip reader said it identified lines "without reading a single label". It reads labels first and the arithmetic holds the veto, which is a good design described wrongly, and the next reader would have built on a guarantee that was not there. When a comment states an invariant, check the invariant, not the prose.
+28. **Two bugs can cancel, and then either fix alone is a regression.** A column test mislabelled every deduction on one payslip layout and a label fallback silently undid it. The reading was correct and neither half was. Before fixing something that looks obviously wrong in a heuristic, capture what the whole thing currently decides about a real input, and diff it after. This is what the probe is for.
+29. **A skip reason has to name the actual reason.** Collapsing "these two figures differ" and "we never found one of them" into one boolean made the app tell a reader their payslip withholds on a non-gross base when it had failed to read the base. Saying why a check did not run is only worth doing if the why is true; three states need three states.
+30. **Test the input the feature is for, not the input you have.** Vision is not deterministic across input paths: the same photograph read from the file and read through the Photos picker gave different figures, and the second one sent the net identity into the year-to-date block. Nothing was wrong on screen, because the "a total has to be a total of something" rule retracted it, but no amount of reading the code would have shown either the variance or the rule earning its place.
 
 ## Where the data goes
 
@@ -162,6 +227,24 @@ unaffected either way: the App Store trader disclosure follows from taking money
 not from taking data.
 
 ## Version history
+
+**v1.1** — The payslip checker, and the reader gets something that can actually run it.
+
+Give it a PDF or a photograph of a recibo de vencimento and it tells you what is wrong, what checks out, and what is worth knowing. Free, on the device, and nothing is kept: the file is read into memory, checked, and gone when the screen closes. There is no history, and adding one would change `PRIVACY.md`, the privacy manifest and the App Store privacy answers in the same commit, which is why the manifest now says so in a comment.
+
+The idea worth protecting is that no name reaches a verdict the arithmetic has not agreed with. Ten checks, and each one that cannot run says so on screen with the reason, because a check that quietly did not happen reads as a check that passed. On both real payslips four or five do not run, since the tax engine models a month as gross times a schedule and neither payslip is shaped like that. A figure we had to guess at is capped at "worth knowing" and can never reach "wrong". And a total has to be a total of something: a payslip carries several figures satisfying earnings minus deductions equals net, year-to-date summaries among them, and one its own lines do not add up to is not believed.
+
+That last rule earned itself during this release. Driving the real app, Vision read "1 923,35" as "4,12", so the net identity latched onto the annual accumulated block instead, where 3 187,40 minus 1 076,15 really is 2 111,25. The deductions total it implied was not supported by any named run, so it was retracted and two checks reported themselves as not run. The alternative was accusing somebody's payslip of being 187,90 short. Nothing in the reader is deterministic across input paths, and that is exactly why the rule is there.
+
+**`tools/payslip_probe`** is the compiled probe the reader's own plan deferred. `verify_payslip_reader.py` can check anything expressible as a rule restated in Python, which covered the money parser, the homoglyph table and the tolerance ordering, and could not touch the four files that make a judgement about a page rather than restate a table. The probe compiles those files, unmodified, and prints what they decide about a real file. It found the bugs below.
+
+Fixed, all of them found by running the thing: the four engine checks reported `taxBaseNotGross` when the truth was that a figure had never been found, so the screen told a reader their employer withholds on something other than gross when the app had simply not read the base. `ssBase` claimed high confidence unconditionally while the contribution beside it computed its own, so a photographed payslip reported its gross as certain with every other figure on the page uncertain; it now follows the same rule and uses the weak-window flag that had been recorded and read by nothing. Two errors were cancelling each other in the classifier: a column test that mislabelled every deduction as an earning on the layout that stacks the two blocks, and a label fallback that quietly undid it, so the reading came out right for the wrong reason and either fix alone would have broken it. A guard in `inferSideOfUnnamedLines` ended in a condition that could never be false, which hid which of its two cases was load-bearing; it is the one the comment said was left alone. A reading that cleared the not-a-payslip gate with nothing identifiable in it showed "nothing on this payslip contradicts itself" over a page we had failed to read. And typing a half-finished number into a review field deleted the figure, because the parser returns nothing for both "cleared" and "not a number yet".
+
+Removed: a skip reason with copy in two languages that nothing ever emitted, a property naming which checks compare equality that nothing read, and an at-most-once invariant that nothing enforced. A second copy of a rule that nothing consults is one more thing to keep in step.
+
+Layout, on five screens nobody had looked at: the header above every step becomes two rows past the accessibility threshold instead of wrapping a title to four lines beside an unmoved button, and its close button, the only way out of the flow, was under Apple's 44 point minimum at the default size. The review rows reflowed only past `isAccessibilitySize`, which is false for the three sizes where they actually stopped fitting. The results screen had no exit of its own. Verified by hand at `large` and `accessibility-extra-large` on all five, and the default look is unchanged.
+
+Plus the review screen stopped telling people their PDF came from a photo, which it had been doing to one of the two real payslips.
 
 **v1.0.4** — The tax engine gets a test, and four things that were wrong get fixed.
 
@@ -244,7 +327,13 @@ What survived from the store-readiness work is the part that has nothing to do w
 
 ## Not done yet
 
-Island cohort figures: the tax is real for all three regions, but the Quadros de Pessoal cover Continente only, so Açores and Madeira have no published comparison and the app says so wherever that bites. Tenure on the European map, where coverage is already measured. The pension model, which is still a placeholder and should fold into Grow's timeline. Self-employed mode. Variable pay in the tax engine. No full accessibility pass, and it is now the largest single piece of work left: 515 hardcoded `.system(size:)` calls, no `ScaledMetric` or `dynamicTypeSize` anywhere, and nine accessibility modifiers in the whole app. The supporter promise of "whatever comes later" has nothing to redeem yet, because there are no paid features beyond the colours.
+Island cohort figures: the tax is real for all three regions, but the Quadros de Pessoal cover Continente only, so Açores and Madeira have no published comparison and the app says so wherever that bites. Tenure on the European map, where coverage is already measured. The pension model, which is still a placeholder and should fold into Grow's timeline. Self-employed mode. Variable pay in the tax engine.
+
+**The tax engine hardcodes 2026.** `TaxEngine.taxYear` is a real constant and Home names the year and region it computed with, so a reader in 2027 is at least told which tables produced the number. The engine itself still has no concept of a year: nothing anywhere compares `taxYear` to the calendar, so in January 2027 every figure quietly becomes last year's, with no error and no crash. That is the worst failure shape left in the app.
+
+**VoiceOver.** Dynamic Type was finished in v1.0.3 and this is a different axis: eleven accessibility modifiers in the whole app, and every chart plus the Portugal map invisible to a screen reader. v1.1a labelled the payslip flow's own controls and grouped its result cards, which is a start on one screen and not the pass.
+
+The supporter promise of "whatever comes later" now has Grow, the European map and the accents behind it, so it is no longer empty; the payslip checker is deliberately free.
 
 The pool itself is not a loose end so much as a decision: it exists, it works, and it lives on `pool-backend`. Reviving it means accepting the controller obligations that come with it, and the branch is `master` plus exactly the backend, so the diff is the whole conversation.
 
