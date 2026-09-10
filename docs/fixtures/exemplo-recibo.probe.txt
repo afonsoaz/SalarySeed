@@ -1,0 +1,56 @@
+======================================================================
+FILE  exemplo-recibo.pdf
+======================================================================
+SOURCE          pdfLines (exact text: true)
+FRAGMENTS       90
+MONEY COLUMNS   0.170  0.205  0.281  0.326
+UNREADABLE      0 token(s) []
+LINES           17, amounts 8
+
+---- LINES -----------------------------------------------------------
+  # label (normalised)                 value       concept            prov                 conf
+ 0  padaria central de aveiro lda      -           -                  label                medium
+ 1  rua das pombas aveiro nipc         -           -                  label                medium
+ 2  recibo de vencimento marco         -           -                  label                medium
+ 3  nome maria joana ferreira dos sant -           -                  label                medium
+ 4  categoria assistente administrativ -           -                  label                medium
+ 5  abono                              -           -                  label                medium
+ 6  vencimento base                    2400,00     baseSalary         label                medium
+ 7  total iliquido                     -           -                  label                medium
+ 8  descontos                          -           -                  label                medium
+ 9  seguranca social                   -           -                  label                medium
+ 10 irs retencao na fonte              -           -                  label                medium
+ 11 total descontos                    -           -                  label                medium
+ 12 liquido a receber                  -           -                  label                medium
+ 13 base de incidencia seguranca socia -           -                  label                medium
+ 14 encargo da entidade empregadora    -           -                  label                medium
+ 15 documento ficticio gerado para dem -           -                  label                medium
+ 16 correspondem a ninguem             -           -                  label                medium
+
+---- FACTS -----------------------------------------------------------
+  totalEarnings        2400,00      labelAndArithmetic   high  lines [7]
+  totalDeductions      700,41       labelAndArithmetic   high  lines [11]
+  netPay               1699,59      labelAndArithmetic   high  lines [12]
+  ssBase               2400,00      arithmetic           high  lines [6]
+  ssContribution       264,00       arithmetic           high  lines [9]
+  irs                  -
+  confirmedByNetIdenti true
+  earningsRun          [6]   gap 0,00
+  deductionsRun        []   gap -
+  disputed             []
+  isEmpty              false
+
+---- VERDICT (continente, 14 months, single, 0 dependants) -----------
+  correct  earningsSum      conf=medium  expected=2400,00     actual=2400,00     delta=0,00
+  correct  minWage          conf=high    expected=920,00      actual=2400,00     delta=1480,00
+  correct  netIdentity      conf=high    expected=1699,59     actual=1699,59     delta=0,00
+  correct  ssRate           conf=high    expected=264,00      actual=264,00      delta=0,00
+
+  skipped  deductionsSum    missingFigure
+  skipped  irsWithholding   missingFigure
+  skipped  jovemApplied     missingFigure
+  skipped  netMonthly       missingFigure
+  skipped  regionTable      missingFigure
+  skipped  statedRate       missingFigure
+
+SUMMARY  wrong=0  mentions=0  correct=4  notChecked=6
