@@ -500,7 +500,7 @@ private struct LayerCard: View {
                 .padding(.top, 7)
             }
 
-            Text(CohortEngine.sourceLine)
+            Text(s.cohortSourceLine)
                 .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .padding(.top, 6)
@@ -591,7 +591,7 @@ private struct SectorCard: View {
                 .padding(.top, 7)
             }
 
-            Text(CohortEngine.sourceLine)
+            Text(s.cohortSourceLine)
                 .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .padding(.top, 6)

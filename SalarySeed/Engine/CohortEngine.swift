@@ -20,7 +20,6 @@ struct CohortResult {
 
 enum CohortEngine {
     static let referenceYear = SalaryDataset.referenceYear
-    static let sourceLine = "Fontes: GEP-MTSSS, Quadros de Pessoal, out. 2024 · INE, Estrutura dos Ganhos 2022"
 
     /// Percentile within a cohort, modelled log-normal around the cell median.
     static func result(grossMonthly: Double, cell: CohortCell) -> CohortResult {

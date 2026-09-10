@@ -271,6 +271,21 @@ struct Strings {
     var thinChip: String { t("Rough estimate, small sample", "Estimativa aproximada, amostra pequena") }
     var edgeChip: String { t("Few data points at this level", "Poucos dados neste nível") }
     var addPill: String { t("+ Add", "+ Adicionar") }
+    /// v1.1a: this was a hardcoded Portuguese constant on `CohortEngine`, so it
+    /// printed "Fontes:" under three charts in the English build. Engines hold no
+    /// user-facing words; the dataset names stay as published, only the label and
+    /// the month abbreviation change.
+    /// v1.1a: was `DistrictDataset.referenceLabel`, printed under the choropleth,
+    /// so the English build read "out. 2024 · Quadros 110 e 61". Quadro is the
+    /// name of the published table and stays; the month and the "and" change.
+    var districtSourceLine: String {
+        t("GEP-MTSSS, Quadros de Pessoal, Oct 2024 · Quadros 110 and 61",
+          "GEP-MTSSS, Quadros de Pessoal, out. 2024 · Quadros 110 e 61")
+    }
+    var cohortSourceLine: String {
+        t("Sources: GEP-MTSSS, Quadros de Pessoal, Oct 2024 · INE, Estrutura dos Ganhos 2022",
+          "Fontes: GEP-MTSSS, Quadros de Pessoal, out. 2024 · INE, Estrutura dos Ganhos 2022")
+    }
     var compareSourceNote: String { t("Group medians from official data: GEP-MTSSS, Quadros de Pessoal, Oct 2024, and INE, Estrutura dos Ganhos 2022. Employees only. Estimates, not official advice.", "Medianas dos grupos com base em dados oficiais: GEP-MTSSS, Quadros de Pessoal, out. 2024, e INE, Estrutura dos Ganhos 2022. Só trabalhadores por conta de outrem. Estimativas, não aconselhamento oficial.") }
 
     // MARK: Dimensions (keyed by CompareDimension.id)
@@ -648,7 +663,12 @@ struct Strings {
         t("Mainland only, private-contract employees, October 2024. These are averages for everyone in the sector, not for your job.",
           "Só continente, trabalhadores com contrato privado, outubro de 2024. São médias de toda a gente do setor, não da tua profissão.")
     }
-    var mapGeoCredit: String { "Fronteiras: CAOP, Direção-Geral do Território" }
+    /// v1.1a: was a bare string, so the English build said "Fronteiras:". The
+    /// authority's name stays in Portuguese because that is its name.
+    var mapGeoCredit: String {
+        t("Borders: CAOP, Direção-Geral do Território",
+          "Fronteiras: CAOP, Direção-Geral do Território")
+    }
 
     // MARK: v0.15 the autonomous regions
 
@@ -1073,6 +1093,13 @@ struct Strings {
     var euroFootnoteGaps: String {
         t("Cyprus and Malta have no figure for mining or for electricity and gas. Length of service is in the source but is not on this screen yet.",
           "Chipre e Malta não têm valor para as indústrias extrativas nem para a eletricidade e gás. A antiguidade existe na fonte mas ainda não está neste ecrã.")
+    }
+
+    /// The Eurostat attribution, which its licence requires be shown. Same fix as
+    /// `cohortSourceLine`: it was a Portuguese constant on `EuroDataset`.
+    var euroSourceLine: String {
+        t("Source: Eurostat, Structure of Earnings Survey 2022 (earn_ses22_24)",
+          "Fonte: Eurostat, Inquérito à Estrutura dos Ganhos 2022 (earn_ses22_24)")
     }
 
     // MARK: v0.16 Support SalarySeed

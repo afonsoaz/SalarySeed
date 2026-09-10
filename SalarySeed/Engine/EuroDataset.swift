@@ -3,7 +3,7 @@ import Foundation
 /// v0.11: the European layer of mapSeed. Eurostat Structure of Earnings Survey
 /// 2022, `earn_ses22_24`: mean gross monthly earnings, NACE section, employees
 /// in enterprises with 10 or more staff, both sexes. Reuse is free including
-/// commercial; the attribution line is in `EuroDataset.sourceLine`.
+/// commercial; the attribution line is `Strings.euroSourceLine`.
 ///
 /// WHY THIS IS A SEPARATE DATASET FROM EVERY OTHER NUMBER IN THE APP. GEP and
 /// Eurostat measure different populations, in different years, with different
@@ -20,7 +20,6 @@ import Foundation
 enum EuroDataset {
 
     static let referenceYear = 2022
-    static let sourceLine = "Fonte: Eurostat, Inquérito à Estrutura dos Ganhos 2022 (earn_ses22_24)"
 
     /// Mean gross monthly earnings in euros, per NACE section, per country.
     /// 455 of the 459 possible cells are populated. The four gaps are Cyprus and

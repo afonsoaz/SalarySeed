@@ -576,7 +576,7 @@ struct GrowView: View {
             conditionalAssumptions(result: result)
             line(store.growScenario.bracketsIndexed ? s.growAssumptionBracketsOn : s.growAssumptionBracketsOff)
             line(s.growAssumptionNothingSaved)
-            Text(CohortEngine.sourceLine)
+            Text(s.cohortSourceLine)
                 .appFont(9.5)
                 .foregroundStyle(Theme.textFaint)
                 .padding(.top, 4)

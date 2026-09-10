@@ -26,7 +26,6 @@ import Foundation
 /// sector for).
 enum DistrictDataset {
 
-    static let referenceLabel = "GEP-MTSSS, Quadros de Pessoal, out. 2024 · Quadros 110 e 61"
 
     /// Mean gross monthly (ganho médio) per sector, per district.
     static let sectorMean: [Sector: [District: Double]] = [

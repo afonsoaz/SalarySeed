@@ -356,7 +356,7 @@ struct EuropeScopeView: View {
             note(s.euroFootnoteVintage)
             note(s.euroFootnoteScope)
             note(s.euroFootnoteGaps)
-            Text(EuroDataset.sourceLine)
+            Text(s.euroSourceLine)
                 .appFont(9.5)
                 .foregroundStyle(Theme.textFaint)
         }

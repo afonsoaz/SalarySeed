@@ -387,7 +387,7 @@ struct MapView: View {
                 .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
-            Text(DistrictDataset.referenceLabel)
+            Text(s.districtSourceLine)
                 .appFont(9.5)
                 .foregroundStyle(Theme.textFaint)
             Text(s.mapGeoCredit)
