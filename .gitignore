@@ -34,36 +34,39 @@ app-concept.md
 # looked at but not deleted from here.
 _archive/
 
-# Real payslips, used to test the payslip reader by hand and with
-# tools/payslip_probe. They are somebody's actual pay and must never be
-# committed. The reader's own fixtures live in the Swift source instead, so a
-# fresh clone loses only the ability to re-run the probe, not the checks.
+# ---------------------------------------------------------------------------
+# Things that must never be committed, whether or not they exist right now.
+#
+# v1.1a emptied the working folder: the payslips, Config/, functions/, the two
+# duplicate scripts and the probe's binary were all deleted, and HANDOFF.md was
+# moved into _archive/. These rules stay anyway, because every one of them
+# describes something that comes BACK. A payslip gets dropped in to run the
+# probe, `git checkout pool-backend` restores Config/ and functions/, and the
+# probe rebuilds .build/ on demand. A rule that only holds while the folder
+# happens to be empty is not protection.
+# ---------------------------------------------------------------------------
+
+# Real payslips. Somebody's actual pay, with names, employers, tax numbers and
+# salaries on them, and the only thing tools/payslip_probe can be pointed at.
+# Once a document like this is in a commit it is in the history for good, so
+# this rule matters more than anything else in this file. The reader's own
+# fixtures live in the Swift source, so a fresh clone loses the ability to run
+# the probe and none of the checks that gate a release.
 payslip_examples/
 
-# tools/payslip_probe build output
-.build/
-
-# Left on disk by a pool-backend checkout, and they must not land on master.
-#
-# Both are tracked on `pool-backend`, which is master plus exactly the Firebase
-# backend, so its diff is the whole story. Committing either here would
-# reintroduce that piecemeal, which is the one thing CLAUDE.md says not to do.
-# `functions/` is also 234MB and 16,735 files, nearly all of it node_modules.
-#
+# Left behind by a pool-backend checkout. Both are tracked on that branch, which
+# is master plus exactly the Firebase backend, so committing either here
+# reintroduces it piecemeal. functions/ is also ~234MB, nearly all node_modules.
 # Config/Local.xcconfig is the real config rather than the .example, and its own
-# header says that name is gitignored. Until now it was not, which is how a
-# Firebase endpoint gets into a commit by accident.
+# header always claimed this name was gitignored; now it is.
 Config/
 functions/
 
-# Superseded by CLAUDE.md when v1.1 was committed, and kept on disk only as a
-# record of the handoff. It describes a working tree with an uncommitted v1.1
-# in it, which no longer exists, so nothing in it should be treated as current.
-HANDOFF.md
-
-# Byte-identical copies of tools/derive_dataset.py and tools/parse_qp2024.py,
-# which are the tracked ones. Two copies of a script drift; the repo root is
-# Afonso's working folder, so they stay on disk and out of git. Nothing is lost
-# if they are deleted: `cp tools/<name> .` brings them back.
+# Byte-identical copies of the tracked tools/ scripts. Two copies of a script
+# drift, and the repo root doubles as a working folder, so if one reappears it
+# stays out of the history. `cp tools/<name> .` if one is ever wanted back.
 /derive_dataset.py
 /parse_qp2024.py
+
+# tools/payslip_probe build output.
+.build/
