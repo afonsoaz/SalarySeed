@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SalarySeed demo</title>
+<meta name="description" content="An iOS app that tells you what a salary in Portugal actually means. Recorded from the real app.">
+<style>
+  :root {
+    --bg: #0a0d0b;
+    --panel: #111613;
+    --line: #1f2a24;
+    --ink: #e8efe9;
+    --muted: #8b9a90;
+    --accent: #3ddc97;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 56px 20px 80px; }
+  header { border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 40px; }
+  h1 { font-size: 30px; margin: 0 0 10px; letter-spacing: -0.4px; }
+  h1 span { color: var(--accent); }
+  .lede { color: var(--muted); max-width: 620px; margin: 0 0 18px; }
+  .links a {
+    display: inline-block; color: var(--accent); text-decoration: none;
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 14px; margin: 4px 8px 4px 0; font-size: 14px;
+  }
+  .links a:hover { border-color: var(--accent); }
+  h2 { font-size: 20px; margin: 48px 0 6px; letter-spacing: -0.2px; }
+  h2:first-of-type { margin-top: 8px; }
+  .note { color: var(--muted); max-width: 620px; margin: 0 0 20px; font-size: 15px; }
+  .clip {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    padding: 18px; display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;
+  }
+  .clip video {
+    width: 270px; border-radius: 12px; display: block; background: #000;
+    border: 1px solid var(--line);
+  }
+  .clip .beside { flex: 1 1 300px; min-width: 260px; }
+  .clip h3 { margin: 4px 0 8px; font-size: 16px; }
+  .clip ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 15px; }
+  .clip li { margin-bottom: 8px; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; }
+  .shots figure { margin: 0; }
+  .shots img {
+    width: 100%; border-radius: 10px; border: 1px solid var(--line); display: block;
+  }
+  .shots figcaption { color: var(--muted); font-size: 13px; margin-top: 8px; line-height: 1.45; }
+  footer {
+    margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line);
+    color: var(--muted); font-size: 14px;
+  }
+  footer a { color: var(--accent); }
+  code { background: #0f1512; border: 1px solid var(--line); border-radius: 4px;
+         padding: 1px 5px; font-size: 13px; }
+  @media (max-width: 560px) {
+    .wrap { padding: 32px 16px 56px; }
+    .clip video { width: 100%; max-width: 300px; margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Salary<span>Seed</span></h1>
+  <p class="lede">
+    An iOS app that tells you what a salary in Portugal actually means. What lands in your
+    account, what it costs your employer, where it sits against everyone else, what it might
+    be in twenty years, and whether your payslip adds up.
+  </p>
+  <p class="links">
+    <a href="https://github.com/afonsoaz/SalarySeed">Code and write-up on GitHub</a>
+  </p>
+</header>
+
+<p class="note">
+  Everything below is the real app, recorded in the iOS Simulator. The clips run at speed
+  because the pauses were mine, not the app's. The app is bilingual and auto-detects; these
+  are in English. Every figure comes from a published table, and nothing typed into the app
+  ever leaves the phone.
+</p>
+
+<h2>The salary</h2>
+<p class="note">
+  One number in, and the app works out the rest: net, the full cost to the employer, where
+  that sits nationally, what it looks like across the EU, and what twenty years of staying
+  put is worth against moving.
+</p>
+<div class="clip">
+  <video src="video/salary.mp4" autoplay muted loop playsinline controls></video>
+  <div class="beside">
+    <h3>What to watch for</h3>
+    <ul>
+      <li><strong>2 400 € gross becomes 1 700 € net</strong>, and costs the employer 2 970 €.
+          The annual settlement card writes out every assumption it made, including the ones
+          that might not apply.</li>
+      <li><strong>The distribution is scrubbable.</strong> Drag anywhere on it to see what
+          that percentile earns, then let go and it returns to you.</li>
+      <li><strong>Açores and Madeira are drawn with no colour</strong> and labelled "no
+          figure", because the survey behind the map covers the mainland only. The app says
+          so rather than inventing a shade.</li>
+      <li><strong>The projection is a staircase, not a curve</strong>, because the source
+          publishes six tenure bands and not a smooth function.</li>
+      <li><strong>Set the negotiated raise to zero</strong> and the app says moving jobs
+          costs you 0.9 points a year. Raise it and the verdict flips.</li>
+      <li><strong>Germany pays 142% more in this sector</strong>, and the app applies that
+          ratio to your own salary instead of putting a foreign average beside a Portuguese
+          one.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>The payslip</h2>
+<p class="note">
+  You hand it a PDF or a photograph of a Portuguese payslip and it tells you whether the
+  arithmetic holds. It runs entirely on the phone, nothing is uploaded, and nothing is kept:
+  close the screen and the file is gone.
+</p>
+<div class="clip">
+  <video src="video/payslip.mp4" autoplay muted loop playsinline controls></video>
+  <div class="beside">
+    <h3>What to watch for</h3>
+    <ul>
+      <li><strong>It asks you to confirm what it read</strong> before it will judge anything,
+          because this one came from a photograph and recognition can misread a digit.</li>
+      <li><strong>Four checks pass.</strong> The lines add up to the total, gross minus
+          deductions is exactly the net, Social Security is 11% of the base, and the pay
+          clears the minimum wage.</li>
+      <li><strong>Six checks refuse to run, and say so by name</strong>, with the reason: it
+          could not find one of the figures they need. A check that quietly did not happen
+          reads as a check that passed, so this app will not do that.</li>
+      <li><strong>It names the tables it used</strong>: the 2026 rules for mainland Portugal,
+          on a fourteen month year.</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Screens</h2>
+<div class="shots">
+  <figure>
+    <img src="img/home.png" alt="Home, showing deductions, the annual IRS settlement and its assumptions">
+    <figcaption>Home. The deductions, and an annual settlement that states what it assumed.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/compare.png" alt="Compare, showing the national distribution and cohort percentiles">
+    <figcaption>Compare. The national curve, then cohorts, each naming its source.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/map.png" alt="A district choropleth of what the sector pays">
+    <figcaption>Map. What this sector pays by district. The islands have no figure.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/grow.png" alt="A twenty year projection comparing staying against changing employer">
+    <figcaption>Grow. Staying put against moving, drawn as the steps the data has.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/europe.png" alt="A 27 tile grid of the European Union with Germany selected">
+    <figcaption>Europe. Twenty seven countries, in euros or purchasing power.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/payslip.png" alt="Payslip result, four checks passing and six declining to run">
+    <figcaption>The payslip verdict, including the checks that declined to run.</figcaption>
+  </figure>
+</div>
+
+<footer>
+  <p>
+    The payslip in the demo is fictional and its figures come from the app's own tax engine.
+    It is committed to the repository as <code>docs/fixtures/exemplo-recibo.pdf</code> so
+    anyone can run the checker.
+  </p>
+  <p>
+    SwiftUI, iOS 17, no dependencies and no backend.
+    <a href="https://github.com/afonsoaz/SalarySeed">Read the code and the write-up</a>.
+    Estimates only, not tax advice.
+  </p>
+</footer>
+
+</div>
+</body>
+</html>
