@@ -42,3 +42,28 @@ payslip_examples/
 
 # tools/payslip_probe build output
 .build/
+
+# Left on disk by a pool-backend checkout, and they must not land on master.
+#
+# Both are tracked on `pool-backend`, which is master plus exactly the Firebase
+# backend, so its diff is the whole story. Committing either here would
+# reintroduce that piecemeal, which is the one thing CLAUDE.md says not to do.
+# `functions/` is also 234MB and 16,735 files, nearly all of it node_modules.
+#
+# Config/Local.xcconfig is the real config rather than the .example, and its own
+# header says that name is gitignored. Until now it was not, which is how a
+# Firebase endpoint gets into a commit by accident.
+Config/
+functions/
+
+# Superseded by CLAUDE.md when v1.1 was committed, and kept on disk only as a
+# record of the handoff. It describes a working tree with an uncommitted v1.1
+# in it, which no longer exists, so nothing in it should be treated as current.
+HANDOFF.md
+
+# Byte-identical copies of tools/derive_dataset.py and tools/parse_qp2024.py,
+# which are the tracked ones. Two copies of a script drift; the repo root is
+# Afonso's working folder, so they stay on disk and out of git. Nothing is lost
+# if they are deleted: `cp tools/<name> .` brings them back.
+/derive_dataset.py
+/parse_qp2024.py
