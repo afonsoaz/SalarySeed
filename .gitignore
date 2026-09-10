@@ -70,3 +70,10 @@ functions/
 
 # tools/payslip_probe build output.
 .build/
+
+# Agent tooling. CLAUDE.md is the internal operating manual for this repo and
+# .claude/ is the permission config that goes with it. Both stay on disk so the
+# tooling keeps working, and neither belongs in a public repository: one is a
+# candid list of what is still wrong with the app, the other is not app source.
+CLAUDE.md
+.claude/

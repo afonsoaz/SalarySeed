@@ -1,114 +1,205 @@
-# SalarySeed — v1.1
+# SalarySeed
 
-An iOS app that tells you what your salary in Portugal actually means: in your pocket, to your employer, against everyone else, over the next twenty years, and against the rest of the European Union. It will also read your payslip and tell you whether it adds up.
+An iOS app that tells you what a salary in Portugal actually means. What lands in your
+account, what it costs your employer, where it sits against everyone else, what it might
+be in twenty years, and how it compares across the European Union. It will also read your
+payslip and tell you whether the arithmetic holds.
 
-**Every figure comes from published, openly licensed data**, and there is no other kind. GEP and INE for Portugal, Eurostat for Europe, the AT workbooks for tax. No crowdsourced number, no recruiter survey, no estimate from another app. If a figure is on screen, a public table stands behind it, and where no such table exists the app says so instead of drawing something.
+Every figure comes from a published, openly licensed table. Nothing you type ever leaves
+the phone, because there is no networking code in the app outside StoreKit.
 
-**Nothing you enter leaves your phone.** Not as a setting, not as a promise: there is no networking code in this app at all beyond StoreKit talking to Apple about the €4.99 unlock. See "Where the data goes" below, which is short.
+**[Watch the demo](https://afonsoaz.github.io/SalarySeed)**
 
-Concept and design rationale live in [`app-concept.md`](app-concept.md), next to this file. Every non-obvious decision in this repo is explained in a comment at the point it was made, including the ones that were wrong the first time.
+<p align="center">
+  <img src="docs/img/home.png" width="24%" alt="Home: gross to net, cost to employer, the breakdown">
+  <img src="docs/img/payslip.png" width="24%" alt="Payslip result, including a check that declined to run">
+  <img src="docs/img/compare.png" width="24%" alt="Compare: national percentile with its caveat">
+  <img src="docs/img/map.png" width="24%" alt="A district choropleth of what your sector pays">
+</p>
 
-## Where things are
+SwiftUI, iOS 17, no dependencies and no backend. 70 Swift files, and the tax and payslip
+engines are about a third of them. Built for the App Store, not yet submitted.
 
-```
-Salary_App/                    <- the git repo root
-  SalarySeed.xcodeproj         <- OPEN THIS ONE. The only project file in the repo.
-  SalarySeed/                  <- every source file. Xcode compiles this whole folder.
-    Engine/ Models/ Features/ Assets.xcassets/
-  SalarySeed.storekit          <- the fake store, for running the purchase in the simulator
-  Info.plist                   <- ONLY the keys Xcode cannot generate. See the comment in it
-  tools/                       <- the Python that generated the bundled datasets,
-                                  check_privacy_manifest.sh, which runs on every build,
-                                  verify_tax_engine.py, which checks the tax tables
-                                  against the AT workbooks they came from,
-                                  verify_payslip_reader.py, which does the same job
-                                  for the payslip reader, and
-                                  payslip_probe/, which compiles the reader and runs
-                                  it over a real payslip
-  README.md  app-concept.md    <- this file and the design doc
-  PRIVACY.md                   <- the privacy policy. Needs a contact line and a host
-  _archive/                    <- not part of the app, gitignored
-    deliveries/                   tarballs and patches
-    data-sources/                 the workbooks the datasets came from
-    old/                          dead directories kept only so nothing is lost
-```
+If you only have a minute, the three parts worth reading about are:
 
-`SalarySeed/` is a folder-synchronized group, so **every `.swift` inside it is compiled whether or not git knows about it**. That is why nothing else is allowed to live there and why `_archive/` sits outside it.
+- **[One country, three tax tables](#one-country-three-tax-tables).** Why the obvious
+  shortcut is wrong, by 0.0001.
+- **[Labels propose, arithmetic disposes](#labels-propose-arithmetic-disposes).** Reading
+  a payslip when you can trust neither the OCR nor the words on it.
+- **[Testing a judgement](#testing-a-judgement).** Why half of this app got a verifier and
+  the other half got a diff tool instead.
 
-## Run it
-
-1. Open `SalarySeed.xcodeproj` in Xcode 16 or newer. The project uses folder-synchronized groups, so files added to `SalarySeed/` appear in Xcode automatically. The flip side, and it has bitten once: a file **removed from git** is not removed from disk, and folder-synchronized groups keep compiling it. After any `git reset --hard`, run `git clean -nd` and look at what it lists.
-2. Pick an iPhone simulator and press Run. The shared scheme already points at `SalarySeed.storekit`, so the €4.99 purchase, the restore and a refund all work in the simulator with no App Store Connect product and no paid developer account. Buying costs nothing there; Xcode's Debug → StoreKit menu is where you undo it.
-
-No dependencies, no account, no backend. Every figure is on-device: bundled datasets plus arithmetic. The only network traffic the app generates is StoreKit talking to Apple around the support sheet, which carries no app data.
-
-## The five tabs
+## What it does
 
 | Tab | What it answers |
 |---|---|
-| **Home** | What you earn now. Gross ↔ net, yearly figures, total cost to your employer, the full breakdown, and the annual IRS settlement with every assumption written out. |
+| **Home** | What you earn now. Gross and net either way round, yearly figures, total cost to your employer, the full breakdown, and the annual IRS settlement with every assumption written out. |
 | **Compare** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region. |
-| **Map** | Where it would sit differently. A Portuguese district choropleth, free; and a 27-tile grid of the European Union, for supporters. |
+| **Map** | Where it would sit differently. A Portuguese district choropleth, free, and a 27-tile grid of the European Union, for supporters. |
 | **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. For supporters. |
-| **Profile** | The inputs behind all of it, each with what it unlocks, and at the top the one place the app asks for money. |
+| **Profile** | The inputs behind all of it, each with what it unlocks, and the one place the app asks for money. |
 
-## The payslip checker
+The sixth thing is not a tab. The payslip checker is reached from a card on Home, it is
+free, and it is the most interesting part of the app.
 
-New in v1.1, reached from a card on Home. You give it a PDF or a photograph of a
-recibo de vencimento and it tells you what is wrong, what checks out, and what is
-worth knowing. Free, and entirely on the device.
+## One country, three tax tables
 
-It reads a PDF's own text layer where there is one, which is exact and needs no
-recognition at all, and falls back to Vision for a photograph. Then it does
-something more useful than reading: **no name reaches a verdict the arithmetic
-has not agreed with**. Segurança Social is whatever figure is 11% of a base,
-whatever the payslip happens to call it, and a run of lines has to reach its
-printed total before the app will believe the total or the lines. That is what
-catches a misread digit, and it is why a photographed payslip can be trusted at
-all.
+Portugal withholds income tax through three regional tables, and the tempting assumption
+is that the islands are a discount on the mainland. Açores really is 0.70 of Continente,
+on eleven of its twelve rates, to the last published digit. On the twelfth the official
+workbook rounds the other way: 0.70 x 0.3969 is 0.27783 and the workbook prints 0.2779.
+The code follows the workbook, because the workbook is the law and the multiplication is
+only the reason behind it.
 
-Be precise about the order, because it is the feature. Labels are read first:
-the lexicon picks which lines belong to a side. What the arithmetic has is the
-veto, and a run that misses its total is reported as a gap rather than quietly
-accepted. v1.1a corrected three comments that claimed labels played no part,
-which was flattering and wrong.
+Madeira is not a multiple of anything, and that is not a contradiction. A withholding
+table is built around a regional minimum wage, so a different floor gives a different
+derivation of the same underlying rates. The married single-earner table has 12 rows in
+Continente, 11 in Madeira and 10 in Açores. They are three objects, not one object with a
+coefficient.
 
-Three rules keep it honest, and they are the point of the feature:
+Two consequences worth pointing at in the code:
 
-- **A check that cannot run says so.** On both of the real payslips it was built
-  against, four or five of the ten checks do not run, because `TaxEngine` models a
-  month as gross times a schedule and neither payslip is shaped like that. The
-  screen names each one and why.
+- **`region` has no default value at any entry point.** Not `.continente`, not anything.
+  An absent region is a silent wrong answer that would follow an islander across every
+  screen forever, so the compiler is made to ask the question at every call site.
+- **Net back to gross is 60 rounds of bisection, not algebra.** There is no closed form
+  once the exemption and the settlement are in it. The bisection calls the same forward
+  function the app displays, so the two directions cannot quietly disagree.
+
+[`SalarySeed/Engine/TaxEngine.swift`](SalarySeed/Engine/TaxEngine.swift)
+
+## Labels propose, arithmetic disposes
+
+A Portuguese payslip has no standard layout and no standard vocabulary. One calls a line
+"Segurança Social (11%)" and the next calls it "Seg. social empregado". If the reader is
+looking at a photograph then the labels are the part recognition gets right and the
+numbers are the part it gets wrong. And there is no answer key: nobody publishes what your
+payslip should have said.
+
+So the reader normalises the PDF text layer and the Vision output into one coordinate
+space, does the row and column geometry itself, and then works out what each line is using
+three arithmetic identities that need no words at all:
+
+- **Net.** Some earnings total minus some deductions total equals some net. That single
+  triple names three figures at once and reveals which column is which.
+- **Eleven percent.** Employee Social Security is 11% of a base, checked in hundredths of
+  a cent, which finds both the contribution and the base whatever the line is called.
+- **Contiguous runs.** The lines immediately above a printed total add up to it. When they
+  do not, the gap is the size of the error and the run is where to look.
+
+Be precise about the order, because it is the feature and it is easy to overstate. Labels
+are read first, and the lexicon is what picks which lines belong to which side. What the
+arithmetic has is the veto. A run that misses its printed total is reported as a gap
+rather than quietly accepted. Three earlier comments in this codebase claimed the reader
+never read a label at all, which was flattering and untrue, and they were corrected.
+
+The safety net earns itself constantly. On a photographed payslip Vision misread one
+deduction by thirty cents, and the deductions run came up thirty cents short of its own
+printed total. Caught, without anything needing to know which line was the misread one.
+The iOS 26 document and table recognition API was tried first and rejected: on the same
+page it corrupted a figure by four cents and invented a value next to a correct one, and
+on a second payslip it found no tables at all.
+
+The best thing this feature taught me came from two bugs that were cancelling. A column
+test was mislabelling every deduction as an earning on the layout that stacks the two
+blocks vertically, and a label fallback was silently undoing it. The reading on screen was
+correct and neither half of it was, so fixing either one alone would have been a
+regression. You cannot find that by reading the code, and you cannot find it with a test
+that only asks whether the final answer is right.
+
+Three rules keep the feature honest, and they are why it is allowed to exist:
+
+- **A check that cannot run says so, with the real reason.** On the payslips it was built
+  against, four or five of the ten checks do not run, because the tax engine models a
+  month as gross times a schedule and real payslips are not always shaped like that. The
+  screen names each one and why. Collapsing "these two figures differ" and "we never found
+  one of them" into a single boolean once made the app accuse a payslip of withholding on
+  the wrong base when it had simply failed to read the base. Three states need three
+  states.
 - **A figure we had to guess at cannot accuse anybody.** Anything resting on a
   low-confidence reading can reach "worth knowing" and never "wrong".
-- **A total has to be a total of something.** A payslip carries several figures
-  that satisfy earnings minus deductions equals net, including year-to-date
-  summaries. One that its own lines do not add up to is not believed.
+- **A total has to be a total of something.** A payslip carries several figures that
+  satisfy earnings minus deductions equals net, including the year-to-date block. One that
+  its own lines do not add up to is not believed. That rule has already retracted a real
+  reading rather than let the app accuse somebody's employer of underpaying them.
 
-Nothing is stored. The file is read into memory, checked, and discarded when the
-screen closes, and leaving mid-read cancels the recognition rather than letting
-it finish over a screen that has gone. See [`PRIVACY.md`](PRIVACY.md).
+Nothing is stored. The file is read into memory, checked, and discarded when the screen
+closes, and leaving mid-read cancels the recognition rather than letting it finish over a
+screen that has gone.
 
-`tools/payslip_probe` compiles the reader's own Engine sources into a command
-line tool and prints what they decide about a real file: every line with the
-concept, provenance and confidence it was given, the facts, and the verdict. It
-is a dump rather than a pass/fail, because there is no answer key for a payslip
-and the useful thing is the diff across a change. Real payslips are somebody's
-actual pay, so they are gitignored and a fresh clone has nothing to point it at.
-That is why `verify_payslip_reader.py`, and not the probe, is what runs before a
-release.
+## Testing a judgement
 
-## Data
+There is no test target in this project, and
+[`tools/verify_tax_engine.py`](tools/verify_tax_engine.py) is what stands in for one on
+the part where being wrong matters most. It parses the withholding tables straight out of
+`TaxEngine.swift` rather than keeping a copy of them, so it checks the code that ships and
+cannot drift away from it. It round-trips both island tables against the official .xlsx
+workbooks they were generated from, every bracket and rate and parcela, with a zip and XML
+reader written by hand so the script has no dependencies. It replays the workbooks' own
+published effective-rate column back through the engine's formula at 63 independent
+points, which tests the arithmetic and not just the transcription. And it checks the four
+things no source document can tell you: that net never falls as gross rises, that each
+region's minimum wage withholds nothing, that the annual médias agree with their normal
+rates, and that net to gross inverts.
 
-Everything is published, openly licensed, and bundled. Nothing is scraped, and no crowdsourced or recruiter figure is embedded anywhere.
+Continente is the gap, and it is declared as one. Its table comes from a Despacho with no
+workbook behind it, so it is covered by the invariants and by nothing else.
 
-- **GEP-MTSSS, Quadros de Pessoal, October 2024** (CC BY 4.0). A near-census of private-sector employees. Quadro 104 for sector × tenure at the employer, Quadros 110 and 61 for sector × district with worker counts, Quadros 105/114/138 for education, region and age.
-- **INE, Inquérito à Estrutura dos Ganhos 2022** (CC BY 4.0), for the shape of the national distribution.
-- **Eurostat, Structure of Earnings Survey 2022** (`earn_ses22_24`, free reuse with attribution), for the European comparison.
-- **CAOP / DGT** for the district boundaries, credited in-app.
-- **Tax**: a real 2026 engine for **all three fiscal regions**. Continente, Açores and Madeira, each with its own withholding tables (generated from the AT workbooks and round-tripped, never transcribed) and its own annual rates. Social Security 11% and 23.75%, the three withholding tables from Despacho 233-A/2026, the nine annual escalões, the specific deduction, dependant credits, the €1,000 general-expense credit, and IRS Jovem in both the monthly withholding and the annual settlement.
+The payslip layer got something different, and the reason is the part worth keeping. A
+script can check code that restates a table, because the table has a source to compare it
+against. Code that makes a judgement about a page cannot be checked by restating the
+judgement in Python, because a second opinion is not a check. So
+[`tools/payslip_probe`](tools/payslip_probe) compiles the shipping `Engine/` sources,
+unmodified, into a command line tool and prints what they decide about a real file: every
+line with the concept, provenance and confidence it was given, then the facts, then the
+verdict. It is a diff tool rather than a pass or fail, because there is no answer key for
+a payslip and the useful thing is seeing what moved after a change. It found six bugs the
+script could not have.
 
-## Architecture
+```bash
+python3 tools/verify_tax_engine.py        # must pass before any release
+python3 tools/verify_payslip_reader.py    # must pass before any release
+tools/payslip_probe/build.sh              # then: .build/payslip_probe <file.pdf|.png>
+```
+
+A fresh clone cannot run all of it. The source workbooks are not in the repo, so the
+verifier skips its round trip and says so, and the probe needs a payslip you supply
+yourself. More on what each check is for in [`docs/verification.md`](docs/verification.md).
+
+## Rules the code follows
+
+These are not aspirations. Each one is enforced somewhere, and most were learned the hard
+way.
+
+- **Say what the data cannot do, on the screen.** Thin cells carry a caveat. Sector is not
+  job title. The district table has no tenure dimension, so it can shift a path and cannot
+  bend it.
+- **State every assumption, unconditionally.** If the app assumes the €1,000 credit or an
+  IRS Jovem exemption, it says so in every branch, including the ones where the assumption
+  turns out not to apply.
+- **Never draw a shape the data does not have.** Six published tenure bands means a
+  staircase, not a smooth curve, and the ten sectors whose pay falls between some bands
+  are drawn falling.
+- **Never mix survey levels, only ratios cross.** GEP and Eurostat measure different
+  populations in different years, so a Portuguese salary is never placed beside a Eurostat
+  mean. The European uplift is computed entirely inside Eurostat and then applied to your
+  own salary.
+- **Quote rates, not bare percentages.** A percentage with no time attached cannot be
+  compared to a raise or to inflation. Anything labelled "per year" is the compounded rate
+  of the path actually drawn.
+- **Recording is not exploring.** Changing your stored salary and trying a hypothetical
+  are separate acts with separate UI. Grow's whole scenario lives in memory and never
+  reaches `UserDefaults`.
+- **Ask for money once, where they came looking.** The support sheet opens from a button
+  in the profile and from nowhere else. No countdown, no crossed-out price, no
+  interstitial, no nagging on the tenth launch. An app whose whole argument is that it does
+  not manipulate the reader cannot manipulate the reader at the till.
+- **The receipt is the truth, never the cache.** `UserDefaults` mirrors the entitlement
+  only so the first frame does not flicker. `Transaction.currentEntitlements` overwrites it
+  on every launch and `Transaction.updates` overwrites it on every refund, so a paid flag
+  can never outlive the payment.
+
+## How it is put together
 
 ```
 SalarySeed/
@@ -136,207 +227,109 @@ SalarySeed/
     Shared/SupportLock     the real screen, blurred, where Grow and the Europe map live
     Payslip/               the checker: PDF and Vision extraction, then the flow
   Models/      SalaryStore (the single source of truth), Localization, catalogues
-    SupporterStore       StoreKit 2: the product, the entitlement, restore, refunds
-    AccentTheme          the five accents, each carrying its own ink
-    AppIcon              setAlternateIconName, and the guard that stops the alert
-    AppConfig            the version, read from the bundle rather than typed
   Theme.swift  design tokens, the OKLCH diverging ramp, and .appFont, which is
                how every point size in the app becomes the reader's point size
   PrivacyInfo.xcprivacy  the privacy manifest, checked against the build on every build
 ```
 
-The engines never import SwiftUI and never read the store. Views never do arithmetic. Everything the user sees in words comes from `Models/Localization.swift`, in English and European Portuguese.
+The engines never import SwiftUI and never read the store. Views never do arithmetic.
+Everything the user sees in words comes from `Models/Localization.swift`, in English and
+European Portuguese.
 
-## Principles the code actually follows
+## The data
 
-These are not aspirations. Each one is enforced somewhere, and most were learned the hard way.
+Everything is published, openly licensed, and bundled. Nothing is scraped, and no
+crowdsourced or recruiter figure is embedded anywhere.
 
-- **Say what the data cannot do, on the screen.** Thin cells carry a caveat. Sector is not job title. The district table has no tenure dimension, so it can shift a path and cannot bend it.
-- **State every assumption, unconditionally.** If the app assumes the €1,000 credit or an IRS Jovem exemption, it says so in every branch, including the ones where the assumption turns out not to apply.
-- **Recording is not exploring.** Changing your stored salary and trying a hypothetical are separate acts with separate UI. Grow's whole scenario lives in memory and never reaches `UserDefaults`.
-- **Explain the answer, not the question.** A note that clarifies a figure or an unclear ask earns its place. A paragraph justifying why the app asks for something does not, and v0.12 deleted several.
-- **Set the input people can reason about, show the one they act on.** The job-move lever is a percentage, because only a percentage means the same at a move in year 3 and a move in year 9. What it displays is the euro raise at each change, because that is what gets negotiated.
-- **Never draw a shape the data does not have.** Six published tenure bands means a staircase, not a smooth curve, and the ten sectors whose pay falls between some bands are drawn falling.
-- **Never mix survey levels; only ratios cross.** GEP and Eurostat measure different populations in different years, so a Portuguese salary is never placed beside a Eurostat mean. The European uplift is computed entirely inside Eurostat and then applied to your own salary.
-- **Show the quantity the source publishes.** GEP publishes gross ganho, so the whole projection is gross. Net appears only where a single point is inspected.
-- **Quote rates, not bare percentages.** A percentage with no time attached cannot be compared to a raise or to inflation. Anything labelled "per year" is the compounded rate of the path actually drawn.
-- **A published table is not a law.** Quadro 104 measures what staying at one employer is worth, so the model does not hand someone who moves a tenure raise the survey never observed.
-- **The summary is generated from the payload, never beside it.** The card that lists what will be sent decodes the actual row, so it cannot describe a field the payload lacks or hide one it has.
-- **Ask for money once, where they came looking.** The support sheet opens from a button in the profile and from nowhere else. No countdown, no crossed-out price, no interstitial, no nagging on the tenth launch. An app whose whole argument is that it does not manipulate the reader cannot manipulate the reader at the till.
-- **Show the thing, then ask.** The accent swatches are live before paying: tapping one recolours the whole app behind the sheet, and closing without buying puts it back. A locked feature you cannot see is a claim; one you can see is an offer.
-- **The receipt is the truth, never the cache.** `UserDefaults` mirrors the entitlement only so the first frame does not flicker. `Transaction.currentEntitlements` overwrites it on every launch and `Transaction.updates` overwrites it on every refund, so a paid flag can never outlive the payment.
+- **GEP-MTSSS, Quadros de Pessoal, October 2024** (CC BY 4.0). A near-census of
+  private-sector employees. Quadro 104 for sector by tenure at the employer, Quadros 110
+  and 61 for sector by district with worker counts, Quadros 105/114/138 for education,
+  region and age.
+- **INE, Inquérito à Estrutura dos Ganhos 2022** (CC BY 4.0), for the shape of the
+  national distribution.
+- **Eurostat, Structure of Earnings Survey 2022** (`earn_ses22_24`, free reuse with
+  attribution), for the European comparison.
+- **CAOP / DGT** for the district boundaries, credited in-app.
+- **Tax**: a real 2026 engine for all three fiscal regions, each with its own withholding
+  tables and its own annual rates. Social Security 11% and 23.75%, the withholding tables
+  from Despacho 233-A/2026, the nine annual escalões, the specific deduction, dependant
+  credits, the €1,000 general-expense credit, and IRS Jovem in both the monthly
+  withholding and the annual settlement.
 
-## Verifying changes
-
-Much of this app was built where no Swift toolchain was available, so correctness came from a repeatable kit rather than from a build. That era is over and the compiler now covers steps 1 to 4, 11, 12 and 16. The rest are the checks a build still cannot do, and the list has caught a real bug in every version since v0.9. Steps 26 to 30 are what v1.1 added, and every one of them came from running the app rather than reading it.
-
-1. Brace, paren and bracket balance, with strings, comments and interpolation stripped first.
-2. ViewBuilder direct-child counts.
-3. Every `s.<key>` cross-referenced against `Strings`, **and the reverse** — declared-but-unused keys, and dangling references to deleted types.
-4. Enum case names against raw values in generated code.
-5. A Python port of any new maths, round-tripped against its source. **Test the degenerate input**: the v0.11.1 model correction came from trying a job move with a zero raise.
-6. Render a PNG and look at it. Cards as well as charts.
-7. Grep for hard-coded counts that shadow a computed total.
-8. Check that explanatory notes sit outside the branch they explain.
-9. Check generated English ordinals and plurals.
-10. Check that a rate shown as text agrees with the path drawn beside it.
-11. Check the store's symbol surface: every `store.x` and `Engine.x` referenced from a view exists on the type. This is the check that catches a rename halfway done.
-12. Check that doc comments do not reference symbols that no longer exist. v0.13 left two behind within an hour of writing them.
-13. **Check that the tracked file list matches the files actually on disk.** Xcode's folder-synchronized groups compile every `.swift` under `SalarySeed/`, tracked or not, so a file git does not know about is still a file the compiler reads. This is the one check the others cannot substitute for: steps 3 and 11 scan the repo, and a file outside the repo is invisible to them by construction. v0.13 shipped four "unused" string deletions that were being used, by a file deleted from git in v0.10 that had never left the disk.
-14. *(Was about the contribution payload. Moved to the `pool-backend` branch with the code it checked.)*
-15. **Round-trip anything generated.** Emit the Swift from the source file, parse the Swift back, compare to the source. The regional tax tables are 45 rows nobody should ever retype.
-16. **When a stored property's type or optionality changes, grep every use of it in the same edit.** A type checker does this for free; a regex kit cannot. v0.15.2 shipped a build error this would have caught.
-17. **When a value becomes reachable that previously was not, grep every filter that used to exclude it.** v0.15 made Açores and Madeira selectable; a `filter { $0.cohort != nil }` written when they were unreachable then silently rendered them as unanswered. This failure has no error message and no crash, which is what makes it worth its own step.
-18. **When a constant becomes computed, check that nothing it now reads reads it back.** v0.16 turned `Theme.ink` from a literal into `current.ink`, and the bulk edit that replaced 52 hardcoded ink values happily replaced the one inside `AccentTheme.ink` too. That single line made the two properties call each other until the stack ran out: no compiler error, no warning, a crash on the first frame. Grep the new computed property's own definition first, before anything else.
-19. **When a design token stops being a constant, list the views that draw with it and check each one observes the thing that changes it.** SwiftUI cannot see a static change, so `Theme.accent` becoming computed made eight views quietly stale. The tempting fix, `.id(store.accent)` on the root, is worse than the bug: it rebuilds the whole tree and resets every `@State`, including the sheet the user is standing in while tapping the swatches. Grep for the token, then grep those files for the store.
-20. **Check that every name in a build setting exists on disk, and spelt the same.** `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES`, the `.appiconset` folder names and `AccentTheme.alternateIconName` have to agree three ways. Two of the three are strings no compiler ever reads, and the failure is a silent no-op at runtime.
-21. **Check that a plist key Xcode was asked to generate actually arrived.** `INFOPLIST_KEY_` only maps the key names Xcode knows: `ITSAppUsesNonExemptEncryption` lands as a real boolean and `CFBundleLocalizations` is dropped on the floor with no warning at all. Anything set that way has to be read back out of the BUILT `Info.plist`, not out of the build settings. v1.0 checked before writing rather than after, which is the only reason there is a separate `Info.plist` in the repo.
-22. **`onChange` does not fire for the value a view already has.** A trigger written as `onChange(of: scenePhase)` alone runs on backgrounding and returning and never on a cold launch, so v1.0's first send schedule only worked for people who had already been in the app. Nothing failed: the profile card looked healthy and did nothing. Any recurring trigger needs its `.task` counterpart, and the way to find out is step 9.
-23. **`JSONEncoder` does not write keys in the order your `encode(to:)` calls them.** It fills a dictionary and serialises that, so the order is arbitrary and differs between calls. Anything that compares, signs or hashes encoded bytes needs `.sortedKeys`. Without it the pool re-uploaded an unchanged row on every launch, twice, for every user: the correct single document existed with the correct values, the app said "sent", and nothing anywhere looked wrong. Found only by logging what the server actually received.
-24. **Firebase `onRequest` parses the body before your handler sees it.** Adding `express.json()` or `express.raw()` gets an already-consumed stream and leaves the body empty, so every request 400s including valid ones. The original bytes are on `req.rawBody`, and those are the ones a signature must be checked against; reconstructing them with `JSON.stringify` produces different bytes and fails every signature for reasons no log explains.
-25. **When something is created for later use and the creation can fail, check the caller checked.** Especially Keychain writes, which fail silently and return a status nobody reads. The case that taught this created a durable identifier, ignored the failure, and left the app showing a confident status card over a feature that could not work.
-26. **Code that makes a judgement rather than restating a table cannot be checked by restating it in Python.** Steps 5 and 15 work because a table has a source to be compared against. The payslip layout, reader, classifier and reconciler decide things about a page, and a Python twin of a judgement is a second opinion, not a check. Compile the real thing and run it: `tools/payslip_probe`. Everything under `Engine/` imports only Foundation, so this is always possible, and it found six bugs the script could not have.
-27. **A comment that claims a safety property is load-bearing, and a flattering one is worse than none.** Three comments in the payslip reader said it identified lines "without reading a single label". It reads labels first and the arithmetic holds the veto, which is a good design described wrongly, and the next reader would have built on a guarantee that was not there. When a comment states an invariant, check the invariant, not the prose.
-28. **Two bugs can cancel, and then either fix alone is a regression.** A column test mislabelled every deduction on one payslip layout and a label fallback silently undid it. The reading was correct and neither half was. Before fixing something that looks obviously wrong in a heuristic, capture what the whole thing currently decides about a real input, and diff it after. This is what the probe is for.
-29. **A skip reason has to name the actual reason.** Collapsing "these two figures differ" and "we never found one of them" into one boolean made the app tell a reader their payslip withholds on a non-gross base when it had failed to read the base. Saying why a check did not run is only worth doing if the why is true; three states need three states.
-30. **Test the input the feature is for, not the input you have.** Vision is not deterministic across input paths: the same photograph read from the file and read through the Photos picker gave different figures, and the second one sent the net identity into the year-to-date block. Nothing was wrong on screen, because the "a total has to be a total of something" rule retracted it, but no amount of reading the code would have shown either the variance or the rule earning its place.
+The datasets keep their own licences wherever they go and are not covered by this
+repository's [LICENSE](LICENSE).
 
 ## Where the data goes
 
 Nowhere.
 
 The app has no server, no account and no analytics. `grep -r URLSession SalarySeed`
-returns nothing: there is no code path that could send your salary anywhere, which
-is a stronger statement than a privacy policy and the reason the App Store label
-reads "Data Not Collected" without qualification.
+returns nothing: there is no code path that could send your salary anywhere, which is a
+stronger statement than a privacy policy and the reason the App Store label reads "Data
+Not Collected" without qualification.
 
-The one exception is not about you. StoreKit talks to Apple to fetch the product
-price and complete the €4.99 purchase. Apple is the seller of record, so we never
-see an Apple ID, a name or a payment detail, only an anonymous monthly total.
+The one exception is not about you. StoreKit talks to Apple to fetch the product price and
+complete the €4.99 purchase. Apple is the seller of record, so the app never sees an Apple
+ID, a name or a payment detail.
 
-**A contribution pool was built, and deliberately not shipped.** It works: rows
-reached Firestore through a Cloud Function, documents were named by keyed hash so
-the token was never stored, erasure deleted and could not be used as an oracle,
-and the security rules denied every client path. It is on the **`pool-backend`**
-branch, which is `master` plus exactly that.
+A contribution pool was also built, and deliberately not shipped. It worked: rows reached
+Firestore through a Cloud Function, documents were named by keyed hash so the token was
+never stored, erasure deleted and could not be used as an oracle, and the security rules
+denied every client path. It is not here because collecting pay data turns a one-person
+app into something with real compliance obligations, and that was out of proportion to
+what the pool would have been worth in its first year. The payment is unaffected either
+way. Full detail in [`PRIVACY.md`](PRIVACY.md).
 
-It is not here because collecting pay data makes the author a data controller, and
-the lawyer, DPIA, processing record, retention policy, erasure duties and personal
-liability that follow are out of proportion to a one-person app. The payment is
-unaffected either way: the App Store trader disclosure follows from taking money,
-not from taking data.
+## What it does not do
 
-## Version history
+Estimates for guidance, not tax advice. The engine models regular monthly salary under
+2026 rules for whichever of the three fiscal regions you are in, and does not know your
+health or education deductions. Cohort figures cover private-sector employees; public
+function contracts sit outside the Quadros de Pessoal entirely, and the app says so once
+you tell it that is your situation. Within-cohort dispersions are modelling assumptions,
+not published values, while the national curve's are derived from published deciles. The
+European figures are 2022 against Portugal's 2024, which is exactly why the two are never
+added together.
 
-**v1.1** — The payslip checker, and the reader gets something that can actually run it.
+Two things are missing and worth naming before you find them:
 
-Give it a PDF or a photograph of a recibo de vencimento and it tells you what is wrong, what checks out, and what is worth knowing. Free, on the device, and nothing is kept: the file is read into memory, checked, and gone when the screen closes. There is no history, and adding one would change `PRIVACY.md`, the privacy manifest and the App Store privacy answers in the same commit, which is why the manifest now says so in a comment.
+- **The tax engine hardcodes 2026.** `TaxEngine.taxYear` is a real constant and Home names
+  the year and the region it computed with, so a reader in 2027 is at least told which
+  tables produced the number. The engine itself still has no concept of a year: nothing
+  compares `taxYear` to the calendar, so in January 2027 every figure quietly becomes last
+  year's, with no error and no crash. That is the worst failure shape left in the app.
+- **VoiceOver.** Dynamic Type was finished in v1.0.3 and this is a different axis. Every
+  chart and the Portugal map are still invisible to a screen reader. The payslip flow is
+  labelled, which is one screen done and not the pass.
 
-The idea worth protecting is that no name reaches a verdict the arithmetic has not agreed with. Ten checks, and each one that cannot run says so on screen with the reason, because a check that quietly did not happen reads as a check that passed. On both real payslips four or five do not run, since the tax engine models a month as gross times a schedule and neither payslip is shaped like that. A figure we had to guess at is capped at "worth knowing" and can never reach "wrong". And a total has to be a total of something: a payslip carries several figures satisfying earnings minus deductions equals net, year-to-date summaries among them, and one its own lines do not add up to is not believed.
+Also missing: island cohort figures, because the Quadros de Pessoal cover Continente only
+and the app says so wherever that bites. Tenure on the European map. A real pension model.
+Self-employed mode. Variable pay in the tax engine.
 
-That last rule earned itself during this release. Driving the real app, Vision read "1 923,35" as "4,12", so the net identity latched onto the annual accumulated block instead, where 3 187,40 minus 1 076,15 really is 2 111,25. The deductions total it implied was not supported by any named run, so it was retracted and two checks reported themselves as not run. The alternative was accusing somebody's payslip of being 187,90 short. Nothing in the reader is deterministic across input paths, and that is exactly why the rule is there.
+## Build it
 
-**`tools/payslip_probe`** is the compiled probe the reader's own plan deferred. `verify_payslip_reader.py` can check anything expressible as a rule restated in Python, which covered the money parser, the homoglyph table and the tolerance ordering, and could not touch the four files that make a judgement about a page rather than restate a table. The probe compiles those files, unmodified, and prints what they decide about a real file. It found the bugs below.
+Open `SalarySeed.xcodeproj` in Xcode 16 or newer, pick a simulator, and run. iOS 17
+minimum. There are no dependencies to fetch, no account to sign in to and no backend to
+start.
 
-Fixed, all of them found by running the thing: the four engine checks reported `taxBaseNotGross` when the truth was that a figure had never been found, so the screen told a reader their employer withholds on something other than gross when the app had simply not read the base. `ssBase` claimed high confidence unconditionally while the contribution beside it computed its own, so a photographed payslip reported its gross as certain with every other figure on the page uncertain; it now follows the same rule and uses the weak-window flag that had been recorded and read by nothing. Two errors were cancelling each other in the classifier: a column test that mislabelled every deduction as an earning on the layout that stacks the two blocks, and a label fallback that quietly undid it, so the reading came out right for the wrong reason and either fix alone would have broken it. A guard in `inferSideOfUnnamedLines` ended in a condition that could never be false, which hid which of its two cases was load-bearing; it is the one the comment said was left alone. A reading that cleared the not-a-payslip gate with nothing identifiable in it showed "nothing on this payslip contradicts itself" over a page we had failed to read. And typing a half-finished number into a review field deleted the figure, because the parser returns nothing for both "cleared" and "not a number yet".
+The shared scheme points at `SalarySeed.storekit`, so the purchase, the restore and even a
+refund all work in the simulator with no App Store Connect product and no paid developer
+account.
 
-Removed: a skip reason with copy in two languages that nothing ever emitted, a property naming which checks compare equality that nothing read, and an at-most-once invariant that nothing enforced. A second copy of a rule that nothing consults is one more thing to keep in step.
+```bash
+xcodebuild -scheme SalarySeed -destination 'platform=iOS Simulator,name=iPhone 17' build
+```
 
-Layout, on five screens nobody had looked at: the header above every step becomes two rows past the accessibility threshold instead of wrapping a title to four lines beside an unmoved button, and its close button, the only way out of the flow, was under Apple's 44 point minimum at the default size. The review rows reflowed only past `isAccessibilitySize`, which is false for the three sizes where they actually stopped fitting. The results screen had no exit of its own. Verified by hand at `large` and `accessibility-extra-large` on all five, and the default look is unchanged.
+`SalarySeed/` is a folder-synchronized group, so every `.swift` inside it is compiled
+whether or not git knows about it. [`docs/verification.md`](docs/verification.md) explains
+why that matters.
 
-Plus the review screen stopped telling people their PDF came from a photo, which it had been doing to one of the two real payslips.
+## Licence
 
-**v1.0.4** — The tax engine gets a test, and four things that were wrong get fixed.
+All rights reserved. The source is published to be read, not reused. See
+[LICENSE](LICENSE), and note that the bundled datasets keep their own terms.
 
-There is no test target in this project, so the part of the app where being wrong matters most had never been checked by anything but reading. `tools/verify_tax_engine.py` now does it, and it passes. It parses the withholding tables straight out of `TaxEngine.swift`, so it checks the code that ships rather than a copy that can drift. It round-trips the Açores and Madeira tables against the AT workbooks they were generated from, every bracket and rate and parcela and formula. It replays the workbooks' own published effective-rate column back through the engine's arithmetic, 63 independent points, which tests the formula and not just the transcription. And it checks the four things no source document can tell you: that net never falls as gross rises, that each region's minimum wage withholds nothing, that the annual médias agree with their normal rates, and that net to gross inverts exactly.
+Version history, including the bugs that shipped and what they cost, is in
+[CHANGELOG.md](CHANGELOG.md).
 
-All of it passes. Continente is the gap: its table comes from a Despacho and there is no workbook for it here, so it is covered by the invariants and by nothing else.
-
-Two claims turned out to be wrong. A comment said the Açores table was exactly 0.70 of the Continente one on all twelve rates; it is eleven of twelve, and on the twelfth AT rounded the other way. And the settlement note said your real deductions "can shift" the result, which was far too mild: on a salary between about €1,100 and €1,900 the withholding runs slightly *under* the real IRS, so the refund the card shows exists entirely because the app assumed €1,000 of deductions on your behalf. Collect none and you owe money instead. The note now says that.
-
-Two more Dynamic Type breaks surfaced on the two screens that had never been looked at, because they sit behind the support payment: Grow truncated "Daqui a 10 anos, se fi…" and broke "Custa à empresa" mid-word, and the European map shortened Portugal to "Portu…". All three now reflow instead. Plus the Portuguese opening line stopped saying *compreender*, which nobody says out loud, and one pair of straight quotes became proper ones.
-
-**v1.0.3** — The app follows the reader's text size. It never did before.
-
-SwiftUI's `.system(size:)` looks like a design size and is really a fixed point count: it ignores Dynamic Type completely. The app had 493 of them and not one `ScaledMetric`, so setting an iPhone to the largest text size and opening SalarySeed changed nothing at all, not by a pixel. For an app about pay and pensions, read by people who are older on average than a game's audience, that was the worst thing left in it.
-
-Every one of those call sites now goes through `.appFont(_:weight:)`, which asks `UIFontMetrics` what the reader's size is. At the default setting `UIFontMetrics` returns the design size unchanged, so this release is pixel-identical to v1.0.2 for anybody who never opened Settings. The scaling curve is picked from the design size, so a 10pt footnote grows proportionally more than a 34pt hero number, which is how Apple's own text styles behave and what stops captions turning into headlines.
-
-About half the work was layout, because bigger text has to go somewhere. Onboarding's plain steps scroll now instead of squeezing their own headlines into "Vamos compree…". Home's top bar becomes two rows past the accessibility sizes rather than breaking the wordmark into "Salar / ySee / d". Section labels stack above their hints instead of splitting mid-word into "DISTRIBUIÇÃ / O NACIONAL". Nothing shrinks to fit: shrinking text is the opposite of what the reader asked for.
-
-Verified by hand at `accessibility-extra-large` on onboarding, Home, Compare, the Portugal map, Profile and the support sheet. Grow, the European map and the deeper sheets have not been checked yet, and nor has anything above that size. VoiceOver is untouched and remains the accessibility work still outstanding.
-
-**v1.0.2** — Four copy fixes, one of which was a wrong statement about the app's own maths.
-
-The footer under Home said every figure came from the 2026 tables "for the Continente", unconditionally, and had said so since v0.6. v0.15 added real Açores and Madeira tables and did not come back for this line, so an islander whose numbers *were* computed regionally was told, in the only sentence on the screen that names a table, that they were not. It now names the region it used, with the article Portuguese needs for each. The app was doing the right thing and confessing to the wrong one.
-
-The support sheet lost its "no ads" bullet. Charging for the absence of something the app never had is not a benefit, and it was the one line on that screen a review would quote back. What the money funds is already the first thing the sheet says. The remaining bullets are things you get: Grow, the European map, the accents, and everything built later. Portuguese there also stopped saying *features* and *pagos* and started saying *funcionalidades* and *pagas*.
-
-Onboarding's salary step used to say the salary was the only thing needed, directly above a progress bar promising seven more questions. It now says what it is actually there for, which is that the button will not move until a number is typed.
-
-And *indústrias extractivas* became *extrativas*, which is the spelling every other label on the same picker had already been using.
-
-**v1.0.1** — The support payment goes to €4.99 and starts unlocking something. Grow and the European half of the map are now behind it, alongside the accents and the standing promise that everything built later is included. Portugal's map, Home and Compare stay free, because the app's own country is what the app is for.
-
-This reverses half of a v0.16 decision on purpose. That version said the support sheet opens from the profile and from nowhere else, which was right when the payment bought five colours and anything louder would have been selling paint. A feature nobody can find is not a feature, so Grow and the European map now show a gate where the paid thing lives. What stays forbidden is everything the old rule was really aimed at: interstitials, launch-count nags, countdowns, crossed-out prices, and prompts over a screen somebody was already using. The sheet is still the only place money is asked for.
-
-Both gates are the real screen, blurred and inert, with a small card over it. The first version was a page of its own with a headline, a real computed figure and four bullets; every word of it was true and it still read as a destination rather than a hint, which is what rendering it showed. A blur is a weaker promise than v0.16's accent swatches, which recolour the app for real before payment: you can see something is there and you cannot read it. That trade was made deliberately, after looking at both.
-
-The support sheet was cut to two sentences and five lines, each with a bold accent lead so the list can be read by scanning. It says what it is: a way to keep the app free of ads and paid for, with a few extra things attached.
-
-The price rises on the SAME product id, in App Store Connect, which is what keeps everyone who paid €2.99 entitled to all of it. A new product at a new price would have stranded them and broken the promise the sheet makes. The buy button also moved below the scroll: five benefits instead of three pushed it off the bottom of a 6.1-inch screen, and a payment button that has to be scrolled to is not a decision anyone declined.
-
-
-**v1.0.0** — The release, and it is smaller than what came before it. Everything the app shows comes from published data and nothing a user types ever leaves the phone, which is now a property of the code rather than a setting: there is no `URLSession` anywhere in the app and no endpoint to point one at.
-
-The consent screen went, along with the contribution row, the pseudonymous token, the transport and the erasure path. All of it was finished and tested against a live Firestore emulator, and all of it is on the `pool-backend` branch. It is not here because collecting pay data makes a one-person app's author a data controller: a lawyer, a DPIA, a processing record, a retention policy, erasure duties and personal liability, none of which are proportionate to what the pool would have bought in its first year. The €2.99 unlock is untouched, because the App Store trader disclosure follows from taking money rather than from taking data.
-
-What survived from the store-readiness work is the part that has nothing to do with the pool: the privacy manifest, `CFBundleLocalizations` so the App Store stops advertising a Portuguese app as English-only, `ITSAppUsesNonExemptEncryption`, the build phase that fails if the manifest goes missing or starts claiming to collect something, and the version read from the bundle rather than typed into a string that had said "v0.9.4" for six releases. Onboarding is nine steps instead of ten and ends on the sector question. `SupportSheet`'s Close button was quietly borrowing a string named `consentPreviewDone`, which the removal would have taken with it: it is now `closeButton`, which is the same v0.13 mistake caught before rather than after.
-
-**v0.16** — The first time the app asks for money. A €2.99 non-consumable, bought from a button at the top of the profile and from nowhere else, which funds the app, promises whatever paid features come later at no further cost, and unlocks five accent colours: green, blue, purple, pink, amber. The colours are live before paying and revert on close, because the honest version of a paywall shows the thing first. `Theme.accent` and `Theme.ink` became computed, which meant replacing 52 hardcoded ink values across 20 files and taught the kit step 18. Each accent carries its own ink rather than deriving one, so the check on a pink swatch is readable. `Theme.segNet` stays seed green throughout: it is a data colour, not chrome, and a net-pay segment that changed meaning with the user's taste would be a lie. The home-screen icon follows the accent through `setAlternateIconName`, with the four variants generated from the green master by `tools/make_alternate_icons.py` and declared in the asset catalogue rather than by hand. StoreKit is the only source of entitlement truth; the cached flag exists purely to stop a first-frame flicker, and a refund takes the colours back through the `Transaction.updates` listener. `SalarySeed.storekit` and a shared scheme make the whole flow testable in the simulator with no developer account.
-
-**v0.15.4** — Repository layout: `_archive/` for deliveries, data sources and dead directories, everything outside the folder-synchronized group so nothing stray is ever compiled.
-
-**v0.15.3** — Three island bugs, one of them user-visible. The region dimension's option list was still filtered to regions with a published cohort, which was correct while the islands were unreachable and became a silent failure the moment they were not: picking a Madeira município stored fine and then rendered everywhere as though nothing had been chosen. Grow's island note claimed the district lever "does nothing", which was false — with no home district the model falls back to the national sector average, so it does move the path. And the map's "vs where I am" chip was offered to users with no district, where it lit up and changed nothing.
-
-**v0.15.1 / v0.15.2** — `git clean` protection in `.gitignore`, and `ConcelhoCatalog.search` fixed after `Concelho.district` became optional.
-
-**v0.15** — Açores and Madeira. The tax is the real work: `TaxEngine.TaxRegion`, the two regions' withholding tables generated from the AT workbooks and round-tripped against them, and the annual rates computed as the 30% differential both regions apply in 2026 rather than embedded as eighteen more numbers. `region` is deliberately not defaulted anywhere, so the compiler asks at every call site. 30 island concelhos, `Concelho.district` now optional because the islands have none, and the picker browses the two regions as their own sections. On the map they appear beside the mainland with no colour, because the Quadros de Pessoal are Continente-only and there is no figure to give them. Compare and Grow say what that costs.
-
-**v0.14** — Consent reframed. The screen is now unskippable, with no default and two active buttons, and it argues for itself: what the pool is for, what a yes unlocks in a future version, and the row itself listed on the screen rather than behind a link. Both answers still continue into the app, because a screen that gates the app collects consent that is void under Article 7(4) and leaves a database with no lawful basis. The profile toggle became a status card that states what is happening, with the stop and the delete as plain text actions. New kit step 14: every payload field must appear in the summary that claims to describe it.
-
-**v0.13.1** — Removed `RaiseSimulatorView`, deleted from git in v0.10 but still sitting on disk and still being compiled, where it was the only remaining user of four `Strings` keys that v0.12 deleted as unused. Committed the `DEVELOPMENT_TEAM` setting so `git reset --hard` stops wiping the signing config. Added kit step 13.
-
-**v0.13** — Everything the app needs for crowd data, with nothing switched on. The pseudonymous token in the Keychain, deliberately surviving app deletion so erasure stays possible and shown in the profile as a copyable code. `Contribution`: 19 fields, a coarsening rule and a stated reason per field, a fixed wire shape that always writes every key. The consent copy corrected for a pseudonymous design, since the v0.12 wording said "anónimo", claimed nothing identifying the phone was shared, and never said whether withdrawal meant stop or delete. Delete-what-I-sent, and a sheet that prints the exact row. No endpoint, no scheduled question, nothing sent.
-
-**v0.12** — A polish pass with one new screen. The onboarding salary step asks for the amount first and drops the labels over its own segments. The consent screen: at the end of onboarding, in plain language, with equally weighted buttons and a matching toggle in the profile. Grow's levers became "Change parameters", the job-move raise is shown in euros at every change rather than as a percentage, and tax and prices moved behind "Change more". The European map names its units "Salário absoluto (€)" and "Salário PPP (€)", explaining PPP only where PPP is selected. Plus the missing `%` in the salary explorer, two equal exit buttons in place of one accent button and a text link, a red part-time caveat, a green button that says what it does, and 36 orphaned strings deleted.
-
-**v0.11.2** — Fixed country selection on the European grid, which was almost entirely untappable: tiles were placed with `.offset()` inside a `ZStack`, so they rendered outside their container's bounds and SwiftUI refused the taps. Rebuilt as rows, where hit testing is correct by construction. Full-codebase sweep for undefined symbols, duplicate declarations, non-exhaustive switches, unstable `ForEach` ids and unsafe indexing, plus a 5,184-scenario edge battery on the growth engine. This README rewritten from v0.5.
-
-**v0.11.1** — Grow's break-even card leads with a compounded annual rate. The job-move premium became a percentage applied at every move, with both rates shown side by side. Every "per year" figure is now read off the drawn path. The mover's tenure ladder is frozen after the first move, which fixed a zero-raise move coming out ahead.
-
-**v0.11** — The European half of the map. Eurostat SES 2022, 17 NACE sections and 27 countries, euros or purchasing power, with its own reciprocal-pair colour buckets because the Portuguese ones collapsed at European spread.
-
-**v0.10 / v0.10.1** — Grow. Ratio anchoring, the stay-versus-move comparison, break-even, the lever system and the waterfall. Then gross-only, the projection hero card first, and the tabs reordered.
-
-**v0.9 – v0.9.4** — Crowd-data signals and job titles; concelho in, with district and NUTS derived; the Portuguese map; a polish pass; the annual settlement's parts exposed, the salary explorer, and the record-versus-explore split.
-
-**v0.6 – v0.8.3** — The real 2026 tax engine, the IRS Jovem assessor, swipe tabs, and the 24-sector by tenure cohort.
-
-**v0.1 – v0.5** — Core calculator, real published percentile data, ajudas de custo as a first-class input, the branching detail trees, and one-question-at-a-time onboarding.
-
-## Not done yet
-
-Island cohort figures: the tax is real for all three regions, but the Quadros de Pessoal cover Continente only, so Açores and Madeira have no published comparison and the app says so wherever that bites. Tenure on the European map, where coverage is already measured. The pension model, which is still a placeholder and should fold into Grow's timeline. Self-employed mode. Variable pay in the tax engine.
-
-**The tax engine hardcodes 2026.** `TaxEngine.taxYear` is a real constant and Home names the year and region it computed with, so a reader in 2027 is at least told which tables produced the number. The engine itself still has no concept of a year: nothing anywhere compares `taxYear` to the calendar, so in January 2027 every figure quietly becomes last year's, with no error and no crash. That is the worst failure shape left in the app.
-
-**VoiceOver.** Dynamic Type was finished in v1.0.3 and this is a different axis: eleven accessibility modifiers in the whole app, and every chart plus the Portugal map invisible to a screen reader. v1.1a labelled the payslip flow's own controls and grouped its result cards, which is a start on one screen and not the pass.
-
-The supporter promise of "whatever comes later" now has Grow, the European map and the accents behind it, so it is no longer empty; the payslip checker is deliberately free.
-
-The pool itself is not a loose end so much as a decision: it exists, it works, and it lives on `pool-backend`. Reviving it means accepting the controller obligations that come with it, and the branch is `master` plus exactly the backend, so the diff is the whole conversation.
-
-## Honest limits
-
-Estimates for guidance, not tax advice. The engine models regular monthly salary under 2026 rules for whichever of the three fiscal regions you are in, and does not know your health or education deductions. Cohort figures cover private-sector employees; public-function contracts sit outside the Quadros de Pessoal entirely, and the app says so once you tell it that is your situation. Within-cohort dispersions are modelling assumptions, not published values, while the national curve's are derived from published deciles. The European figures are 2022 against Portugal's 2024, which is exactly why the two are never added together.
+Afonso Azevedo, 2026.

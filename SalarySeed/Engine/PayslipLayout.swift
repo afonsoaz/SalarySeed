@@ -116,7 +116,7 @@ enum PayslipLayout {
 
     /// Rejoins numbers the recogniser split at the thousands separator.
     ///
-    /// "2 741,86" very often arrives as "2" and "292,14". The test is narrow on
+    /// "2 741,86" very often arrives as "2" and "741,86". The test is narrow on
     /// purpose: the left half must be one to three digits and nothing else, the
     /// right half must begin with exactly three digits, and the two must be
     /// adjacent. That rejects joining a quantity to the amount beside it,

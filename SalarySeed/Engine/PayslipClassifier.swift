@@ -8,7 +8,12 @@ import Foundation
 /// it reads badly, while on the page it is the numbers that are constrained and
 /// the labels that are arbitrary.
 ///
-/// Three identities do the work, none of which needs to read a word:
+/// Three identities do the work, none of which needs to read a word.
+///
+/// The worked figures below, and everywhere else in the payslip reader, are
+/// stand-ins. Every relation they demonstrate is real and still holds, but the
+/// digits are not the ones that were measured, because the payslips this was
+/// built against were somebody's actual pay.
 ///
 ///  - **Net.** Some earnings total minus some deductions total equals some net.
 ///    That single triple names three figures at once and tells us which column

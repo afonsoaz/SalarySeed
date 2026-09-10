@@ -259,7 +259,7 @@ enum PayslipText {
     /// Homoglyph cases, as "input => expected". Same contract as
     /// `labelFixtures`: the script re-implements the rule and compares.
     static let homoglyphFixtures: [String] = [
-        "\u{0437} 187,40 => 3 187,40",   // real, the Total Pago on a photographed payslip
+        "\u{0437} 187,40 => 3 187,40",   // real, the Total Iliquido on a photographed payslip
         "1133356465\u{0405} => 11333564655",
         "R1G => R16",
         "S57,00 => 557,00",

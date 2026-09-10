@@ -247,8 +247,13 @@ enum PayslipNumber {
     ///
     /// Read by tools/verify_payslip_reader.py, which runs a Python
     /// implementation written from the rules rather than transliterated from
-    /// this file, and fails on any disagreement. Rows marked real came off one
-    /// of the three payslips this was built against.
+    /// this file, and fails on any disagreement.
+    ///
+    /// Rows marked real are token SHAPES that came off one of the three
+    /// payslips this was built against: the separators, the homoglyph, the
+    /// trailing sign. The digits inside them are stand-ins, because the
+    /// originals were somebody's actual pay. Change a shape and you are
+    /// changing the test; change the digits and you are not.
     static let parsingFixtures: [String] = [
         "2 741,86 => 274186",        // real
         "5.910,22 => 591022",        // real, same page as the line above

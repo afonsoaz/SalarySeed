@@ -90,5 +90,8 @@ change at the same time.
 
 ## Contact
 
-*(To be completed before publication: a contact email, and the developer name and
-address as they appear on the App Store listing.)*
+SalarySeed has not been submitted to the App Store yet. When it is, this section
+carries the contact email and the developer name and address that appear on the
+listing, because taking money for the unlock makes that a legal requirement
+rather than a courtesy. Until then there is nothing to contact, and nothing has
+been collected from anybody to ask about.
