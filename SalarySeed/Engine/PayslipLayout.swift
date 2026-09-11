@@ -66,6 +66,37 @@ enum PayslipLayout {
     /// most this many character widths.
     static let joinTolerance = 0.4
 
+    /// The same tolerance for geometry that was SYNTHESISED from a text layer
+    /// rather than measured off a page.
+    ///
+    /// `PayslipPDF.fragments(fromLinesOf:)` builds x from the character offset
+    /// within the extracted line, so every gap is a whole number of character
+    /// widths and a single space is ALWAYS exactly 1.0 of them. The 0.4 above
+    /// was measured against real per-word extents, where a thousands space is
+    /// genuinely narrower than a digit, and it can therefore never be met on
+    /// the synthetic path: "2 400,00" arrived as "2" and "400,00" and stayed
+    /// that way, so the reading silently lost the thousands and called it
+    /// 400,00. Every figure over a thousand on a payslip that separates
+    /// thousands with a space, which is most of them in Portugal.
+    ///
+    /// Just over one character, deliberately, because on this path the width of
+    /// the gap is the whole signal: consecutive spaces each advance the offset,
+    /// so a single space between a group and its thousands is 1.0 and a column
+    /// gap is several. Anything wider than one character is a column and must
+    /// not be joined across.
+    ///
+    /// What this DOES weaken, said plainly rather than glossed: the adjacency
+    /// test below is what stops a quantity being joined to the amount beside
+    /// it, and a whole character of slack is a weaker guard than four tenths of
+    /// one. A 1-to-3 digit quantity sitting exactly one space before an amount
+    /// whose own leading run is exactly three digits would now merge, so "220"
+    /// beside "400,00" could become 220 400,00. The other guards still have to
+    /// pass and one space is the tightest gap a column can have, but the risk
+    /// is real and is the price of reading the thousands at all. No fixture in
+    /// `tools/payslip_corpus` triggers it, across every layout and all five
+    /// money styles; that is evidence, not a proof.
+    static let syntheticJoinTolerance = 1.05
+
     // MARK: Rows
 
     /// Groups fragments into printed lines.
@@ -121,12 +152,14 @@ enum PayslipLayout {
     /// right half must begin with exactly three digits, and the two must be
     /// adjacent. That rejects joining a quantity to the amount beside it,
     /// because "1.450,00" begins with one digit, not three.
-    static func joinSplitNumbers(in row: PayslipRow) -> PayslipRow {
+    static func joinSplitNumbers(in row: PayslipRow,
+                                 tolerance: Double = joinTolerance) -> PayslipRow {
         var out: [PayslipFragment] = []
         var index = 0
         let items = row.fragments
         while index < items.count {
-            if index + 1 < items.count, let merged = join(items[index], items[index + 1]) {
+            if index + 1 < items.count,
+               let merged = join(items[index], items[index + 1], tolerance: tolerance) {
                 out.append(merged)
                 index += 2
             } else {
@@ -137,13 +170,14 @@ enum PayslipLayout {
         return PayslipRow(fragments: out, yMid: row.yMid)
     }
 
-    private static func join(_ left: PayslipFragment, _ right: PayslipFragment) -> PayslipFragment? {
+    private static func join(_ left: PayslipFragment, _ right: PayslipFragment,
+                             tolerance: Double) -> PayslipFragment? {
         let l = left.text.trimmingCharacters(in: .whitespaces)
         let r = right.text.trimmingCharacters(in: .whitespaces)
         guard (1...3).contains(l.count), l.allSatisfy(\.isNumber) else { return nil }
         guard leadingDigitRun(r) == 3 else { return nil }
         let gap = right.x0 - left.x1
-        guard gap >= 0, gap <= joinTolerance * max(left.characterWidth, right.characterWidth) else { return nil }
+        guard gap >= 0, gap <= tolerance * max(left.characterWidth, right.characterWidth) else { return nil }
         // Only worth it if the join is what makes it money.
         guard PayslipNumber.cents(from: l + " " + r) != nil else { return nil }
         return PayslipFragment(text: l + " " + r,
