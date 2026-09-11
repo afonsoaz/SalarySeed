@@ -18,6 +18,15 @@ struct PayslipCheckFlow: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @StateObject private var model = PayslipCheckModel()
 
+    /// What to do when the reader keeps the figure the payslip proposed.
+    ///
+    /// A closure, and not a write inside this file, so the rule that the payslip
+    /// feature reads the store and never writes to it stays literally true:
+    /// `grep -rn "store\." SalarySeed/Features/Payslip` returns only reads.
+    /// `nil` means nobody is offering to keep anything, and the results screen
+    /// then asks nothing.
+    var onAccept: ((PayslipSalary.GrossProposal) -> Void)?
+
     private var s: Strings { store.s }
 
     /// What the app knows about the reader, read once on the way in.
@@ -108,7 +117,7 @@ struct PayslipCheckFlow: View {
             PayslipReviewStep(model: model, workings: workings,
                               onConfirm: { model.confirmReview(context: context) })
         case .results(let verdict, let workings):
-            PayslipResultsView(verdict: verdict, workings: workings)
+            PayslipResultsView(verdict: verdict, workings: workings, onAccept: onAccept)
         case .unreadable(let why):
             PayslipUnreadableView(why: why, onRetry: { model.restart() })
         }

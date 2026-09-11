@@ -19,6 +19,9 @@ struct PayslipResultsView: View {
     @Environment(\.dismiss) private var dismiss
     let verdict: PayslipVerdict
     let workings: PayslipCheckModel.Workings
+    /// Called when the reader taps to keep the figure. The payslip feature does
+    /// not write to the store itself; `HomeView` owns that.
+    var onAccept: ((PayslipSalary.GrossProposal) -> Void)?
 
     private var s: Strings { store.s }
 
@@ -45,6 +48,7 @@ struct PayslipResultsView: View {
                     section(s.payslipCorrectLabel, verdict.correct, tint: Theme.accent)
                 }
                 if !verdict.notChecked.isEmpty { notChecked }
+                salaryAsk
                 footer
             }
             .padding(.horizontal, 20)
@@ -52,6 +56,137 @@ struct PayslipResultsView: View {
         }
         PrimaryButton(title: s.closeButton) { dismiss() }
             .padding(.horizontal, 20)
+        }
+    }
+
+    // MARK: The salary question
+
+    /// Asked LAST, under the verdict, and never on the way to it.
+    ///
+    /// The order is the point. The reader decides whether to keep this number
+    /// knowing what the app just found wrong with the payslip it came from, and
+    /// that is the only order in which the decision is informed. An ask placed
+    /// before the findings would be collecting an answer to a question the
+    /// reader cannot yet have thought about.
+    ///
+    /// Nothing appears when `PayslipSalary` refuses. Home already has a salary,
+    /// so saying nothing is not a claim, and a line explaining a proposal that
+    /// was never offered would be noise on a screen whose job is the verdict.
+    @ViewBuilder private var salaryAsk: some View {
+        if let onAccept, case .proposal(let proposal) = PayslipSalary.propose(workings.facts) {
+            VStack(alignment: .leading, spacing: 12) {
+                Divider().overlay(Theme.cardBorder)
+                SectionLabel(s.payslipUseTitle)
+                proposalCard(proposal)
+                askButtons(proposal, onAccept: onAccept)
+            }
+            .padding(.top, 6)
+        }
+    }
+
+    private func proposalCard(_ proposal: PayslipSalary.GrossProposal) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            // Both numbers, side by side. This is not an echo of something
+            // already on screen: it is the comparison the decision is actually
+            // between, and the reader cannot make it without seeing both.
+            figures(proposal)
+
+            VStack(alignment: .leading, spacing: 4) {
+                note(s.payslipUseFromSS)
+                switch proposal.corroboration {
+                case .agreed: note(s.payslipUseAgreed)
+                case .notAvailable: note(s.payslipUseNoCrossCheck)
+                }
+                if proposal.assumptions.contains(.mealAllowanceFoldedIntoAjudas) {
+                    note(s.payslipUseAjudas)
+                }
+                note(s.payslipUseSchedule)
+                if proposal.confidence < .high { note(s.payslipLowConfidence) }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(13)
+        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.cardBorder, lineWidth: 1))
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Side by side normally, stacked once the text is large enough that two
+    /// columns of figures would each be a column of wrapped fragments. Reflow,
+    /// not shrink: nobody asked for smaller text.
+    @ViewBuilder private func figures(_ proposal: PayslipSalary.GrossProposal) -> some View {
+        let mine = PayslipNumber.format(cents: Int((store.amount * 100).rounded()))
+        let theirs = PayslipNumber.format(cents: proposal.monthlyGrossCents)
+        if typeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 10) {
+                figure(s.payslipUseGrossLabel, theirs, tint: Theme.accent)
+                figure(s.payslipUseCurrentLabel, mine, tint: Theme.textSecondary)
+            }
+        } else {
+            HStack(alignment: .top, spacing: 16) {
+                figure(s.payslipUseGrossLabel, theirs, tint: Theme.accent)
+                figure(s.payslipUseCurrentLabel, mine, tint: Theme.textSecondary)
+            }
+        }
+    }
+
+    private func figure(_ label: String, _ value: String, tint: Color) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .appFont(11)
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(value)
+                .appFont(19, weight: .semibold)
+                .foregroundStyle(tint)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func note(_ text: String) -> some View {
+        Text(text)
+            .appFont(11)
+            .foregroundStyle(Theme.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    /// Two buttons of the same size, both starting with "Ok", so keeping what
+    /// you have is as easy to find as changing it. Same shape as the explorer's
+    /// exit, for the same reason.
+    @ViewBuilder private func askButtons(_ proposal: PayslipSalary.GrossProposal,
+                                         onAccept: @escaping (PayslipSalary.GrossProposal) -> Void) -> some View {
+        let keep = askButton(title: s.payslipUseKeepMine, primary: false) { dismiss() }
+        let use = askButton(title: s.payslipUseThis, primary: true) {
+            onAccept(proposal)
+            dismiss()
+        }
+        if typeSize.isAccessibilitySize {
+            VStack(spacing: 10) { keep; use }
+        } else {
+            HStack(spacing: 10) { keep; use }
+        }
+    }
+
+    /// Equal width by construction: both take `maxWidth: .infinity` inside the
+    /// same stack, so neither can grow with the length of its own translation.
+    /// No `minimumScaleFactor`, unlike the explorer's older version of this:
+    /// past an accessibility size the pair stacks instead of shrinking.
+    private func askButton(title: String, primary: Bool,
+                           action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .appFont(14, weight: .semibold)
+                .foregroundStyle(primary ? Theme.ink : Theme.textPrimary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: .infinity, minHeight: 22)
+                .padding(.vertical, 13)
+                .padding(.horizontal, 6)
+                .background(primary ? Theme.accent : Color.white.opacity(0.06),
+                            in: RoundedRectangle(cornerRadius: 15))
+                .overlay(RoundedRectangle(cornerRadius: 15)
+                    .stroke(primary ? Theme.accent : Theme.cardBorder, lineWidth: 1))
         }
     }
 

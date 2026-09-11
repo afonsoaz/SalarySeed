@@ -27,6 +27,7 @@ swiftc -O \
     SalarySeed/Engine/PayslipFacts.swift \
     SalarySeed/Engine/PayslipFinding.swift \
     SalarySeed/Engine/PayslipReconciler.swift \
+    SalarySeed/Engine/PayslipSalary.swift \
     SalarySeed/Engine/TaxEngine.swift \
     SalarySeed/Models/SearchText.swift \
     SalarySeed/Features/Payslip/PayslipPDF.swift \

@@ -508,6 +508,57 @@ if !wantsJSON {
     print("  \(pad("deductionsRun", 20)) \(facts0.deductionsRun)   gap \(euros(facts0.deductionsGap))")
     print("  \(pad("disputed", 20)) \(facts0.disputed.map(\.lineIndex))")
     print("  \(pad("isEmpty", 20)) \(facts0.isEmpty)")
+    showProposal(facts0)
+}
+
+// MARK: The salary this payslip would propose
+
+/// What `PayslipSalary` would hand the app, printed so it can be diffed like
+/// everything else. A judgement about a page cannot be checked by restating it
+/// in Python, and this one decides the number every other number in the app is
+/// derived from, so it belongs in the probe.
+func showProposal(_ facts: PayslipFacts) {
+    print("")
+    print(rule("PROPOSAL"))
+    switch PayslipSalary.propose(facts) {
+    case .cannot(let why):
+        print("  cannot propose a salary: \(why.rawValue)")
+    case .proposal(let p):
+        let corroboration: String
+        switch p.corroboration {
+        case .agreed(let total): corroboration = "agreed with total earnings \(euros(total))"
+        case .notAvailable: corroboration = "no earnings total to cross-check against"
+        }
+        print("  \(pad("monthly gross", 20)) \(pad(euros(p.monthlyGrossCents), 12)) \(p.confidence.name)")
+        print("  \(pad("ajudas + meal", 20)) \(euros(p.ajudasMonthlyCents))")
+        print("  \(pad("corroboration", 20)) \(corroboration)")
+        print("  \(pad("from lines", 20)) \(p.lineIndexes)")
+        print("  \(pad("assumptions", 20)) \(p.assumptions.map(\.rawValue).joined(separator: ", "))")
+    }
+}
+
+func proposalJSON(_ facts: PayslipFacts) -> [String: Any] {
+    switch PayslipSalary.propose(facts) {
+    case .cannot(let why):
+        return ["outcome": "cannot", "refusal": why.rawValue]
+    case .proposal(let p):
+        var out: [String: Any] = [
+            "outcome": "proposal",
+            "monthlyGrossCents": p.monthlyGrossCents,
+            "ajudasMonthlyCents": orNull(p.ajudasMonthlyCents),
+            "confidence": p.confidence.name,
+            "lineIndexes": p.lineIndexes,
+            "assumptions": p.assumptions.map(\.rawValue),
+        ]
+        switch p.corroboration {
+        case .agreed(let total):
+            out["corroboration"] = "agreed"
+            out["corroboratedAgainstCents"] = total
+        case .notAvailable:
+            out["corroboration"] = "notAvailable"
+        }
+        return out
+    }
 }
 
 let context = PayslipContext(
@@ -564,6 +615,7 @@ if wantsJSON {
     out["verdict"] = verdictJSON(verdict)
     out["context"] = contextJSON(context)
     out["needsReview"] = reading0.needsReview(facts: facts0)
+    out["proposal"] = proposalJSON(facts0)
     out["extractionPath"] = route.rawValue
     out["ocrLongEdge"] = ocrLongEdge
     out["rasterLongEdge"] = rasterLongEdge

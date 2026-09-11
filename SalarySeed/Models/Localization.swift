@@ -1297,6 +1297,33 @@ struct Strings {
         t("Nothing on this payslip contradicts itself.",
           "Nada neste recibo se contradiz.")
     }
+    // v1.2: the salary question, asked AFTER the verdict and never before it.
+    var payslipUseTitle: String { t("Use this as your salary?", "Usar como o teu salário?") }
+    var payslipUseGrossLabel: String { t("Gross, per month", "Bruto, por mês") }
+    var payslipUseCurrentLabel: String { t("What you have now", "O que tens agora") }
+    var payslipUseFromSS: String {
+        t("Taken from the Social Security line and the base it was charged on.",
+          "Tirado da linha da Segurança Social e da base sobre a qual foi cobrada.")
+    }
+    var payslipUseAgreed: String {
+        t("The earnings total on the payslip agrees with it.",
+          "O total de abonos do recibo confirma o valor.")
+    }
+    var payslipUseNoCrossCheck: String {
+        t("There was no earnings total on the payslip to cross-check it against.",
+          "Não havia total de abonos no recibo para confirmar o valor.")
+    }
+    var payslipUseSchedule: String {
+        t("A payslip is one month, so it cannot tell us how many payments a year you get. We kept your setting.",
+          "Um recibo é um mês, por isso não diz quantos pagamentos recebes por ano. Mantivemos o que tinhas.")
+    }
+    var payslipUseAjudas: String {
+        t("Meal allowance and ajudas de custo are kept separately, outside the salary.",
+          "Subsídio de alimentação e ajudas de custo ficam à parte, fora do salário.")
+    }
+    var payslipUseKeepMine: String { t("Ok, keep mine", "Ok, fico com o meu") }
+    var payslipUseThis: String { t("Ok, use this", "Ok, usar este") }
+
     var payslipLowConfidence: String {
         t("Read from a photo, so check this against the paper.",
           "Lido de uma foto, por isso confirma no papel.")
