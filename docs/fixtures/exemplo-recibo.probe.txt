@@ -40,6 +40,13 @@ LINES           17, amounts 8
   disputed             []
   isEmpty              false
 
+---- PROPOSAL --------------------------------------------------------
+  monthly gross        2400,00      high
+  ajudas + meal        -
+  corroboration        agreed with total earnings 2400,00
+  from lines           [6, 7]
+  assumptions          scheduleNotFromPayslip, oneMonthOnly, ajudasNotFound
+
 ---- VERDICT (continente, 14 months, single, 0 dependants) -----------
   correct  earningsSum      conf=medium  expected=2400,00     actual=2400,00     delta=0,00
   correct  minWage          conf=high    expected=920,00      actual=2400,00     delta=1480,00

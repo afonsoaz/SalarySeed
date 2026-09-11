@@ -79,7 +79,13 @@ struct HomeView: View {
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showFutureSeed) { FutureSeedView() }
             .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
-            .fullScreenCover(isPresented: $showPayslip) { PayslipCheckFlow() }
+            .fullScreenCover(isPresented: $showPayslip) {
+            // The checker asks, at the end and only at the end, whether the
+            // figure it read should become the salary. The write lives here
+            // rather than inside the payslip feature, which goes on reading the
+            // store and never writing to it.
+            PayslipCheckFlow(onAccept: { store.adopt($0) })
+        }
             .salaryChangeConfirmation(
                 isPresented: $askingSalaryChange,
                 s: s,

@@ -67,6 +67,31 @@ final class SalaryStore: ObservableObject {
     @Published var ajudasMonthly: Double { didSet { save() } }
     @Published var employment: EmploymentType { didSet { save() } }
     @Published var hasOnboarded: Bool { didSet { save() } }
+    /// v1.2: the one place a figure read off a payslip becomes the salary.
+    ///
+    /// Called from `HomeView`, never from inside `Features/Payslip/`, which goes
+    /// on reading the store and never writing to it. The proposal has already
+    /// been through `PayslipSalary`, which refuses rather than guesses, and the
+    /// reader has already seen the number and tapped to keep it.
+    ///
+    /// What it deliberately does NOT touch: `schedule`, because a payslip is one
+    /// month and cannot say whether you are paid 12 or 14 times, and the reader
+    /// answered that in onboarding; and `maritalSituation`, `dependents`,
+    /// `concelhoID` or anything else, none of which a payslip was asked about.
+    ///
+    /// `ajudasMonthly` moves only when the proposal actually carries a figure. A
+    /// payslip where we found no meal allowance is not a payslip that proves
+    /// there is none, and writing a zero over a real value the reader entered
+    /// would be losing their answer to our failure to read one.
+    func adopt(_ proposal: PayslipSalary.GrossProposal) {
+        amount = Double(proposal.monthlyGrossCents) / 100
+        kind = .gross
+        inputYearly = false
+        if let ajudas = proposal.ajudasMonthlyCents {
+            ajudasMonthly = Double(ajudas) / 100
+        }
+    }
+
     /// v0.8: remembers whether the editor last showed the salary as monthly or
     /// yearly, so it reopens the way the user prefers.
     @Published var inputYearly: Bool { didSet { save() } }
