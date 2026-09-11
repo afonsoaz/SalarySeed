@@ -12,6 +12,11 @@ struct PayslipUnreadableView: View {
     @EnvironmentObject private var store: SalaryStore
     let why: PayslipUnreadable
     let onRetry: () -> Void
+    /// Set during onboarding, where Try again is not enough of a way out: the
+    /// reader still owes the app a salary and cannot leave the step without one.
+    /// A screen whose only action is to attempt the thing that just failed is
+    /// the dead end this file exists to avoid.
+    var onGiveUp: (() -> Void)?
 
     private var s: Strings { store.s }
 
@@ -48,6 +53,14 @@ struct PayslipUnreadableView: View {
             }
             PrimaryButton(title: s.payslipTryAgain, action: onRetry)
                 .padding(.horizontal, 20)
+            if let onGiveUp {
+                Button(action: onGiveUp) {
+                    Text(s.onbTypeItMyself)
+                        .appFont(14, weight: .semibold)
+                        .foregroundStyle(Theme.textSecondary)
+                        .padding(.top, 12)
+                }
+            }
         }
     }
 }

@@ -18,6 +18,18 @@ struct PayslipCheckFlow: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @StateObject private var model = PayslipCheckModel()
 
+
+    private var s: Strings { store.s }
+
+    /// What the app knows about the reader, or nothing at all.
+    ///
+    /// Passed in rather than read off the store here, because onboarding runs
+    /// this flow BEFORE the reader has said where they live, whether they are
+    /// married or how many dependants they have. Nil is not a shrug: five of the
+    /// ten checks need none of that and still run, and the rest say
+    /// `profileIncomplete` on the screen instead of quietly not happening.
+    let context: PayslipContext?
+
     /// What to do when the reader keeps the figure the payslip proposed.
     ///
     /// A closure, and not a write inside this file, so the rule that the payslip
@@ -26,17 +38,6 @@ struct PayslipCheckFlow: View {
     /// `nil` means nobody is offering to keep anything, and the results screen
     /// then asks nothing.
     var onAccept: ((PayslipSalary.GrossProposal) -> Void)?
-
-    private var s: Strings { store.s }
-
-    /// What the app knows about the reader, read once on the way in.
-    private var context: PayslipContext {
-        PayslipContext(region: store.taxRegion,
-                       months: store.schedule.months,
-                       marital: store.maritalSituation,
-                       dependents: store.dependents,
-                       jovemExemption: store.irsJovemExemption)
-    }
 
     var body: some View {
         ZStack {
@@ -117,9 +118,11 @@ struct PayslipCheckFlow: View {
             PayslipReviewStep(model: model, workings: workings,
                               onConfirm: { model.confirmReview(context: context) })
         case .results(let verdict, let workings):
-            PayslipResultsView(verdict: verdict, workings: workings, onAccept: onAccept)
+            PayslipResultsView(verdict: verdict, workings: workings,
+                               onAccept: onAccept, hasProfile: context != nil)
         case .unreadable(let why):
-            PayslipUnreadableView(why: why, onRetry: { model.restart() })
+            PayslipUnreadableView(why: why, onRetry: { model.restart() },
+                                  onGiveUp: context == nil ? { dismiss() } : nil)
         }
     }
 }

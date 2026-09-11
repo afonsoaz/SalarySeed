@@ -338,6 +338,7 @@ func usage(_ complaint: String? = nil) -> Never {
 
       --json                 one machine-readable object instead of the dump
       --review               replay an untouched review and print what moved
+      --no-context           check with no profile at all, as onboarding does
 
       --region <r>           continente | acores | madeira   (default continente)
       --months <n>           paid months a year               (default 14)
@@ -360,7 +361,7 @@ func usage(_ complaint: String? = nil) -> Never {
 /// that quietly fell back to Continente would score a whole corpus against the
 /// wrong tax tables and every number in the report would be wrong with nothing
 /// on screen to say so.
-let noValueFlags: Set<String> = ["--json", "--review"]
+let noValueFlags: Set<String> = ["--json", "--review", "--no-context"]
 let valueFlags: Set<String> = ["--region", "--months", "--marital", "--dependents",
                                "--jovem", "--path", "--long-edge", "--raster-long-edge"]
 
@@ -561,6 +562,10 @@ func proposalJSON(_ facts: PayslipFacts) -> [String: Any] {
     }
 }
 
+/// `--no-context` is what onboarding sees: a payslip read before the reader has
+/// said where they live, whether they are married or how many dependants they
+/// have. Five checks still run and five say they cannot run yet.
+let hasContext = !switches.contains("--no-context")
 let context = PayslipContext(
     region: stringFlag("--region", TaxEngine.TaxRegion.continente),
     months: doubleFlag("--months", 14, min: 1, max: 14),
@@ -599,7 +604,7 @@ if wantsReview {
     }
 }
 
-let verdict = PayslipReconciler.check(facts, context: context)
+let verdict = PayslipReconciler.check(facts, context: hasContext ? context : nil)
 
 if wantsJSON {
     var out = jsonBase
@@ -613,7 +618,7 @@ if wantsJSON {
     out["amountCount"] = reading0.amounts.count
     out["facts"] = factsJSON(facts0, reading: reading0)
     out["verdict"] = verdictJSON(verdict)
-    out["context"] = contextJSON(context)
+    out["context"] = hasContext ? contextJSON(context) : NSNull()
     out["needsReview"] = reading0.needsReview(facts: facts0)
     out["proposal"] = proposalJSON(facts0)
     out["extractionPath"] = route.rawValue
@@ -629,8 +634,10 @@ if wantsJSON {
 }
 
 print("")
-print(rule("VERDICT (\(context.region.rawValue), \(monthsText(context.months)) months, "
-           + "\(context.marital.rawValue), \(context.dependents) dependants)"))
+print(rule(hasContext
+           ? "VERDICT (\(context.region.rawValue), \(monthsText(context.months)) months, "
+             + "\(context.marital.rawValue), \(context.dependents) dependants)"
+           : "VERDICT (no profile yet, as at onboarding)"))
 for f in verdict.findings.sorted(by: { $0.id.rawValue < $1.id.rawValue }) {
     print("  \(pad(f.tier.name, 8)) \(pad(f.id.rawValue, 16)) conf=\(pad(f.confidence.name, 7))"
           + " expected=\(pad(euros(f.expectedCents), 11)) actual=\(pad(euros(f.actualCents), 11))"

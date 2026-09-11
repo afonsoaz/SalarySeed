@@ -84,7 +84,13 @@ struct HomeView: View {
             // figure it read should become the salary. The write lives here
             // rather than inside the payslip feature, which goes on reading the
             // store and never writing to it.
-            PayslipCheckFlow(onAccept: { store.adopt($0) })
+            PayslipCheckFlow(
+                context: PayslipContext(region: store.taxRegion,
+                                        months: store.schedule.months,
+                                        marital: store.maritalSituation,
+                                        dependents: store.dependents,
+                                        jovemExemption: store.irsJovemExemption),
+                onAccept: { store.adopt($0) })
         }
             .salaryChangeConfirmation(
                 isPresented: $askingSalaryChange,

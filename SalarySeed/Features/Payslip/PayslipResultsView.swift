@@ -22,6 +22,12 @@ struct PayslipResultsView: View {
     /// Called when the reader taps to keep the figure. The payslip feature does
     /// not write to the store itself; `HomeView` owns that.
     var onAccept: ((PayslipSalary.GrossProposal) -> Void)?
+    /// False during onboarding, where the reader has not answered enough for the
+    /// tax checks to run. Passed rather than inferred from the skip reasons,
+    /// because `jovemApplied` legitimately skips with `profileIncomplete` on a
+    /// fully filled profile too, and reading it back off the verdict would call
+    /// that onboarding.
+    var hasProfile: Bool = true
 
     private var s: Strings { store.s }
 
@@ -48,6 +54,7 @@ struct PayslipResultsView: View {
                     section(s.payslipCorrectLabel, verdict.correct, tint: Theme.accent)
                 }
                 if !verdict.notChecked.isEmpty { notChecked }
+                if !hasProfile { notCheckedYet }
                 salaryAsk
                 footer
             }
@@ -57,6 +64,18 @@ struct PayslipResultsView: View {
         PrimaryButton(title: s.closeButton) { dismiss() }
             .padding(.horizontal, 20)
         }
+    }
+
+    /// Said once, plainly, when the tax checks could not run because the app
+    /// does not know the reader yet. Not a disclaimer at the bottom: a reader
+    /// who has just been shown four green ticks should be told what the app has
+    /// NOT looked at before being asked to keep the number.
+    private var notCheckedYet: some View {
+        Text(s.payslipNotCheckedYet)
+            .appFont(12)
+            .foregroundStyle(Theme.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     // MARK: The salary question
