@@ -1,7 +1,9 @@
 # How accurately the payslip reader reads a payslip
 
 Measured September 2026, against `tools/payslip_corpus`: 24 generated payslips,
-three extraction paths, and 144 degraded images. Rerun it with
+three extraction paths, and 144 degraded images. Two things are scored: what the
+reader decides about a payslip, and what `PayslipSalary` would propose as a salary
+from it. Rerun both with
 
 ```bash
 tools/payslip_probe/build.sh && tools/payslip_corpus/build.sh
@@ -21,15 +23,17 @@ The question this was built to answer is whether the reader is accurate enough t
 move the payslip from a card on Home to the way into the app, filling in a salary
 instead of typing one.
 
-## The three things that had to be true
+## The four things that had to be true
 
-All three hold, on every fixture, every extraction path and every image quality.
+All four hold, on every fixture, every extraction path and every image quality.
+`tools/score_payslip_corpus.py` exits non-zero on any of them and on nothing else.
 
 | | |
 |---|---|
 | False accusations | **0** |
 | Verdicts on things that are not payslips | **0** |
 | Grosses that were wrong and silently accepted | **0** |
+| Wrong salaries proposed | **0** |
 
 The first is the strongest result here, and the corpus's shared tax engine is
 what makes it clean rather than what weakens it: because the payslip and the
@@ -37,8 +41,8 @@ reconciler are computed from the same `TaxEngine`, a `wrong` finding on a page
 generated to be correct cannot be a disagreement about tax. It can only be the
 reader accusing a correct payslip. It never did.
 
-The third is the one the promotion decision actually turns on, and it needs its
-own paragraph.
+The third and fourth are the ones the promotion decision actually turns on. The
+third needs its own paragraph; the fourth has its own section, further down.
 
 ## Why silent-wrong is the metric and percent-correct is not
 
@@ -158,12 +162,104 @@ exact on every total across 23 fixtures. It is only ever reached when the line
 path fails, so this costs nothing today, and it confirms the comment that put it
 second.
 
+## The salary it would propose
+
+v1.2 lets the checker hand its figure back: the results screen ends by asking
+whether the monthly gross it read should become your salary, and onboarding offers
+to read a payslip instead of asking you to type a number. `PayslipSalary.propose`
+is the only route across, and the probe prints what it decides in a `PROPOSAL`
+block so it is measured rather than argued about.
+
+Out of 19 payslips generated to be correct, 18 can be proposed from at all. The
+nineteenth is the duodécimos fixture and it is refused on purpose, because the
+Social Security base there is the salary plus both subsidy twelfths and storing
+that as a monthly salary on a 14 month schedule would be 16.7% high in the
+flattering direction, silently, for ever.
+
+| input | proposed correctly | proposed wrongly | refused |
+|---|---|---|---|
+| PDF text layer | 18 | **0** | 1 |
+| PDF, rasterised to Vision | 18 | **0** | 1 |
+| clean render | 18 | **0** | 1 |
+| flatbed scan | 18 | **0** | 1 |
+| good photo | 18 | **0** | 1 |
+| ordinary photo | 18 | **0** | 1 |
+| poor photo | 18 | **0** | 1 |
+| barely legible photo | 0 | **0** | 0 |
+
+Not one wrong salary was proposed, on any input, at any image quality. The figure
+is right on every proposable payslip from a clean render down to a poor
+photograph, and the table is flat across that whole range for the same structural
+reason the gross itself is: it comes from the 11% Social Security identity, which
+is arithmetic and does not care which label sits beside the numbers.
+
+The last row is the honest failure. At the barely legible profile the reading fails
+outright, before any facts exist, so the reader gets the unreadable screen and is
+never offered a figure at all. Nothing is proposed, nothing is refused, because the
+question never arises.
+
+The corroboration gate never produced a false refusal. On every one of these the
+earnings total, minus the meal allowance and ajudas de custo, equalled the gross
+found by the 11% identity to the cent. Two independent readings of the page, one
+by an arithmetic identity and one by a printed total its own lines add up to,
+agreeing 18 times out of 18. The two fixtures where the Social Security figure was
+deliberately perturbed refuse with `noGrossFigure` rather than inventing a gross
+without it, which is the design working rather than a refusal rate.
+
+The ajudas fixtures are the ones worth looking at by hand. They print earnings of
+2 675,40, and what is proposed is 2 400,00, with the 275,40 carried separately as
+the meal allowance and ajudas de custo. Folding those into a gross would hide the
+exact thing this app exists to show.
+
+## What onboarding sees
+
+At the salary step the reader has not said where they live, whether they are
+married or how many dependants they have, so `PayslipReconciler.check` is called
+with no context at all. Four of the ten checks still run and keep identical
+figures: earnings and deductions each summing to their own printed total, the net
+identity, and the Social Security rate, which reads a constant rather than a table.
+
+The other six say so. Five skip with `profileIncomplete`, a reason that already
+existed and had one user, and the sixth skips for whatever reason it would have
+anyway. The screen names them and says the checker on the home screen will run them
+once the profile is filled in.
+
+`PayslipSalary` never reads the context, so the proposal is identical in onboarding
+and on Home. The table above holds in both places.
+
+```
+  ---- VERDICT (no profile yet, as at onboarding) ----------------------
+    correct  deductionsSum    expected=700,41   actual=700,41   delta=0,00
+    correct  earningsSum      expected=2400,00  actual=2400,00  delta=0,00
+    correct  netIdentity      expected=1699,59  actual=1699,59  delta=0,00
+    correct  ssRate           expected=264,00   actual=264,00   delta=0,00
+
+    skipped  irsWithholding   profileIncomplete
+    skipped  jovemApplied     profileIncomplete
+    skipped  minWage          profileIncomplete
+    skipped  netMonthly       profileIncomplete
+    skipped  regionTable      profileIncomplete
+    skipped  statedRate       missingFigure
+```
+
+Reproduce it with `--no-context` on any fixture.
+
 ## What this does not tell you
 
 The corpus's own limits are in `docs/fixtures/corpus/README.md` and they are
 real: nothing about whether the tax tables are right, nothing about PDF
 generators that are not Chrome, and label coverage overstated by construction
 because the vocabulary came from the lexicon's own word list.
+
+**The refusal rate above is not the refusal rate in the wild.** Eighteen out of
+eighteen corroborated because these pages are internally perfect: every printed
+total equals its own lines, because the generator refuses to emit one that does
+not. A real payslip carries lines this reader has never seen a name for, and every
+one of those that lands in the earnings total and not in the gross will trip
+`earningsDisagree` and refuse. That is the intended trade, since a false refusal
+costs one tap and a false proposal costs every figure in the app, but it means the
+honest expectation for real payslips is "refuses more often than this", not
+"proposes correctly 95% of the time". Nothing here measures how much more often.
 
 One more belongs here rather than there. **No printed payslip has been
 photographed and measured.** The degraded images are simulations: seeded grain,
