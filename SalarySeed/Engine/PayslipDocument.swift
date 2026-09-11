@@ -20,6 +20,17 @@ enum PayslipSource {
     /// opinion of them. Nothing may treat this as "correct", only as "not
     /// misread": a PDF can still say something wrong.
     var isExactText: Bool { self != .ocr }
+
+    /// True when the coordinates were INVENTED from the text rather than
+    /// measured off the page.
+    ///
+    /// `.pdfLines` lays fragments out from the character offset within each
+    /// extracted line, which is perfectly good for rows and left-to-right
+    /// order and is not a measurement of anything. Distances on that path are
+    /// whole characters and mean something different from distances on the
+    /// other two, so any tolerance expressed as a fraction of a glyph has to
+    /// know which it is looking at.
+    var hasSyntheticGeometry: Bool { self == .pdfLines }
 }
 
 /// One amount found on the page, with where it sat.
@@ -74,6 +85,31 @@ struct PayslipReading {
 
     var amounts: [PayslipAmount] { lines.flatMap(\.amounts) }
 
+    /// Whether to stop and ask the reader before showing a verdict.
+    ///
+    /// A PDF that carried its own text, read cleanly and agreed with itself has
+    /// nothing to confirm: every figure came from the file rather than from a
+    /// recogniser's opinion of it, and asking the reader to check figures the
+    /// file supplied is ceremony. Anything recognised from pixels, anything we
+    /// could not read, and anything whose label fought its arithmetic does stop,
+    /// because those are the cases where a wrong figure would otherwise become a
+    /// wrong accusation.
+    ///
+    /// This lives here, in the Foundation-only layer, rather than on the view
+    /// model that asks it, because it is the whole difference between a figure
+    /// the reader saw before it counted and one they never did. That makes it
+    /// the load-bearing rule for anything that promotes a read figure into
+    /// stored state, and `tools/payslip_probe` has to be able to report it.
+    /// A `@MainActor` view model cannot be compiled into that tool, and
+    /// restating the rule in Python would be a second opinion rather than a
+    /// check.
+    func needsReview(facts: PayslipFacts) -> Bool {
+        if source == .ocr { return true }
+        if !unreadableTokens.isEmpty { return true }
+        if !facts.disputed.isEmpty { return true }
+        return false
+    }
+
     /// A copy with the reader's corrections applied, keyed by line.
     ///
     /// The value replaces the last amount on its line, which is the one the
@@ -123,7 +159,11 @@ struct PayslipReading {
     static func read(fragments: [PayslipFragment], source: PayslipSource) -> Result<PayslipReading, PayslipUnreadable> {
         guard !fragments.isEmpty else { return .failure(.noTextFound) }
 
-        let grouped = PayslipLayout.rows(from: fragments).map { PayslipLayout.joinSplitNumbers(in: $0) }
+        let joinTolerance = source.hasSyntheticGeometry
+            ? PayslipLayout.syntheticJoinTolerance
+            : PayslipLayout.joinTolerance
+        let grouped = PayslipLayout.rows(from: fragments)
+            .map { PayslipLayout.joinSplitNumbers(in: $0, tolerance: joinTolerance) }
         let rows = PayslipLayout.mergeOrphanRows(grouped)
         let columns = PayslipLayout.moneyColumns(in: rows)
 

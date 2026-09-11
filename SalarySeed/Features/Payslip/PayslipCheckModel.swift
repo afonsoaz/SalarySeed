@@ -131,18 +131,11 @@ final class PayslipCheckModel: ObservableObject {
 
     /// Whether to stop and ask before showing a verdict.
     ///
-    /// A PDF that carried its own text, read cleanly and agreed with itself has
-    /// nothing to confirm: every figure came from the file rather than from a
-    /// recogniser's opinion of it, and asking the reader to check figures the
-    /// file supplied is ceremony. Anything recognised from pixels, anything we
-    /// could not read, and anything whose label fought its arithmetic does stop
-    /// here, because those are the cases where a wrong figure would otherwise
-    /// become a wrong accusation.
+    /// The rule itself is `PayslipReading.needsReview(facts:)`, in the Engine,
+    /// so the probe can report it. See that comment for why it decides what it
+    /// decides; this is only the view model's way in.
     func needsReview(_ workings: Workings) -> Bool {
-        if workings.reading.source == .ocr { return true }
-        if !workings.reading.unreadableTokens.isEmpty { return true }
-        if !workings.facts.disputed.isEmpty { return true }
-        return false
+        workings.reading.needsReview(facts: workings.facts)
     }
 
     // MARK: Review
