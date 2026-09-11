@@ -1,0 +1,145 @@
+{
+  "concepts" : {
+    "baseSalary" : 240000,
+    "employeeSS" : 26400,
+    "employerSS" : 57000,
+    "irs" : 29098,
+    "netPay" : 184502,
+    "ssBase" : 240000,
+    "totalDeductions" : 55498,
+    "totalEarnings" : 240000
+  },
+  "context" : {
+    "dependents" : 0,
+    "jovemExemption" : 0,
+    "marital" : "single",
+    "months" : 14,
+    "region" : "acores"
+  },
+  "expectedSkips" : [
+
+  ],
+  "family" : "twoColumnSplit",
+  "id" : "split-acores14",
+  "injection" : null,
+  "isPayslip" : true,
+  "lines" : [
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "earnings",
+      "cents" : 240000,
+      "code" : null,
+      "concept" : "baseSalary",
+      "label" : "Vencimento base",
+      "labelSource" : "lexicon",
+      "printed" : "2.400,00",
+      "quantity" : "30",
+      "ratePermyriad" : null,
+      "side" : "earning"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "earnings",
+      "cents" : 240000,
+      "code" : null,
+      "concept" : "totalEarnings",
+      "label" : "Total Ilíquido",
+      "labelSource" : "lexicon",
+      "printed" : "2.400,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "total"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 26400,
+      "code" : null,
+      "concept" : "employeeSS",
+      "label" : "Segurança Social (11%)",
+      "labelSource" : "lexicon",
+      "printed" : "264,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "deduction"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 29098,
+      "code" : null,
+      "concept" : "irs",
+      "label" : "IRS Retenção na fonte",
+      "labelSource" : "attested",
+      "printed" : "290,98",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "deduction"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 55498,
+      "code" : null,
+      "concept" : "totalDeductions",
+      "label" : "Total Descontos",
+      "labelSource" : "lexicon",
+      "printed" : "554,98",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "total"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "net",
+      "cents" : 184502,
+      "code" : null,
+      "concept" : "netPay",
+      "label" : "LÍQUIDO A RECEBER",
+      "labelSource" : "attested",
+      "printed" : "1.845,02",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "total"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "extra",
+      "cents" : 240000,
+      "code" : null,
+      "concept" : "ssBase",
+      "label" : "Base de incidência Segurança Social",
+      "labelSource" : "attested",
+      "printed" : "2.400,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "base"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "extra",
+      "cents" : 57000,
+      "code" : null,
+      "concept" : "employerSS",
+      "label" : "Encargo da entidade empregadora",
+      "labelSource" : "attested",
+      "printed" : "570,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "total"
+    }
+  ],
+  "onboarding" : {
+    "ajudasMonthlyCents" : 0,
+    "monthlyGrossCents" : 240000
+  },
+  "style" : "dotComma"
+}

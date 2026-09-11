@@ -1,0 +1,160 @@
+{
+  "concepts" : {
+    "ajudas" : 15000,
+    "baseSalary" : 240000,
+    "employeeSS" : 26400,
+    "irs" : 43641,
+    "mealAllowance" : 12540,
+    "netPay" : 197499,
+    "ssBase" : 240000,
+    "totalDeductions" : 70041,
+    "totalEarnings" : 267540
+  },
+  "context" : {
+    "dependents" : 0,
+    "jovemExemption" : 0,
+    "marital" : "single",
+    "months" : 14,
+    "region" : "continente"
+  },
+  "expectedSkips" : [
+
+  ],
+  "family" : "twoColumnSplit",
+  "id" : "ajudas-cont14",
+  "injection" : null,
+  "isPayslip" : true,
+  "lines" : [
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "earnings",
+      "cents" : 240000,
+      "code" : null,
+      "concept" : "baseSalary",
+      "label" : "Vencimento base",
+      "labelSource" : "lexicon",
+      "printed" : "2.400,00",
+      "quantity" : "30",
+      "ratePermyriad" : null,
+      "side" : "earning"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "earnings",
+      "cents" : 15000,
+      "code" : null,
+      "concept" : "ajudas",
+      "label" : "Ajudas de Custo",
+      "labelSource" : "lexicon",
+      "printed" : "150,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "earning"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "earnings",
+      "cents" : 12540,
+      "code" : null,
+      "concept" : "mealAllowance",
+      "label" : "Subs. Alim. (isento)",
+      "labelSource" : "lexicon",
+      "printed" : "125,40",
+      "quantity" : "22",
+      "ratePermyriad" : null,
+      "side" : "earning"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "earnings",
+      "cents" : 267540,
+      "code" : null,
+      "concept" : "totalEarnings",
+      "label" : "Total Ilíquido",
+      "labelSource" : "lexicon",
+      "printed" : "2.675,40",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "total"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 26400,
+      "code" : null,
+      "concept" : "employeeSS",
+      "label" : "Segurança Social (11%)",
+      "labelSource" : "lexicon",
+      "printed" : "264,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "deduction"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 43641,
+      "code" : null,
+      "concept" : "irs",
+      "label" : "IRS - Tx. 18,18%",
+      "labelSource" : "lexicon",
+      "printed" : "436,41",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "deduction"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 70041,
+      "code" : null,
+      "concept" : "totalDeductions",
+      "label" : "Total Descontos",
+      "labelSource" : "lexicon",
+      "printed" : "700,41",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "total"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "net",
+      "cents" : 197499,
+      "code" : null,
+      "concept" : "netPay",
+      "label" : "Total a Receber",
+      "labelSource" : "lexicon",
+      "printed" : "1.974,99",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "total"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "extra",
+      "cents" : 240000,
+      "code" : null,
+      "concept" : "ssBase",
+      "label" : "Base de incidência Segurança Social",
+      "labelSource" : "attested",
+      "printed" : "2.400,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "base"
+    }
+  ],
+  "onboarding" : {
+    "ajudasMonthlyCents" : 0,
+    "monthlyGrossCents" : 240000
+  },
+  "style" : "dotComma"
+}

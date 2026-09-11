@@ -1,0 +1,96 @@
+{
+  "concepts" : {
+
+  },
+  "context" : {
+    "dependents" : 0,
+    "jovemExemption" : 0,
+    "marital" : "single",
+    "months" : 14,
+    "region" : "continente"
+  },
+  "expectedSkips" : [
+
+  ],
+  "family" : "notAPayslip",
+  "id" : "negative-invoice",
+  "injection" : null,
+  "isPayslip" : false,
+  "lines" : [
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "earnings",
+      "cents" : 100000,
+      "code" : null,
+      "concept" : null,
+      "label" : "Serviços prestados em Março",
+      "labelSource" : "unknown",
+      "printed" : "1.000,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : null
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "earnings",
+      "cents" : 11000,
+      "code" : null,
+      "concept" : null,
+      "label" : "Desconto comercial",
+      "labelSource" : "unknown",
+      "printed" : "110,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : null
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 89000,
+      "code" : null,
+      "concept" : null,
+      "label" : "Valor tributável",
+      "labelSource" : "unknown",
+      "printed" : "890,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : null
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 20470,
+      "code" : null,
+      "concept" : null,
+      "label" : "IVA 23%",
+      "labelSource" : "unknown",
+      "printed" : "204,70",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : null
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "net",
+      "cents" : 109470,
+      "code" : null,
+      "concept" : null,
+      "label" : "Total a pagar",
+      "labelSource" : "unknown",
+      "printed" : "1.094,70",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : null
+    }
+  ],
+  "onboarding" : {
+    "ajudasMonthlyCents" : 0,
+    "monthlyGrossCents" : 240000
+  },
+  "style" : "dotComma"
+}

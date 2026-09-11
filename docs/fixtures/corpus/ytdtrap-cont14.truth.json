@@ -1,0 +1,157 @@
+{
+  "concepts" : {
+    "baseSalary" : 240000,
+    "employeeSS" : 26400,
+    "irs" : 43641,
+    "netPay" : 169959,
+    "totalDeductions" : 70041,
+    "totalEarnings" : 240000
+  },
+  "context" : {
+    "dependents" : 0,
+    "jovemExemption" : 0,
+    "marital" : "single",
+    "months" : 14,
+    "region" : "continente"
+  },
+  "expectedSkips" : [
+
+  ],
+  "family" : "oneColumn",
+  "id" : "ytdtrap-cont14",
+  "injection" : null,
+  "isPayslip" : true,
+  "lines" : [
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "earnings",
+      "cents" : 240000,
+      "code" : null,
+      "concept" : "baseSalary",
+      "label" : "Vencimento base",
+      "labelSource" : "lexicon",
+      "printed" : "2.400,00",
+      "quantity" : "30",
+      "ratePermyriad" : null,
+      "side" : "earning"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 26400,
+      "code" : null,
+      "concept" : "employeeSS",
+      "label" : "Segurança Social (11%)",
+      "labelSource" : "lexicon",
+      "printed" : "264,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "deduction"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 43641,
+      "code" : null,
+      "concept" : "irs",
+      "label" : "IRS - Tx. 18,18%",
+      "labelSource" : "lexicon",
+      "printed" : "436,41",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "deduction"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "earnings",
+      "cents" : 240000,
+      "code" : null,
+      "concept" : "totalEarnings",
+      "label" : "Total",
+      "labelSource" : "unknown",
+      "printed" : "2.400,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "total"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "deductions",
+      "cents" : 70041,
+      "code" : null,
+      "concept" : "totalDeductions",
+      "label" : "Total",
+      "labelSource" : "unknown",
+      "printed" : "700,41",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "total"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "net",
+      "cents" : 169959,
+      "code" : null,
+      "concept" : "netPay",
+      "label" : "A Receber",
+      "labelSource" : "unknown",
+      "printed" : "1.699,59",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : "total"
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "accumulated",
+      "cents" : 720000,
+      "code" : null,
+      "concept" : null,
+      "label" : "Acumulado Abonos",
+      "labelSource" : "unknown",
+      "printed" : "7.200,00",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : null
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "accumulated",
+      "cents" : 210123,
+      "code" : null,
+      "concept" : null,
+      "label" : "Acumulado Descontos",
+      "labelSource" : "unknown",
+      "printed" : "2.101,23",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : null
+    },
+    {
+      "accumulatedCents" : null,
+      "baseCents" : null,
+      "block" : "accumulated",
+      "cents" : 509877,
+      "code" : null,
+      "concept" : null,
+      "label" : "Acumulado Líquido",
+      "labelSource" : "unknown",
+      "printed" : "5.098,77",
+      "quantity" : null,
+      "ratePermyriad" : null,
+      "side" : null
+    }
+  ],
+  "onboarding" : {
+    "ajudasMonthlyCents" : 0,
+    "monthlyGrossCents" : 240000
+  },
+  "style" : "dotComma"
+}
