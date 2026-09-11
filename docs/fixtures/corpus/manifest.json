@@ -1,0 +1,197 @@
+{
+  "fixtures" : [
+    {
+      "family" : "twoColumnSplit",
+      "html" : "ajudas-cont14.html",
+      "htmlSHA256" : "bdfd20762b70ab0190b69c6174d6510a52c43aca0b56e8a688cb23e06577579c",
+      "id" : "ajudas-cont14",
+      "pdf" : "ajudas-cont14.pdf",
+      "truth" : "ajudas-cont14.truth.json"
+    },
+    {
+      "family" : "oneColumn",
+      "html" : "ajudas-onecol.html",
+      "htmlSHA256" : "ba77417c74228335d25c3a989be8d3b7d113a7f79a05ed2521852f028534855e",
+      "id" : "ajudas-onecol",
+      "pdf" : "ajudas-onecol.pdf",
+      "truth" : "ajudas-onecol.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "duodecimos-cont14.html",
+      "htmlSHA256" : "9d88223329a5490883d7a8e3d5b877e8f08efa73e8a36c184f85c7786f1983a9",
+      "id" : "duodecimos-cont14",
+      "pdf" : "duodecimos-cont14.pdf",
+      "truth" : "duodecimos-cont14.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "inject-base-2.html",
+      "htmlSHA256" : "3ee929dcc85378265379436f52a661b03282151ce087e5110290ac13b38b3b18",
+      "id" : "inject-base-2",
+      "pdf" : "inject-base-2.pdf",
+      "truth" : "inject-base-2.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "inject-irs-50000.html",
+      "htmlSHA256" : "5f1b4a82fca0c07f7d468338830f3e558a135cd7dfd711673d789b4c0b4c6057",
+      "id" : "inject-irs-50000",
+      "pdf" : "inject-irs-50000.pdf",
+      "truth" : "inject-irs-50000.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "inject-ss-30.html",
+      "htmlSHA256" : "3f8c3befcc9b3bac807a039787223d338b22ad62c8ba5a7954a8a87155f1cfb8",
+      "id" : "inject-ss-30",
+      "pdf" : "inject-ss-30.pdf",
+      "truth" : "inject-ss-30.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "inject-ss-3000.html",
+      "htmlSHA256" : "e9a0f12492af5fb56f4303739717193867836ac93b2d342952413542a6e70f60",
+      "id" : "inject-ss-3000",
+      "pdf" : "inject-ss-3000.pdf",
+      "truth" : "inject-ss-3000.truth.json"
+    },
+    {
+      "family" : "notAPayslip",
+      "html" : "negative-invoice.html",
+      "htmlSHA256" : "76ef2ed7a18c4822d79d608468cf4af62713439b6571c72a530339c17f3514f4",
+      "id" : "negative-invoice",
+      "pdf" : "negative-invoice.pdf",
+      "truth" : "negative-invoice.truth.json"
+    },
+    {
+      "family" : "oneColumn",
+      "html" : "onecol-cont14.html",
+      "htmlSHA256" : "df35c0af5c7b9dcf128beb159661311e2843a9337bfa0fddbe30b7811fc4b21b",
+      "id" : "onecol-cont14",
+      "pdf" : "onecol-cont14.pdf",
+      "truth" : "onecol-cont14.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-acores14.html",
+      "htmlSHA256" : "5cfdd6fc0f85f58234cc6db9c2a10f9cced4ec6611001022f0d86b4432ee035b",
+      "id" : "split-acores14",
+      "pdf" : "split-acores14.pdf",
+      "truth" : "split-acores14.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-cont12.html",
+      "htmlSHA256" : "1992cd1305f8c43f36ebb33338dadac9684e5a1c92d5188255e26ef3b5251f97",
+      "id" : "split-cont12",
+      "pdf" : "split-cont12.pdf",
+      "truth" : "split-cont12.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-cont14.html",
+      "htmlSHA256" : "1992cd1305f8c43f36ebb33338dadac9684e5a1c92d5188255e26ef3b5251f97",
+      "id" : "split-cont14",
+      "pdf" : "split-cont14.pdf",
+      "truth" : "split-cont14.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-eursuffix.html",
+      "htmlSHA256" : "3888963027b37967425025c5d20b518fdf3b56c0c1a9effd7df70085d702973d",
+      "id" : "split-eursuffix",
+      "pdf" : "split-eursuffix.pdf",
+      "truth" : "split-eursuffix.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-jovem.html",
+      "htmlSHA256" : "9e85941ea0e32db0db38c7d1380ae4dd09182e0835d13e06e2f2a78fb20976ec",
+      "id" : "split-jovem",
+      "pdf" : "split-jovem.pdf",
+      "truth" : "split-jovem.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-madeira14.html",
+      "htmlSHA256" : "5700146dd1ee605b3089a0b595446a590d46fb006160e9b3a29d762fc2e9adea",
+      "id" : "split-madeira14",
+      "pdf" : "split-madeira14.pdf",
+      "truth" : "split-madeira14.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-married2dep.html",
+      "htmlSHA256" : "221c20afe731d6d66d0caa59395c4cde791af811638db7ac581c69c6154e52b0",
+      "id" : "split-married2dep",
+      "pdf" : "split-married2dep.pdf",
+      "truth" : "split-married2dep.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-minwage.html",
+      "htmlSHA256" : "295bf2eac4f263656a46aeacf5b0aae7490bcf4b8b4bfde1a375983efa3458ab",
+      "id" : "split-minwage",
+      "pdf" : "split-minwage.pdf",
+      "truth" : "split-minwage.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-nbsp.html",
+      "htmlSHA256" : "447cae04a64a46df66cde2a5b8a96ce2640a43614f8c3c098f8fbf627d873859",
+      "id" : "split-nbsp",
+      "pdf" : "split-nbsp.pdf",
+      "truth" : "split-nbsp.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-plaindot.html",
+      "htmlSHA256" : "e447ad87d26fc051a567065401aa0130b5417386a89d63550d8f0fba9d2217a1",
+      "id" : "split-plaindot",
+      "pdf" : "split-plaindot.pdf",
+      "truth" : "split-plaindot.truth.json"
+    },
+    {
+      "family" : "twoColumnSideBySide",
+      "html" : "split-sidebyside-cont14.html",
+      "htmlSHA256" : "f624c1a8f9efd70a446f52a1078b107909df78ce20ae94af4114d7da574dfef1",
+      "id" : "split-sidebyside-cont14",
+      "pdf" : "split-sidebyside-cont14.pdf",
+      "truth" : "split-sidebyside-cont14.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "split-spacecomma.html",
+      "htmlSHA256" : "e3666d28ae1c537c242459ef296e97e0adbf073b33481dece6cf7746c6f8928a",
+      "id" : "split-spacecomma",
+      "pdf" : "split-spacecomma.pdf",
+      "truth" : "split-spacecomma.truth.json"
+    },
+    {
+      "family" : "threeColumn",
+      "html" : "split-threecol-cont14.html",
+      "htmlSHA256" : "d5582905e44b35154981ee04cab6eadfcc7872a374a3b97b81d05f7c534879dd",
+      "id" : "split-threecol-cont14",
+      "pdf" : "split-threecol-cont14.pdf",
+      "truth" : "split-threecol-cont14.truth.json"
+    },
+    {
+      "family" : "oneColumn",
+      "html" : "ytdtrap-cont14.html",
+      "htmlSHA256" : "cc240aa639bf790e249ceeb4c84034015a74909e5b50a6b94c37ed9b2f10058e",
+      "id" : "ytdtrap-cont14",
+      "pdf" : "ytdtrap-cont14.pdf",
+      "truth" : "ytdtrap-cont14.truth.json"
+    },
+    {
+      "family" : "twoColumnSplit",
+      "html" : "ytdtrap-split.html",
+      "htmlSHA256" : "30c8240b26869867b936a9bd99493a5a413a3096bc3a6f6480381a6c661be4a3",
+      "id" : "ytdtrap-split",
+      "pdf" : "ytdtrap-split.pdf",
+      "truth" : "ytdtrap-split.truth.json"
+    }
+  ],
+  "generated" : 24
+}

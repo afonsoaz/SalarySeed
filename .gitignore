@@ -71,6 +71,14 @@ functions/
 # tools/payslip_probe build output.
 .build/
 
+# The degraded images tools/payslip_corpus generates. Regenerable exactly, by
+# design: the noise is seeded, so `payslip_corpus photos` produces byte-identical
+# files every run. 144 JPEGs is about 45MB, and a corpus you can rebuild in a
+# minute does not belong in the history. The PDFs and the truth files beside them
+# ARE committed, so a fresh clone can run the harness without Chrome.
+docs/fixtures/corpus/photos/
+docs/fixtures/corpus/photos.json
+
 # Agent tooling. CLAUDE.md is the internal operating manual for this repo and
 # .claude/ is the permission config that goes with it. Both stay on disk so the
 # tooling keeps working, and neither belongs in a public repository: one is a

@@ -7,6 +7,10 @@ what they cannot cover.
 python3 tools/verify_tax_engine.py        # must pass before any release
 python3 tools/verify_payslip_reader.py    # must pass before any release
 tools/payslip_probe/build.sh              # then: .build/payslip_probe <file.pdf|.png>
+
+tools/payslip_corpus/build.sh                                 # generated payslips
+.build/payslip_corpus generate --out docs/fixtures/corpus     # with an answer key
+python3 tools/score_payslip_corpus.py --corpus docs/fixtures/corpus
 ```
 
 A fresh clone cannot run all of it, and it is better to know that now than to run it and
@@ -15,6 +19,17 @@ skips its round trip against them and says so on the way past. It still checks e
 else, including the invariants, which is the part no source document could give it.
 `payslip_probe` compiles and then has nothing to read, because real payslips are
 somebody's actual pay and are permanently gitignored. Supply your own.
+
+`tools/payslip_corpus` is the answer to the problem in that last paragraph. It
+generates payslips whose every figure comes from the app's own `TaxEngine`, so
+unlike a real payslip they can be scored, and `score_payslip_corpus.py` runs the
+shipping reader over them through the probe. It fails on two things and nothing
+else: a `wrong` finding on a page generated to be correct, and a verdict on
+something that is not a payslip. Everything else it prints is a budget rather
+than a target, and the skip count in particular must never be optimised. The
+results, and what the corpus cannot tell you, are in
+[payslip-accuracy.md](payslip-accuracy.md). It found the space separator bug that
+was dropping the thousands from every figure on the PDF text path.
 
 The probe is not a pass or a fail and does not gate anything. It prints what the shipping
 `Engine/` sources decide about a real file: every line with its concept, provenance and
