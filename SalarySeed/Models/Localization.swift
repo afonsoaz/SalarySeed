@@ -1297,6 +1297,18 @@ struct Strings {
         t("Nothing on this payslip contradicts itself.",
           "Nada neste recibo se contradiz.")
     }
+    // v1.2: the payslip as a second way through the salary step.
+    var onbReadFromPayslip: String { t("Read it off a payslip", "Ler de um recibo") }
+    var onbReadFromPayslipSub: String {
+        t("It is read here on your phone and nothing is saved.",
+          "É lido aqui no teu telemóvel e nada fica guardado.")
+    }
+    var onbTypeItMyself: String { t("Type it myself", "Escrevo eu") }
+    var payslipNotCheckedYet: String {
+        t("We have not checked the tax on this yet. Tell us where you live and a bit about yourself, and the payslip checker on the home screen will.",
+          "Ainda não verificámos os impostos deste recibo. Diz-nos onde vives e um pouco sobre ti, e o verificador de recibos no ecrã inicial faz isso.")
+    }
+
     // v1.2: the salary question, asked AFTER the verdict and never before it.
     var payslipUseTitle: String { t("Use this as your salary?", "Usar como o teu salário?") }
     var payslipUseGrossLabel: String { t("Gross, per month", "Bruto, por mês") }

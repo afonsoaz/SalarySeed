@@ -123,9 +123,12 @@ Three rules keep the feature honest, and they are why it is allowed to exist:
   its own lines do not add up to is not believed. That rule has already retracted a real
   reading rather than let the app accuse somebody's employer of underpaying them.
 
-Nothing is stored. The file is read into memory, checked, and discarded when the screen
-closes, and leaving mid-read cancels the recognition rather than letting it finish over a
-screen that has gone.
+Nothing about the payslip is stored. The file is read into memory, checked, and discarded
+when the screen closes, and leaving mid-read cancels the recognition rather than letting it
+finish over a screen that has gone. One figure can outlive it, and only one: from v1.2 the
+screen ends by asking whether the monthly gross it read should become your salary, and a yes
+keeps that number and nothing else. Not the document, not the lines, not the employer or the
+name on the page, and not the fact that a payslip was ever opened.
 
 ## Testing a judgement
 

@@ -4,6 +4,49 @@ What changed in each version and why, including the bugs that shipped and what t
 Versions before 1.0 were never released; they are here because the mistakes in them are
 the reason later versions are shaped the way they are.
 
+**v1.2**: The payslip reader gets measured, and then gets a way to hand its figure back.
+
+The reader had never been measured. It was built against two real payslips, both since
+deleted from this machine on purpose, and the four files that make a judgement about a page
+had no automated coverage at all. `tools/payslip_corpus` generates payslips whose every
+figure comes from the app's own `TaxEngine`, so unlike a real payslip they have an answer
+key, and `tools/score_payslip_corpus.py` scores the shipping reader against 24 of them
+across three extraction paths and 144 degraded images. Results in
+`docs/payslip-accuracy.md`, along with what the corpus cannot tell you, which is most of
+what a sceptic would ask.
+
+Two metrics fail that script and nothing else does: a `wrong` finding on a page generated
+to be correct, and a verdict on something that is not a payslip. Both are zero, as is the
+number that decides whether a payslip may fill in somebody's salary: a gross that was wrong
+and silently accepted. The gross survives a poor photograph better than anything else on the
+page, because it is recovered from the 11% Social Security identity rather than from a
+label, and its score is identical from a clean render down to a bad photo.
+
+It found a real bug first. Thousands separated by a space were being dropped from every
+figure on the PDF text path: "2 400,00" read as 400,00. The join tolerance that rejoins a
+thousands group was measured against Vision's real per-word extents, where a thousands space
+is narrower than a digit, but the text path synthesises its coordinates from character
+offsets, where a single space is always exactly one character width and the tolerance could
+never be met. Portuguese payslips commonly print 1 234,56. It failed safe, so all ten checks
+declined rather than accusing anybody, which is why nobody noticed. The one fixture in the
+repo prints 2.400,00 with a dot.
+
+Then the feature that measurement was for. The checker now ends by asking whether the
+monthly gross it read should become your salary, and onboarding offers to read a payslip
+instead of typing a number. The ask comes AFTER the verdict, never on the way to it, so the
+decision is made knowing what the app just found wrong with the payslip. `PayslipSalary`
+refuses rather than guesses, with four named reasons, and cross-checks the gross it found by
+the 11% identity against the printed earnings total. It never proposes a net, because a
+payslip's liquido is not the app's net salary. Onboarding fills the FIELD and not the store,
+so `commitAnswers()` is still the only writer and a misread payslip is a wrong number you
+can see and fix.
+
+That narrows a promise `PRIVACY.md` made in absolute terms, and the sentence has been
+rewritten rather than reasoned around: the file and everything read from it are gone when
+the screen closes, and the only thing that can outlive it is a figure you tapped to keep.
+Nothing else follows it, and a flag recording that a number came from a payslip is
+explicitly forbidden, because that is a one-bit payslip history.
+
 **v1.1**: The payslip checker, and the reader gets something that can actually run it.
 
 Give it a PDF or a photograph of a recibo de vencimento and it tells you what is wrong, what checks out, and what is worth knowing. Free, on the device, and nothing is kept: the file is read into memory, checked, and gone when the screen closes. There is no history, and adding one would change `PRIVACY.md`, the privacy manifest and the App Store privacy answers in the same commit, which is why the manifest now says so in a comment.

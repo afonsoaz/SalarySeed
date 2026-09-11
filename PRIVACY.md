@@ -48,8 +48,13 @@ history, and closing the screen discards both the file and everything read from
 it. Open the checker again and it starts from nothing.
 
 The text is recognised on the device by Apple's own Vision framework, which is
-part of iOS and does not go online either. Nothing about the payslip, and no
-figure taken from it, is stored alongside your salary or your profile.
+part of iOS and does not go online either.
+
+The file and everything read from it are gone when you close the screen. The only
+thing that can outlive it is a figure you tapped to keep, which then becomes your
+salary and nothing more. Nothing else is kept: not the document, not the lines on
+it, not the employer, not the name or the tax number printed on it, not the month,
+and not the fact that you ever opened a payslip at all.
 
 Choosing a file does not hand over your photo library or your documents. Both
 pickers run outside the app, in Apple's own interface, and give the app only the

@@ -36,7 +36,21 @@ struct PayslipContext {
 /// and also the app's existing rule: say what the data cannot do, on the screen.
 enum PayslipReconciler {
 
-    static func check(_ facts: PayslipFacts, context: PayslipContext) -> PayslipVerdict {
+    /// `context` is optional, and deliberately has NO default value.
+    ///
+    /// Onboarding can read a payslip before it knows the region, the marital
+    /// situation or the dependants, because those are later questions. Five of
+    /// the ten checks do not need any of that: the three self-consistency ones,
+    /// the Social Security rate, which reads a constant, and the printed rate
+    /// against its own base. Running those and saying plainly that the other
+    /// five cannot run yet tells the reader more than running none of them.
+    ///
+    /// Nil means "no profile yet", never "assume Continente". The house rule
+    /// about not defaulting a parameter whose absence is a silent wrong answer
+    /// is exactly why there is no default here: absence has to be spelled at
+    /// every call site, and it produces a loud `profileIncomplete` skip rather
+    /// than a quiet guess.
+    static func check(_ facts: PayslipFacts, context: PayslipContext?) -> PayslipVerdict {
         var findings: [PayslipFinding] = []
         var skipped: [PayslipSkipped] = []
 
@@ -154,6 +168,14 @@ enum PayslipReconciler {
         }()
 
         let engineChecks: [PayslipCheck] = [.irsWithholding, .netMonthly, .jovemApplied, .regionTable]
+        guard let context else {
+            // No profile yet. Every check that needs the tax tables says so,
+            // with the reason that already exists for it, and the five that
+            // need nothing have already run above.
+            engineChecks.forEach { skip($0, .profileIncomplete) }
+            skip(.minWage, .profileIncomplete)
+            return PayslipVerdict(findings: findings, notChecked: skipped, source: facts.source)
+        }
         if paysSubsidiesSeparately {
             engineChecks.forEach { skip($0, .subsidiesPaidSeparately) }
         } else if taxBase == .isNotGross {

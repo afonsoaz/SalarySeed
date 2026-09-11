@@ -45,7 +45,7 @@ final class PayslipCheckModel: ObservableObject {
 
     // MARK: Loading
 
-    func load(url: URL, context: PayslipContext) {
+    func load(url: URL, context: PayslipContext?) {
         phase = .reading
         reading?.cancel()
         reading = Task {
@@ -72,13 +72,13 @@ final class PayslipCheckModel: ObservableObject {
         }
     }
 
-    func load(imageData data: Data, context: PayslipContext) {
+    func load(imageData data: Data, context: PayslipContext?) {
         phase = .reading
         reading?.cancel()
         reading = Task { await recogniseData(data, context: context) }
     }
 
-    private func recogniseData(_ data: Data, context: PayslipContext) async {
+    private func recogniseData(_ data: Data, context: PayslipContext?) async {
         guard let image = await Task.detached(operation: { PayslipOCR.image(from: data) }).value
         else { phase = .unreadable(.unsupportedFile); return }
         guard !Task.isCancelled else { return }
@@ -93,7 +93,7 @@ final class PayslipCheckModel: ObservableObject {
         return try? Data(contentsOf: url)
     }
 
-    private func recognise(_ images: [CGImage], context: PayslipContext) async {
+    private func recognise(_ images: [CGImage], context: PayslipContext?) async {
         let fragments = await Task.detached {
             images.flatMap { (try? PayslipOCR.fragments(in: $0)) ?? [] }
         }.value
@@ -106,7 +106,7 @@ final class PayslipCheckModel: ObservableObject {
         finish(fragments: fragments, source: .ocr, context: context)
     }
 
-    private func finish(fragments: [PayslipFragment], source: PayslipSource, context: PayslipContext) {
+    private func finish(fragments: [PayslipFragment], source: PayslipSource, context: PayslipContext?) {
         switch PayslipReading.read(fragments: fragments, source: source) {
         case .failure(let why):
             phase = .unreadable(why)
@@ -152,7 +152,7 @@ final class PayslipCheckModel: ObservableObject {
             || line.confidence == .low
     }
 
-    func confirmReview(context: PayslipContext) {
+    func confirmReview(context: PayslipContext?) {
         guard case .review(let workings) = phase else { return }
         let corrected = workings.reading.applying(edits)
         let facts = PayslipClassifier.classify(corrected)

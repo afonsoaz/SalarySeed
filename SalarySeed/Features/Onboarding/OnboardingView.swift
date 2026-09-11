@@ -41,6 +41,9 @@ struct OnboardingView: View {
     @State private var education: EducationLevel?
     @State private var sectorSel: Sector?
     @State private var tenureYearsSel: Int = 3
+    /// v1.2: the payslip route out of step 1. Only ever a way to fill the field
+    /// below in; `commitAnswers()` is still the only thing that writes anything.
+    @State private var readingPayslip = false
 
     private var s: Strings { store.s }
     /// v1.0: nine questions and no tenth screen. v0.12 through v0.16 ended on a
@@ -317,6 +320,59 @@ struct OnboardingView: View {
                 if salaryValue != nil { advance() }
             }
             .opacity(salaryValue == nil ? 0.4 : 1)
+            payslipRoute
+        }
+        .fullScreenCover(isPresented: $readingPayslip) {
+            // No context. At step 1 the reader has not said where they live,
+            // whether they are married or how many dependants they have, so the
+            // checks that need the tax tables cannot run and say so. The ones
+            // that only need the payslip to agree with itself still do.
+            //
+            // Nothing here writes to the store. The proposal fills the field
+            // above, the reader sees it and presses OK, and `commitAnswers()`
+            // remains the only writer in this file. A misread payslip is then a
+            // wrong number sitting visibly in a text field, one keystroke from
+            // being fixed and gone entirely if this run is abandoned.
+            PayslipCheckFlow(context: nil, onAccept: { proposal in
+                // Integer euros, because the field is a number pad and this is
+                // the same rounding `SalaryEditorView` already does. The figure
+                // the reader confirms by pressing OK is the one they can see.
+                amountText = String(Int((Double(proposal.monthlyGrossCents) / 100).rounded()))
+                kind = .gross
+                if let ajudas = proposal.ajudasMonthlyCents {
+                    ajudasText = String(Int((Double(ajudas) / 100).rounded()))
+                }
+            })
+        }
+    }
+
+    /// The second way through this step, and deliberately the quieter one.
+    ///
+    /// Typing stays the default. Somebody on their first run has no reason to
+    /// trust this app yet, and asking them for a document before asking them for
+    /// a number would be the wrong first thing to say. This sits under the OK in
+    /// the same register as the welcome step's Skip.
+    ///
+    /// It does not change `totalSteps`, the dots, or the scrolling split at the
+    /// top of this file: the flow arrives as a cover over this step and brings
+    /// its own scrolling, so no ScrollView is nested inside another one.
+    private var payslipRoute: some View {
+        Button {
+            dismissKeyboard()
+            readingPayslip = true
+        } label: {
+            VStack(spacing: 2) {
+                Text(s.onbReadFromPayslip)
+                    .appFont(14, weight: .semibold)
+                    .foregroundStyle(Theme.accent)
+                Text(s.onbReadFromPayslipSub)
+                    .appFont(11)
+                    .foregroundStyle(Theme.textFaint)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.top, 14)
         }
     }
 
