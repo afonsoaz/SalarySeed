@@ -164,6 +164,8 @@ def main():
     concept_tally = defaultdict(Counter)
     detection = []
     rows = []
+    proposals = defaultdict(Counter)
+    bad_proposals = []
 
     for entry in entries:
         with open(os.path.join(args.corpus, entry["truth"])) as fh:
@@ -218,6 +220,29 @@ def main():
 
                 rows.append((truth["id"], label, result, truth, outcome))
 
+            # What PayslipSalary would hand onboarding or the results screen.
+            # It never reads the context, so this is the same in both places.
+            if truth["isPayslip"]:
+                p = result.get("proposal") or {}
+                if p.get("outcome") == "proposal":
+                    if injected:
+                        proposals[label]["notScored"] += 1
+                    elif p["monthlyGrossCents"] == truth["onboarding"]["monthlyGrossCents"]:
+                        proposals[label]["correct"] += 1
+                    else:
+                        proposals[label]["WRONG"] += 1
+                        bad_proposals.append((truth["id"], label,
+                                              p["monthlyGrossCents"],
+                                              truth["onboarding"]["monthlyGrossCents"]))
+                elif p.get("outcome") == "cannot":
+                    # An injected page refusing is the design working, not a
+                    # refusal rate: the figure it would have rested on is the
+                    # one that was deliberately moved.
+                    proposals[label]["notScored" if injected
+                                     else "refused:" + p["refusal"]] += 1
+                else:
+                    proposals[label]["neverGotThatFar"] += 1
+
             if injected and injected["kind"] == "line":
                 flagged = [f for f in findings if f["tier"] != "correct"]
                 named = [f for f in flagged if injected["concept"] in (f.get("basis") or [])]
@@ -262,6 +287,17 @@ def main():
                                            c[p + ":missing"]) for p in labels)
         print("  %-16s %s" % (concept, cells))
     print("  (exact/off/missing)")
+
+    print("\n---- the salary PayslipSalary would propose " + "-" * 34)
+    print("  refusing costs one tap on 'type it myself'. Proposing a wrong figure")
+    print("  costs every number in the app, so WRONG is the column that matters.\n")
+    reasons = sorted({k for c in proposals.values() for k in c if k.startswith("refused:")})
+    print("  %-14s %8s %7s %s" % ("input", "correct", "WRONG",
+                                  "  ".join(r.split(":")[1][:18] for r in reasons)))
+    for path in labels:
+        c = proposals[path]
+        cells = "  ".join("%-18d" % c[r] for r in reasons)
+        print("  %-14s %8d %7d %s" % (path, c["correct"], c["WRONG"], cells))
 
     if detection:
         print("\n---- injected errors, detection " + "-" * 46)
@@ -308,8 +344,29 @@ def main():
     else:
         print("negative leakage        0")
 
+    if bad_proposals:
+        failed = True
+        print("WRONG SALARY PROPOSED: %d" % len(bad_proposals))
+        print("  A figure that is not the gross was offered as one.")
+        for fid, path, got, want in bad_proposals:
+            print("    %s [%s] proposed %d, truth %d" % (fid, path, got, want))
+    else:
+        print("wrong salaries proposed 0")
+
+    # A gross that was wrong and never shown is the one outcome the promotion
+    # decision cannot survive, so it fails the script like the other three
+    # rather than being printed and hoped about.
     silent = sum(onboarding[p]["wrongSilent"] for p in labels)
-    print("silent-wrong grosses    %d%s" % (silent, "" if silent == 0 else "   <-- LOOK"))
+    if silent:
+        failed = True
+        print("SILENT-WRONG GROSSES: %d" % silent)
+        print("  A wrong gross was recovered and the reader would never have been")
+        print("  shown it. Every figure the app draws is a pure function of that one.")
+        for fid, path, result, truth, outcome in rows:
+            if outcome == "wrongSilent":
+                print("    %s [%s]" % (fid, path))
+    else:
+        print("silent-wrong grosses    0")
     print("=" * 78)
     return 1 if failed else 0
 
