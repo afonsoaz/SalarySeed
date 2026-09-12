@@ -169,6 +169,7 @@ struct MapView: View {
                         .appFont(10.5)
                         .foregroundStyle(store.sector == nil ? Theme.accent : Theme.textFaint)
                 }
+                .multilineTextAlignment(.leading)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .appFont(11)

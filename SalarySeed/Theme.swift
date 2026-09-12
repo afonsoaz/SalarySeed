@@ -160,6 +160,41 @@ func eur(_ value: Double, decimals: Int = 0) -> String {
     return f.string(from: NSNumber(value: value)) ?? "€\(Int(value))"
 }
 
+/// A percentage, written the way the euro beside it is written.
+///
+/// v1.2a. Every rate in the app went through `String(format: "%.1f%%")`, which
+/// is not a formatter: it is C, and C writes a POSIX decimal point whatever the
+/// reader's language. So Home showed "2400 \u{20AC}" and "80.8% do custo" in the
+/// same card, one number in Portuguese and the next in American, eleven points
+/// apart. `eur` above has always used pt_PT; this is the same decision applied
+/// to the other kind of number, and it is the same locale rather than the
+/// reader's, because the amounts are Portuguese wherever the reader is from.
+///
+/// Grouping is off deliberately. A percentage large enough to want a thousands
+/// separator is a percentage that has already gone wrong, and a separator would
+/// only make it harder to notice.
+func percent(_ fraction: Double, decimals: Int = 1, signed: Bool = false) -> String {
+    let f = NumberFormatter()
+    f.locale = Locale(identifier: "pt_PT")
+    f.numberStyle = .decimal
+    f.usesGroupingSeparator = false
+    f.minimumFractionDigits = decimals
+    f.maximumFractionDigits = decimals
+    if signed { f.positivePrefix = "+" }
+    let value = fraction * 100
+    guard let text = f.string(from: NSNumber(value: value)) else {
+        return "\(Int(value.rounded()))%"
+    }
+    return text + "%"
+}
+
+/// The same number without the sign. `growMoveBeats` puts the word "points"
+/// after it, so a "%" there would read as "3,1% points".
+func points(_ fraction: Double, decimals: Int = 1) -> String {
+    let text = percent(fraction, decimals: decimals)
+    return String(text.dropLast())
+}
+
 // MARK: Dynamic Type (v1.0.3)
 //
 // WHY THIS EXISTS. SwiftUI's `.system(size:)` is a FIXED size. It is not a

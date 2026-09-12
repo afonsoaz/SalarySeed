@@ -67,22 +67,46 @@ struct RootTabView: View {
                 .tabItem { Label(s.tabGrow, systemImage: "chart.line.uptrend.xyaxis") }
                 .tag(4)
         }
-        .tabBarMinimisesOnScroll()
+        .overlay(alignment: .top) { statusBarScrim }
+    }
+
+    /// v1.2a: WHY THE APP DRAWS ITS OWN STATUS-BAR SCRIM.
+    ///
+    /// None of the five tabs has a navigation bar, because none of them wants a
+    /// title: each screen draws its own header inside its scroll view. The cost
+    /// only shows once you scroll, and it is ugly. Content passes straight under
+    /// the clock and the battery, white on near-black with nothing between them,
+    /// so "Salario bruto  2400 EUR" reads through "00:39".
+    ///
+    /// `scrollEdgeEffectStyle(.soft, for: .top)` is the iOS 26 API for exactly
+    /// this and it was tried first and does nothing here: the effect is drawn by
+    /// a bar at that edge, and there is no bar. Adding one to get it would cost
+    /// 44 points on five screens to display a title none of them has.
+    ///
+    /// So: a scrim in the page's own colour, which is invisible where there is
+    /// nothing under it and hides what scrolls beneath it. It sits on the
+    /// `TabView` rather than in five screens, it never takes a touch, and the
+    /// fade means content dissolves rather than meeting a line.
+    private var statusBarScrim: some View {
+        LinearGradient(
+            stops: [.init(color: Theme.background, location: 0),
+                    .init(color: Theme.background, location: 0.62),
+                    .init(color: Theme.background.opacity(0), location: 1)],
+            startPoint: .top, endPoint: .bottom)
+            .frame(height: 96)
+            .ignoresSafeArea()
+            .allowsHitTesting(false)
     }
 }
 
-extension View {
-    /// iOS 26 lets the tab bar shrink out of the way as the reader scrolls down
-    /// and come back when they scroll up. Worth having on five screens that are
-    /// all long scrolls, and it does not exist before 26, so it is asked for
-    /// here rather than at the call site: an `if #available` wrapped around the
-    /// `TabView` itself would give SwiftUI two different views to identify.
-    @ViewBuilder
-    func tabBarMinimisesOnScroll() -> some View {
-        if #available(iOS 26.0, *) {
-            self.tabBarMinimizeBehavior(.onScrollDown)
-        } else {
-            self
-        }
-    }
-}
+// v1.2a REMOVED `.tabBarMinimizeBehavior(.onScrollDown)`, which was added in
+// v1.2 and looked right in a list of iOS 26 features and wrong on the screen.
+//
+// Minimising collapses the bar to a small circle that floats OVER the content
+// with no material behind most of its width, so it sat on top of a card and cut
+// a line of text in half; and while it is collapsed the other four tabs cannot
+// be reached without scrolling back up. Apple uses it where the content is the
+// point and the chrome is in the way, which is a video or a web page. Five long
+// scrolls of figures, where the whole job is moving between them, is the other
+// case. The full glass bar already blurs what passes under it, which is the part
+// that was worth having.

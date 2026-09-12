@@ -112,6 +112,52 @@ the screen closes, and the only thing that can outlive it is a figure you tapped
 Nothing else follows it, and a flag recording that a number came from a payslip is
 explicitly forbidden, because that is a one-bit payslip history.
 
+**The polish pass, after the rest of v1.2 was working.** Afonso pointed at two things and
+both turned out to be classes rather than instances.
+
+"Weird spacing in the 2nd line" on the Profile rows was SwiftUI centring the text inside a
+`Button` label, which it does unless told otherwise. A one-line title never reveals it; a
+subtitle that wraps does, and the second line sits centred under a left-aligned first one.
+Twelve rows had it.
+
+The sentence beside Home's percentage was aligned to the figure's baseline, so on the two
+lines it actually occupies the figure clung to the first and the second hung below it. It is
+centred now.
+
+Chasing the first one turned up eight copies of the same row in Profile and Compare, each
+with three faults: an icon in a `frame(width: 28)` while the glyph scaled with the reader's
+text size, so it drew out of its box and over the title; a "+ Adicionar" pill with no line
+limit, which broke mid-word into "+ Adicion / ar"; and no reflow at all, so the title column
+came out about ninety points wide and every word wrapped. `SignalRow` is now one row used
+eight times. The scaling-glyph bug had already been found and fixed twice before, in
+`PayslipSourceStep` and `SupportSheet`, and neither fix could reach these because there was
+nothing shared to fix. `tools/audit_layout.py` looks for both shapes now; it found six more
+fixed boxes after the migration, and they are fixed too.
+
+Every rate in the app was formatted with `String(format: "%.1f%%")`, which is C rather than
+a formatter and writes a POSIX decimal point whatever the language. Home read "2400 EUR" and
+"80.8% do custo" in the same card, eleven points apart, one number Portuguese and the next
+American. `percent(_:decimals:signed:)` in `Theme` is the one path now, in the pt_PT locale
+`eur` has always used.
+
+Scrolled content ran straight under the status bar, white on near-black, so figures read
+through the clock. `scrollEdgeEffectStyle(.soft, for: .top)` is the iOS 26 API for exactly
+this, and it does nothing here, because the effect is drawn by a bar at that edge and none of
+these screens has one. A scrim in the page's own colour does the job: invisible where there
+is nothing under it, and the content dissolves into it instead of meeting a line.
+
+`.tabBarMinimizeBehavior(.onScrollDown)` came out again. It was added in v1.2 because it is
+what iOS 26 does, and on screen it collapsed the bar to a circle that floated over a card and
+cut a line of text in half, while putting the other four tabs out of reach until you scrolled
+back up.
+
+**And one process bug worth recording.** There are two `SalarySeed-*` DerivedData folders on
+this machine, one abandoned since July, and the shell used to pick a build directory with
+`find ... | head -1`. It picked the stale one, installed a July binary, and a screenshot
+taken to confirm a fix showed an app that did not have it. Nothing errored; the tab bar
+quietly had the old tabs in it. `tools/run_sim.sh` asks `xcodebuild -showBuildSettings` which
+folder this scheme actually builds into, and prints the binary's timestamp.
+
 **v1.1**: The payslip checker, and the reader gets something that can actually run it.
 
 Give it a PDF or a photograph of a recibo de vencimento and it tells you what is wrong, what checks out, and what is worth knowing. Free, on the device, and nothing is kept: the file is read into memory, checked, and gone when the screen closes. There is no history, and adding one would change `PRIVACY.md`, the privacy manifest and the App Store privacy answers in the same commit, which is why the manifest now says so in a comment.

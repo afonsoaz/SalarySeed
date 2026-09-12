@@ -172,7 +172,10 @@ struct HomeView: View {
             Image(systemName: "person.crop.circle")
                 .appFont(24)
                 .foregroundStyle(Theme.textSecondary)
-                .frame(width: 44, height: 44)
+                // Apple's 44 point minimum, and no smaller than the glyph
+                // itself once the reader has asked for bigger text.
+                .frame(width: max(44, Theme.scaled(28, typeSize)),
+                       height: max(44, Theme.scaled(28, typeSize)))
                 .contentShape(Rectangle())
         }
         .accessibilityLabel(s.tabProfile)
@@ -256,16 +259,24 @@ struct HomeView: View {
     /// it into something a reader could picture, and a percentage is what that
     /// device was standing in for.
     ///
-    /// Whole percent, and deliberately NOT through `pct` below: that is
-    /// `String(format: "%.1f%%")`, which writes a POSIX decimal point, so a
-    /// Portuguese reader would get "63.4%" beside a "1 234,56 €" from `eur`.
-    /// A whole number has no separator to get wrong.
+    /// Whole percent, where the rates in the detail trees below carry one
+    /// decimal. A headline is a number you glance at; the decimal belongs where
+    /// somebody is comparing two rows, not where they are reading one figure.
+    ///
+    /// v1.2a: `pct` below is locale-correct now, so this no longer has to avoid
+    /// it to avoid a POSIX decimal point. `percent(_:decimals:)` in `Theme` is
+    /// the one path, and the 0 here is a design choice rather than a dodge.
     private var efficiencyCard: some View {
         Group {
             if typeSize.isAccessibilitySize {
                 VStack(alignment: .leading, spacing: 3) { efficiencyFigure; efficiencyLabel }
             } else {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                // `.center`, not `.firstTextBaseline`. The sentence beside the
+                // figure runs to two lines on most phones, and a baseline
+                // alignment pins the figure to the FIRST of them, so the second
+                // hangs below it and the pair reads as misaligned. Centring is
+                // what makes one number and one sentence look like one row.
+                HStack(alignment: .center, spacing: 10) {
                     efficiencyFigure
                     efficiencyLabel
                 }
@@ -350,9 +361,7 @@ struct HomeView: View {
         }
     }
 
-    private func pct(_ fraction: Double) -> String {
-        String(format: "%.1f%%", fraction * 100)
-    }
+    private func pct(_ fraction: Double) -> String { percent(fraction) }
 
     /// v0.6: withholding vs the estimated real annual IRS. Month to month the
     /// employer withholds from the tables; the real tax settles the next year,
@@ -458,7 +467,8 @@ struct HomeView: View {
             Image(systemName: icon)
                 .appFont(9)
                 .foregroundStyle(tint)
-                .frame(width: 12)
+                .frame(width: Theme.scaled(12, typeSize))
+                .accessibilityHidden(true)
             Text(text)
                 .appFont(10)
                 .foregroundStyle(tint == Theme.accent ? Theme.textSecondary : Theme.textFaint)
@@ -518,7 +528,8 @@ struct HomeView: View {
                 Image(systemName: "slider.horizontal.below.square.filled.and.square")
                     .appFont(20)
                     .foregroundStyle(Theme.ink)
-                    .frame(width: 28)
+                    .frame(width: Theme.scaled(28, typeSize))
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(s.explorerNudgeTitle)
                         .appFont(14, weight: .semibold)

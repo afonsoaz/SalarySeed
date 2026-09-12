@@ -8,6 +8,10 @@ import SwiftUI
 struct JobTitleSheet: View {
     @EnvironmentObject private var store: SalaryStore
     @Environment(\.dismiss) private var dismiss
+    // Read so the family icons redraw at their new size when the reader changes
+    // it. See the note on `AppFont` in Theme: a metrics call that reaches past
+    // SwiftUI into UIKit changes nothing SwiftUI can observe.
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     @State private var query: String = ""
     @State private var expanded: JobFamily?
@@ -150,7 +154,8 @@ struct JobTitleSheet: View {
                     Image(systemName: family.icon)
                         .appFont(15)
                         .foregroundStyle(Theme.accent)
-                        .frame(width: 24)
+                        .frame(width: Theme.scaled(24, typeSize))
+                        .accessibilityHidden(true)
                     Text(family.label(pt: s.pt))
                         .appFont(14)
                         .foregroundStyle(Theme.textPrimary)

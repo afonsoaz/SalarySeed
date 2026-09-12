@@ -224,13 +224,13 @@ struct GrowthLeversSheet: View {
                 .appFont(11.5)
                 .foregroundStyle(Theme.textSecondary)
             Spacer(minLength: 8)
-            Text(String(format: "%+.1f%%", value * 100))
+            Text(percent(value, signed: true))
                 .appFont(13, weight: .medium)
                 .foregroundStyle(tint)
         }
     }
 
-    private func pct(_ value: Double) -> String { String(format: "%.1f", abs(value) * 100) }
+    private func pct(_ value: Double) -> String { points(abs(value)) }
 
     // MARK: Sector
 
@@ -344,7 +344,7 @@ struct GrowthLeversSheet: View {
                     .appFont(13)
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
-                Text(String(format: "%.1f%%", value.wrappedValue * 100))
+                Text(percent(value.wrappedValue))
                     .appFont(13, weight: .medium)
                     .foregroundStyle(Theme.accent)
             }

@@ -245,7 +245,7 @@ struct GrowView: View {
 
     private func deltaLine(from: Double, to: Double, tint: Color) -> some View {
         let pct = from > 0 ? (to - from) / from * 100 : 0
-        return Text(s.growVsToday(signedEur(to - from), String(format: "%+.1f%%", pct)))
+        return Text(s.growVsToday(signedEur(to - from), percent(pct / 100, signed: true)))
             .appFont(11)
             .foregroundStyle(tint)
     }
@@ -411,7 +411,7 @@ struct GrowView: View {
                 .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(String(format: "%+.1f%%", result.stayAnnual * 100))
+                Text(percent(result.stayAnnual, signed: true))
                     .appFont(32, weight: .medium)
                     .foregroundStyle(positive ? Theme.accent : Theme.danger)
                     .contentTransition(.numericText())
@@ -420,7 +420,7 @@ struct GrowView: View {
                     .foregroundStyle(Theme.textSecondary)
             }
             Text(positive
-                 ? s.growBreakEvenBody(String(format: "%+.1f%%", result.breakEven * 100), years: years)
+                 ? s.growBreakEvenBody(percent(result.breakEven, signed: true), years: years)
                  : s.growBreakEvenFlat(ctx.sector.label(pt: s.pt)))
                 .appFont(11.5)
                 .foregroundStyle(Theme.textSecondary)
@@ -507,7 +507,7 @@ struct GrowView: View {
         }
         if let sector = sc.sector, sector != store.sector { parts.append(sector.label(pt: s.pt)) }
         if let district = sc.district, district != store.district { parts.append(district.label) }
-        if sc.payGrowth > 0 { parts.append(String(format: "%+.1f%%/%@", sc.payGrowth * 100, s.growPerYearShort)) }
+        if sc.payGrowth > 0 { parts.append("\(percent(sc.payGrowth, signed: true))/\(s.growPerYearShort)") }
         if sc.bracketsIndexed { parts.append(s.growBracketsShort) }
         return parts.isEmpty ? s.growLeversNone : parts.joined(separator: " · ")
     }
@@ -622,7 +622,8 @@ struct GrowView: View {
             Image(systemName: "info.circle")
                 .appFont(9)
                 .foregroundStyle(Theme.textFaint)
-                .frame(width: 12)
+                .frame(width: Theme.scaled(12, typeSize))
+                .accessibilityHidden(true)
             Text(text)
                 .appFont(10)
                 .foregroundStyle(Theme.textFaint)
