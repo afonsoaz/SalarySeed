@@ -16,7 +16,10 @@ struct HomeView: View {
     @State private var showFutureSeed = false
     // v0.9.4
     @State private var showExplorer = false
-    @State private var showPayslip = false
+    /// v1.2: Profile is no longer a tab, and this is how it is reached. A push
+    /// rather than a sheet, because it is a destination with ten sheets of its
+    /// own hanging off it and a sheet on a sheet is a stack of cards.
+    @State private var showProfile = false
     @State private var askingSalaryChange = false
 
     /// v0.8: three ways to read the result. Two are monthly (the yearly pay spread
@@ -62,7 +65,6 @@ struct HomeView: View {
                     detailsSection
                     annualSettlementCard
                     nudges
-                    payslipSection
                     disclaimer
                 }
                 .padding(.horizontal, 20)
@@ -79,19 +81,13 @@ struct HomeView: View {
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showFutureSeed) { FutureSeedView() }
             .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
-            .fullScreenCover(isPresented: $showPayslip) {
-            // The checker asks, at the end and only at the end, whether the
-            // figure it read should become the salary. The write lives here
-            // rather than inside the payslip feature, which goes on reading the
-            // store and never writing to it.
-            PayslipCheckFlow(
-                context: PayslipContext(region: store.taxRegion,
-                                        months: store.schedule.months,
-                                        marital: store.maritalSituation,
-                                        dependents: store.dependents,
-                                        jovemExemption: store.irsJovemExemption),
-                onAccept: { store.adopt($0) })
-        }
+            .navigationDestination(isPresented: $showProfile) {
+                // The only nav bar in the app, and it carries nothing but a
+                // back chevron: `ProfileView` draws its own "profileSeed"
+                // header, so a title here would say the same thing twice.
+                ProfileView()
+                    .navigationBarTitleDisplayMode(.inline)
+            }
             .salaryChangeConfirmation(
                 isPresented: $askingSalaryChange,
                 s: s,
@@ -121,7 +117,7 @@ struct HomeView: View {
                     HStack {
                         brandMark
                         Spacer()
-                        editSalaryButton
+                        profileButton
                     }
                     periodPicker
                 }
@@ -130,7 +126,7 @@ struct HomeView: View {
                     brandMark
                     Spacer()
                     periodPicker.frame(width: 188)
-                    editSalaryButton
+                    profileButton
                 }
             }
         }
@@ -154,12 +150,32 @@ struct HomeView: View {
         }
     }
 
-    private var editSalaryButton: some View {
-        Button { askingSalaryChange = true } label: {
-            Image(systemName: "pencil.circle.fill")
+    /// v1.2: PROFILE LIVES HERE NOW, and it cost nothing to put it here.
+    ///
+    /// This slot held a pencil that opened `askingSalaryChange`, which is what
+    /// `updateSalaryButton` two rows below in the same scroll view already
+    /// does. One action, twice, on one screen, which is the thing "no echoes"
+    /// forbids. So the row did not have to grow to take a fourth item; it had
+    /// to lose a third.
+    ///
+    /// The glyph is a person and NOT the sprout, which is what it was first.
+    ///
+    /// The sprout was the tempting answer, because it already grows from stage
+    /// 1 to 5 with the profile. Rendered, it was wrong twice over: `brandMark`
+    /// is a sprout too, so the row had two of them eighteen points apart, and
+    /// at stage 1, which is where somebody who has just finished onboarding
+    /// actually is, the drawing is a hairline stalk that reads as a smudge
+    /// rather than as a control. A button whose job is to be found cannot be
+    /// drawn by a glyph that is nearly blank exactly when it is new.
+    private var profileButton: some View {
+        Button { showProfile = true } label: {
+            Image(systemName: "person.crop.circle")
                 .appFont(24)
                 .foregroundStyle(Theme.textSecondary)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
         }
+        .accessibilityLabel(s.tabProfile)
     }
 
     private var greeting: some View {
@@ -232,24 +248,47 @@ struct HomeView: View {
         }
     }
 
+    /// v1.2: one figure and one sentence, where there were two lines and a
+    /// division to do in your head.
+    ///
+    /// It used to read "Of every €100 your company spends," over "€63 reaches
+    /// your pocket". `efficiency` is a ratio, so €100 was a device for turning
+    /// it into something a reader could picture, and a percentage is what that
+    /// device was standing in for.
+    ///
+    /// Whole percent, and deliberately NOT through `pct` below: that is
+    /// `String(format: "%.1f%%")`, which writes a POSIX decimal point, so a
+    /// Portuguese reader would get "63.4%" beside a "1 234,56 €" from `eur`.
+    /// A whole number has no separator to get wrong.
     private var efficiencyCard: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(s.effLine1)
-                .appFont(12)
-                .foregroundStyle(Theme.textSecondary)
-            HStack(alignment: .firstTextBaseline, spacing: 5) {
-                Text(eur(b.efficiency * 100))
-                    .appFont(22, weight: .medium)
-                    .foregroundStyle(Theme.accent)
-                Text(s.effLine2)
-                    .appFont(13)
-                    .foregroundStyle(Theme.textSecondary)
+        Group {
+            if typeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 3) { efficiencyFigure; efficiencyLabel }
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    efficiencyFigure
+                    efficiencyLabel
+                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accentBorder))
+    }
+
+    private var efficiencyFigure: some View {
+        Text("\(Int((b.efficiency * 100).rounded()))%")
+            .appFont(26, weight: .medium)
+            .foregroundStyle(Theme.accent)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private var efficiencyLabel: some View {
+        Text(s.effPocket)
+            .appFont(13)
+            .foregroundStyle(Theme.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     /// v0.5 "in detail": two branching trees plus the red ajudas de custo highlight.
@@ -456,17 +495,6 @@ struct HomeView: View {
     ///
     /// Not accented. `explorerButton` is the one accent card on Home and two of
     /// them would fight for the same attention.
-    private var payslipSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(s.payslipSection)
-            NudgeCard(
-                icon: "doc.text.magnifyingglass",
-                title: s.payslipNudgeTitle,
-                subtitle: s.payslipNudgeSub
-            ) { showPayslip = true }
-        }
-    }
-
     private var nudges: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(s.whatIf)

@@ -1,21 +1,34 @@
 import SwiftUI
 
-/// The main screens. v0.8.2: a paged TabView so the user can swipe horizontally,
-/// with a custom bottom bar that also lets them tap to jump. safeAreaInset
-/// reserves the bar's space so each screen's scroll content never hides behind it.
-/// v0.9.2 added mapSeed as a fourth tab. v0.10 added Grow as a fifth.
+/// The main screens.
 ///
-/// v0.10.1 moves Grow to the right, next to the profile. The order now runs from
-/// the most concrete to the most speculative: what you earn now, how that
-/// compares, where it would compare differently, what it might become, and the
-/// inputs behind all of it. Grow is the one screen that projects rather than
-/// reports, so it belongs at the far end of that run rather than second.
+/// v1.2 REPLACED THE BAR WITH APPLE'S. Until now this was a paged `TabView`
+/// (`.tabViewStyle(.page)`) with a hand-drawn bar pushed in through
+/// `safeAreaInset`, which meant there was no UIKit tab bar on screen anywhere in
+/// the app. That bought horizontal swiping between tabs and a persistently
+/// tinted Grow item, and it cost everything the real control does for free:
+/// the material behind it, the scroll-edge effect, minimising on scroll, and
+/// the accessibility semantics of an actual tab bar. On iOS 26 it also cost the
+/// glass, which arrives with no code at all as long as nothing here sets
+/// `UITabBar.appearance()` to something opaque. Nothing does, and nothing should.
 ///
-/// Grow's tab item is tinted even when it is not selected. It is the newest and
-/// least obvious of the five, and one persistently coloured item is a cheaper way
-/// to say "there is something here" than a card on Home telling people to go
-/// there. Selection stays legible because the selected item, whichever it is,
-/// gets a soft pill behind it.
+/// Two behaviours went with the old bar and are not reproduced. Swiping between
+/// tabs is gone, because that is not what native tabs do. Grow's tab item is no
+/// longer tinted while unselected; a real tab bar tints the selected item and
+/// only the selected item, and the trick was a workaround for a bar that had no
+/// rules of its own.
+///
+/// THE ORDER runs from the most concrete to the most speculative: what you are
+/// actually paid, what your last payslip says about it, how that compares, where
+/// it would compare differently, and what it might become. The payslip sits
+/// second because it is the one screen about something that already happened.
+///
+/// PROFILE IS NOT HERE ANY MORE. A native iPhone tab bar shows five items and
+/// collapses anything past that into a system "More" list, so the sixth tab the
+/// checker needed had to come from somewhere. Profile went, because it is the
+/// only one of the six that is settings rather than an answer. It is reached
+/// from the sprout in `HomeView.topBar`, and the two `SupportLock` gates still
+/// open the support sheet directly, so the payment ask did not move.
 ///
 /// The selection lives on the store rather than in this view so that one screen
 /// can hand the user to another without two sources of truth for which tab is
@@ -27,76 +40,49 @@ struct RootTabView: View {
 
     var body: some View {
         TabView(selection: $store.selectedTab) {
-            HomeView().tag(0)
-            CompareView().tag(1)
-            MapView().tag(2)
-            GrowView().tag(3)
-            ProfileView().tag(4)
+            HomeView()
+                .tabItem { Label(s.tabHome, systemImage: "house.fill") }
+                .tag(0)
+            // `context` and `onAccept` are built here rather than inside the
+            // feature, because `SalaryStore.adopt` is a write and
+            // `Features/Payslip/` reads the store and never writes to it. This
+            // is the same wiring `HomeView` carried while the checker was a
+            // card there.
+            PayslipTabView(
+                context: PayslipContext(region: store.taxRegion,
+                                        months: store.schedule.months,
+                                        marital: store.maritalSituation,
+                                        dependents: store.dependents,
+                                        jovemExemption: store.irsJovemExemption),
+                onAccept: { store.adopt($0) })
+                .tabItem { Label(s.tabPayslip, systemImage: "doc.text.magnifyingglass") }
+                .tag(1)
+            CompareView()
+                .tabItem { Label(s.tabCompare, systemImage: "chart.bar.fill") }
+                .tag(2)
+            MapView()
+                .tabItem { Label(s.tabMap, systemImage: "map.fill") }
+                .tag(3)
+            GrowView()
+                .tabItem { Label(s.tabGrow, systemImage: "chart.line.uptrend.xyaxis") }
+                .tag(4)
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .ignoresSafeArea(.keyboard)
-        .background(Theme.background.ignoresSafeArea())
-        .safeAreaInset(edge: .bottom, spacing: 0) {
-            CustomTabBar(selection: $store.selectedTab, s: s)
-        }
+        .tabBarMinimisesOnScroll()
     }
 }
 
-private struct CustomTabBar: View {
-    @Binding var selection: Int
-    let s: Strings
-
-    /// `tinted` marks a tab that stays accent-coloured when it is not selected.
-    private var items: [(icon: String, title: String, tinted: Bool)] {
-        [("house.fill", s.tabHome, false),
-         ("chart.bar.fill", s.tabCompare, false),
-         ("map.fill", s.tabMap, false),
-         ("chart.line.uptrend.xyaxis", s.tabGrow, true),
-         ("person.fill", s.tabProfile, false)]
-    }
-
-    var body: some View {
-        HStack(spacing: 0) {
-            ForEach(items.indices, id: \.self) { i in
-                tabButton(index: i)
-            }
+extension View {
+    /// iOS 26 lets the tab bar shrink out of the way as the reader scrolls down
+    /// and come back when they scroll up. Worth having on five screens that are
+    /// all long scrolls, and it does not exist before 26, so it is asked for
+    /// here rather than at the call site: an `if #available` wrapped around the
+    /// `TabView` itself would give SwiftUI two different views to identify.
+    @ViewBuilder
+    func tabBarMinimisesOnScroll() -> some View {
+        if #available(iOS 26.0, *) {
+            self.tabBarMinimizeBehavior(.onScrollDown)
+        } else {
+            self
         }
-        .padding(.top, 7)
-        .padding(.bottom, 4)
-        .background(alignment: .top) {
-            Rectangle()
-                .fill(Theme.background)
-                .overlay(Rectangle().fill(Theme.cardBorder).frame(height: 1), alignment: .top)
-                .ignoresSafeArea(edges: .bottom)
-        }
-    }
-
-    private func tabButton(index i: Int) -> some View {
-        let item = items[i]
-        let selected = selection == i
-        // Unselected: grey, except the tinted one. Selected: accent for everyone,
-        // with the pill doing the work of showing which one it is.
-        let tint = selected ? Theme.accent : (item.tinted ? Theme.accent.opacity(0.8) : Theme.textSecondary)
-        return Button {
-            withAnimation(.easeInOut(duration: 0.25)) { selection = i }
-        } label: {
-            VStack(spacing: 3) {
-                Image(systemName: item.icon)
-                    .appFont(18)
-                Text(item.title)
-                    // v0.10: five tabs instead of four, so the label gets a
-                    // point less and is allowed to shrink rather than truncate.
-                    .appFont(9.5, weight: .medium)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-            }
-            .foregroundStyle(tint)
-            .padding(.vertical, 5)
-            .frame(maxWidth: .infinity)
-            .background(selected ? Theme.accentSoft : .clear,
-                        in: RoundedRectangle(cornerRadius: 11))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 }

@@ -46,6 +46,10 @@ struct Strings {
     var tabGrow: String { t("Grow", "Crescer") }
     var tabCompare: String { t("Compare", "Comparar") }
     var tabMap: String { t("Map", "Mapa") }
+    var tabPayslip: String { t("Payslip", "Recibo") }
+    /// v1.2: no longer a tab. Reached from the sprout in Home's top bar, and
+    /// kept as a string because that button still has to say what it is to
+    /// VoiceOver.
     var tabProfile: String { t("Profile", "Perfil") }
 
     // MARK: Onboarding
@@ -120,8 +124,14 @@ struct Strings {
         default: return nil
         }
     }
-    var effLine1: String { t("Of every €100 your company spends,", "Por cada €100 que a tua empresa gasta,") }
-    var effLine2: String { t("reaches your pocket", "chegam ao teu bolso") }
+    /// v1.2: was two lines, "Of every €100 your company spends," above
+    /// "€63 reaches your pocket". The number is a ratio, so it is now shown as
+    /// one: a percentage with this sentence beside it. One line, one figure, and
+    /// nothing for the reader to divide by 100 in their head.
+    var effPocket: String {
+        t("reaches your pocket, out of what your company pays",
+          "chega ao teu bolso, do que a tua empresa paga")
+    }
 
     var whereMoneyGoes: String { t("Where the money goes", "Para onde vai o dinheiro") }
     var legendNet: String { t("Net", "Líquido") }
@@ -131,7 +141,12 @@ struct Strings {
     var shareOfCost: String { t("Share of total cost to your company", "Parte do custo total para a tua empresa") }
 
     var theDetails: String { t("Details", "Detalhe") }
-    func perPeriod(yearly: Bool) -> String { t(yearly ? "per year" : "per month", yearly ? "por ano" : "por mês") }
+    /// v1.2: two `t()` calls rather than one with a ternary in each argument.
+    /// Same output; the difference is that `tools/dump_copy.py` can see a pair
+    /// here, and could not see one inside the ternaries.
+    func perPeriod(yearly: Bool) -> String {
+        yearly ? t("per year", "por ano") : t("per month", "por mês")
+    }
     var cardYourSS: String { t("Social Security (employee)", "Segurança Social (trabalhador)") }
     var cardIRS: String { t("IRS withheld", "IRS retido") }
 
@@ -1235,18 +1250,43 @@ struct Strings {
 
     // MARK: v1.1 Payslip checker
 
-    var payslipSection: String { t("Your payslip", "O teu recibo") }
-    var payslipNudgeTitle: String { t("Check a payslip", "Confere um recibo") }
-    var payslipNudgeSub: String {
-        t("Import a PDF or a photo. It is read here on your phone.",
-          "Importa um PDF ou uma foto. É lido aqui no teu telemóvel.")
+    // The tab, and the step it opens on.
+
+    /// v1.2: what the checker does, said before it asks for a file. The tab's
+    /// landing screen used to be a paragraph and two buttons, which is thin for
+    /// something somebody arrived at on purpose.
+    var payslipWhatTitle: String { t("What we check", "O que verificamos") }
+    /// One `t()` per item rather than one ternary over two arrays, so each line
+    /// is a pair that `tools/dump_copy.py` can lift into the review document.
+    /// A language-shaped branch hides copy from the only tool that lists it.
+    var payslipWhatItems: [String] {
+        [t("The Social Security on it, at 11% of the right base.",
+           "A Segurança Social, a 11% sobre a base certa."),
+         t("The IRS withheld, against the 2026 tables for your situation.",
+           "O IRS retido, face às tabelas de 2026 para a tua situação."),
+         t("That the totals add up: earnings minus deductions equals net.",
+           "Se as contas batem certo: vencimentos menos descontos igual a líquido.")]
+    }
+    /// The third honesty rule, on the screen rather than in a footnote.
+    var payslipWhatHonesty: String {
+        t("Anything we cannot check, we say so, and why.",
+          "O que não conseguirmos verificar, dizemos, e porquê.")
+    }
+    /// v1.2: replaces the Close button when the checker is a tab, where there is
+    /// nothing to close.
+    var payslipCheckAnother: String {
+        t("Check another payslip", "Conferir outro recibo")
     }
 
     // The source step.
     var payslipTitle: String { t("Check your payslip", "Confere o teu recibo") }
+    /// v1.2 REWORDED THIS, because the checker is a tab now and "close this
+    /// screen and it is gone" named a thing that no longer happens. What is
+    /// still exactly true is the part that matters: it never leaves the phone,
+    /// it is never written to the phone either, and there is no history.
     var payslipSourceIntro: String {
-        t("The file is read on your phone. Nothing is sent anywhere and nothing is saved. Close this screen and it is gone.",
-          "O ficheiro é lido no teu telemóvel. Não é enviado para lado nenhum nem fica guardado. Fechas este ecrã e desaparece.")
+        t("The file is read on your phone. Nothing is sent anywhere, nothing is written to your phone, and there is no history.",
+          "O ficheiro é lido no teu telemóvel. Não é enviado para lado nenhum, não fica gravado no telemóvel, e não há histórico.")
     }
     var payslipPickFile: String { t("Choose a file", "Escolher ficheiro") }
     var payslipPickPhoto: String { t("Choose a photo", "Escolher foto") }
@@ -1335,6 +1375,13 @@ struct Strings {
     }
     var payslipUseKeepMine: String { t("Ok, keep mine", "Ok, fico com o meu") }
     var payslipUseThis: String { t("Ok, use this", "Ok, usar este") }
+    /// v1.2: shown in place of the ask once it has been answered that way. Only
+    /// reachable from the tab, where the verdict stays on screen afterwards and
+    /// the figure it changed is on another tab, so the confirmation has to be
+    /// here rather than implied by a screen closing.
+    var payslipUseDone: String {
+        t("Saved. That is your salary now.", "Guardado. É esse o teu salário agora.")
+    }
 
     var payslipLowConfidence: String {
         t("Read from a photo, so check this against the paper.",

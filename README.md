@@ -34,13 +34,14 @@ If you only have a minute, the three parts worth reading about are:
 | Tab | What it answers |
 |---|---|
 | **Home** | What you earn now. Gross and net either way round, yearly figures, total cost to your employer, the full breakdown, and the annual IRS settlement with every assumption written out. |
+| **Payslip** | Whether your last payslip adds up. Give it a PDF or a photograph and it checks ten things, on the device, and says which ones it could not check and why. Free, and the most interesting part of the app. |
 | **Compare** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region. |
 | **Map** | Where it would sit differently. A Portuguese district choropleth, free, and a 27-tile grid of the European Union, for supporters. |
 | **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. For supporters. |
-| **Profile** | The inputs behind all of it, each with what it unlocks, and the one place the app asks for money. |
 
-The sixth thing is not a tab. The payslip checker is reached from a card on Home, it is
-free, and it is the most interesting part of the app.
+The sixth thing is not a tab. **Profile** holds the inputs behind all of it, each with what
+it unlocks, and the one place the app asks for money. It is reached from the top of Home,
+because a native iPhone tab bar shows five items and the checker earned one of them.
 
 ## One country, three tax tables
 

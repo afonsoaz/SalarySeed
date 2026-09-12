@@ -42,19 +42,26 @@ this one.
 The payslip checker reads a PDF or a photograph that you choose, and tells you
 whether it adds up. All of that happens on your iPhone.
 
-The file is read into memory, checked, and gone. It is never uploaded, it is
-never written to disk by the app, and it is not kept: there is no payslip
-history, and closing the screen discards both the file and everything read from
-it. Open the checker again and it starts from nothing.
+The file is read into memory, checked, and gone. It is never uploaded and it is
+never written to disk by the app. There is no payslip history: nothing about a
+payslip is ever saved to your phone, so there is nothing to go back and look at,
+and nothing that survives closing the app.
+
+From v1.2 the checker is a tab rather than a screen you close, so the wording
+here is narrower than it used to be and it is exact. While the app is running,
+the payslip you checked and the verdict stay in memory, so that leaving the tab
+and coming back does not throw away what you were reading. They are replaced the
+moment you check another payslip, and they are gone when the app quits. At no
+point are they written down.
 
 The text is recognised on the device by Apple's own Vision framework, which is
 part of iOS and does not go online either.
 
-The file and everything read from it are gone when you close the screen. The only
-thing that can outlive it is a figure you tapped to keep, which then becomes your
-salary and nothing more. Nothing else is kept: not the document, not the lines on
-it, not the employer, not the name or the tax number printed on it, not the month,
-and not the fact that you ever opened a payslip at all.
+The only thing that can outlive the reading is a figure you tapped to keep, which
+then becomes your salary and nothing more. Nothing else is kept: not the
+document, not the lines on it, not the employer, not the name or the tax number
+printed on it, not the month, and not the fact that you ever opened a payslip at
+all.
 
 Choosing a file does not hand over your photo library or your documents. Both
 pickers run outside the app, in Apple's own interface, and give the app only the

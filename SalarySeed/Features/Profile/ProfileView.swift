@@ -24,54 +24,52 @@ struct ProfileView: View {
     private var s: Strings { store.s }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("profileSeed")
-                            .appFont(12)
-                            .foregroundStyle(Theme.accent)
-                        Text(s.profileTitle(store.displayName))
-                            .appFont(22, weight: .medium)
-                            .foregroundStyle(Theme.textPrimary)
-                    }
-                    .padding(.top, 8)
-
-                    supportCard
-                    progressCard
-                    currentSalaryCard
-                    nameCard
-
-                    demographicsSection
-                    workSection
-                    taxSection
-                    appSection
-
-                    Text(s.profileFooter)
-                        .appFont(10)
-                        .foregroundStyle(Theme.textFaint)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("profileSeed")
+                        .appFont(12)
+                        .foregroundStyle(Theme.accent)
+                    Text(s.profileTitle(store.displayName))
+                        .appFont(22, weight: .medium)
+                        .foregroundStyle(Theme.textPrimary)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 24)
+                .padding(.top, 8)
+
+                supportCard
+                progressCard
+                currentSalaryCard
+                nameCard
+
+                demographicsSection
+                workSection
+                taxSection
+                appSection
+
+                Text(s.profileFooter)
+                    .appFont(10)
+                    .foregroundStyle(Theme.textFaint)
             }
-            .scrollDismissesKeyboard(.interactively)
-            .background(Theme.background)
-            .sheet(isPresented: $showEditor) { SalaryEditorView() }
-            .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
-            .salaryChangeConfirmation(
-                isPresented: $askingSalaryChange,
-                s: s,
-                onChange: { showEditor = true },
-                onExplore: { showExplorer = true }
-            )
-            .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
-            .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
-            .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
-            .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
-            .sheet(isPresented: $showSupport) { SupportSheet() }
-            .sheet(item: $activeDimension) { dim in
-                ProfilePickerSheet(dimension: dim)
-            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 24)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Theme.background)
+        .sheet(isPresented: $showEditor) { SalaryEditorView() }
+        .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
+        .salaryChangeConfirmation(
+            isPresented: $askingSalaryChange,
+            s: s,
+            onChange: { showEditor = true },
+            onExplore: { showExplorer = true }
+        )
+        .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
+        .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
+        .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
+        .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
+        .sheet(isPresented: $showSupport) { SupportSheet() }
+        .sheet(item: $activeDimension) { dim in
+            ProfilePickerSheet(dimension: dim)
         }
     }
 
