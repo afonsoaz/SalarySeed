@@ -60,6 +60,12 @@ struct PayslipCheckFlow: View {
     /// Closes the cover. `nil` in a tab, where there is nothing to close.
     var onClose: (() -> Void)?
 
+    /// Drives the push into Profile. Only the tab passes one: onboarding's
+    /// cover has no business offering a way into a screen the reader has not
+    /// finished filling in yet, and there is no navigation stack under it to
+    /// push onto either.
+    var showProfile: Binding<Bool>?
+
     var body: some View {
         ZStack {
             Theme.background.ignoresSafeArea()
@@ -96,7 +102,17 @@ struct PayslipCheckFlow: View {
                     title
                 }
             } else {
-                HStack(alignment: .firstTextBaseline) {
+                // v1.2b: `.bottom`, and it used to be `.firstTextBaseline`.
+                //
+                // A baseline alignment asks SwiftUI for the first text baseline
+                // of each child, and an `Image` has no text in it, so it offers
+                // its bottom edge instead. While the trailing slot was empty on
+                // the source step that cost nothing. The moment it held a 44
+                // point profile button, the title was dragged down to meet the
+                // bottom of it and "payslipSeed" sat 44 points lower than on
+                // every other tab. Home, Compare and Map all align this row on
+                // `.bottom` already.
+                HStack(alignment: .bottom) {
                     title
                     Spacer(minLength: 12)
                     trailingButton
@@ -134,9 +150,14 @@ struct PayslipCheckFlow: View {
         case .cover:
             circleButton(icon: "xmark", label: s.closeButton) { onClose?() }
         case .tab:
-            if !isAtStart {
-                circleButton(icon: "arrow.counterclockwise",
-                             label: s.payslipCheckAnother) { model.restart() }
+            HStack(spacing: 4) {
+                if !isAtStart {
+                    circleButton(icon: "arrow.counterclockwise",
+                                 label: s.payslipCheckAnother) { model.restart() }
+                }
+                if let showProfile {
+                    ProfileButton(isPresented: showProfile)
+                }
             }
         }
     }
@@ -161,7 +182,7 @@ struct PayslipCheckFlow: View {
     /// that draws nothing, and the accessibility-size layout needs to know
     /// whether to give it a row of its own.
     private var hasTrailingButton: Bool {
-        chrome == .cover || !isAtStart
+        chrome == .cover || !isAtStart || showProfile != nil
     }
 
     private func circleButton(icon: String, label: String,
@@ -213,13 +234,24 @@ struct PayslipCheckFlow: View {
 /// reads the store and never writes to it, and `SalaryStore.adopt` is a write.
 struct PayslipTabView: View {
     @StateObject private var model = PayslipCheckModel()
+    @State private var showProfile = false
 
     let context: PayslipContext
     var onAccept: (PayslipSalary.GrossProposal) -> Void
 
+    /// The `NavigationStack` exists only so the profile button has somewhere to
+    /// push to. This is the one tab that never had one, because the flow is a
+    /// state machine rather than a stack and nothing in it navigates.
     var body: some View {
-        PayslipCheckFlow(model: model, chrome: .tab,
-                         context: context, onAccept: onAccept)
+        NavigationStack {
+            PayslipCheckFlow(model: model, chrome: .tab,
+                             context: context, onAccept: onAccept,
+                             showProfile: $showProfile)
+                // Nothing here wants a navigation bar: the screen draws its
+                // own header, and the stack exists only to push Profile.
+                .toolbar(.hidden, for: .navigationBar)
+                .profileDestination(isPresented: $showProfile)
+        }
     }
 }
 

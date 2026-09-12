@@ -20,6 +20,7 @@ struct MapView: View {
     @State private var selected: District?
     @State private var showSectorSheet = false
     @State private var showConcelhoSheet = false
+    @State private var showProfile = false
 
     // v0.11
     @State private var selectedCountry: Country?
@@ -65,19 +66,25 @@ struct MapView: View {
             .background(Theme.background)
             .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
             .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
+            .profileDestination(isPresented: $showProfile)
         }
     }
 
     // MARK: Header
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text("mapSeed")
-                .appFont(12)
-                .foregroundStyle(Theme.accent)
-            Text(scope == .portugal ? s.mapTitle : s.euroTitle)
-                .appFont(22, weight: .medium)
-                .foregroundStyle(Theme.textPrimary)
+        HStack(alignment: .bottom) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("mapSeed")
+                    .appFont(12)
+                    .foregroundStyle(Theme.accent)
+                Text(scope == .portugal ? s.mapTitle : s.euroTitle)
+                    .appFont(22, weight: .medium)
+                    .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            ProfileButton(isPresented: $showProfile)
         }
         .padding(.top, 8)
     }

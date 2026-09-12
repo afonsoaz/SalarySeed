@@ -158,6 +158,38 @@ taken to confirm a fix showed an app that did not have it. Nothing errored; the 
 quietly had the old tabs in it. `tools/run_sim.sh` asks `xcodebuild -showBuildSettings` which
 folder this scheme actually builds into, and prints the binary's timestamp.
 
+**The profile gets found.** v1.2 moved Profile out of the tab bar and left one grey glyph on
+one screen as the way back in, which is thin for the screen every cohort in the app is
+computed from. It is accent green now and it is in all five headers.
+
+Two of the five had to make room. Compare's top-right held a sprout and "3 de 10" that said
+something true and led nowhere, eighteen points from a second sprout in Home's own corner;
+the count moved to the new card and the slot now holds the way in. Grow handed its entire
+screen to `SupportLock`, title included, so a button there would have been blurred and inert
+for exactly the people who have not paid: the title row is lifted out of the lock, which also
+makes the locked screen read as "this screen, out of focus" rather than "everything, out of
+focus", which is what that component's own comment says it is for.
+
+**Home says what is missing.** A green card above the detail section: how many of the ten
+profile signals are filled, why that matters, and a tap into Profile. It disappears at 10/10
+and cannot be dismissed, which is not the same thing as a nag: it never interrupts, never
+counts launches, has no countdown and no second ask. It reads `store.signalTotal` rather than
+the number 10, because the card in Profile that hard-coded a total spent several releases
+reading "11 de 5" after the profile grew underneath it.
+
+Compare keeps its one-question-at-a-time card. Dropping it there was the plan for about ten
+minutes, until it turned out Compare was its only caller and the deletion would have taken
+`Enrichment.swift` and forty-six copy pairs out of a document that is currently being
+reviewed.
+
+Two layout bugs found by looking. The payslip header aligned on `.firstTextBaseline`, which
+asks an `Image` for a baseline it does not have and gets its bottom edge instead, so the new
+44 point button dragged "payslipSeed" 44 points down the screen; it looked exactly like a
+navigation bar appearing, and hiding the toolbar changed nothing. And the card's sprout was
+drawn at 30 points, which at three of ten is a thin seedling in an empty column: the state
+the card spends most of its life in was the state it looked worst in.
+
+
 **v1.1**: The payslip checker, and the reader gets something that can actually run it.
 
 Give it a PDF or a photograph of a recibo de vencimento and it tells you what is wrong, what checks out, and what is worth knowing. Free, on the device, and nothing is kept: the file is read into memory, checked, and gone when the screen closes. There is no history, and adding one would change `PRIVACY.md`, the privacy manifest and the App Store privacy answers in the same commit, which is why the manifest now says so in a comment.

@@ -11,6 +11,7 @@ struct CompareView: View {
     // v0.9: progressive enrichment. `snoozed` is intentionally in-memory only,
     // so "not now" means not now and not never.
     @State private var activeSignalSheet: SignalSheet?
+    @State private var showProfile = false
     @State private var snoozed: Set<String> = []
     // v0.9.1: the region layer is answered by picking a município.
     @State private var showConcelhoSheet = false
@@ -38,6 +39,7 @@ struct CompareView: View {
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
             }
+            .profileDestination(isPresented: $showProfile)
         }
     }
 
@@ -123,13 +125,11 @@ struct CompareView: View {
                     .foregroundStyle(Theme.textPrimary)
             }
             Spacer()
-            HStack(spacing: 6) {
-                SproutView(stage: store.sproutStage, size: 22)
-                Text(s.profileProgressCount(store.profileFilledCount, store.signalTotal))
-                    .appFont(10)
-                    .foregroundStyle(Theme.textFaint)
-            }
-            .padding(.bottom, 2)
+            // v1.2b: this slot held a sprout and "3 de 10", which said something
+            // true and led nowhere, next to a second sprout in the same corner
+            // of Home. The count moved to `ProfileNudgeCard`, where there is
+            // room to say what it means, and the slot now holds the way in.
+            ProfileButton(isPresented: $showProfile)
         }
         .padding(.top, 8)
     }

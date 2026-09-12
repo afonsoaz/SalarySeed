@@ -62,6 +62,7 @@ struct HomeView: View {
                     updateSalaryButton
                     efficiencyCard
                     BreakdownBar(breakdown: b)
+                    profileNudge
                     detailsSection
                     annualSettlementCard
                     nudges
@@ -81,13 +82,7 @@ struct HomeView: View {
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showFutureSeed) { FutureSeedView() }
             .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
-            .navigationDestination(isPresented: $showProfile) {
-                // The only nav bar in the app, and it carries nothing but a
-                // back chevron: `ProfileView` draws its own "profileSeed"
-                // header, so a title here would say the same thing twice.
-                ProfileView()
-                    .navigationBarTitleDisplayMode(.inline)
-            }
+            .profileDestination(isPresented: $showProfile)
             .salaryChangeConfirmation(
                 isPresented: $askingSalaryChange,
                 s: s,
@@ -117,7 +112,7 @@ struct HomeView: View {
                     HStack {
                         brandMark
                         Spacer()
-                        profileButton
+                        ProfileButton(isPresented: $showProfile)
                     }
                     periodPicker
                 }
@@ -126,7 +121,7 @@ struct HomeView: View {
                     brandMark
                     Spacer()
                     periodPicker.frame(width: 188)
-                    profileButton
+                    ProfileButton(isPresented: $showProfile)
                 }
             }
         }
@@ -158,28 +153,9 @@ struct HomeView: View {
     /// forbids. So the row did not have to grow to take a fourth item; it had
     /// to lose a third.
     ///
-    /// The glyph is a person and NOT the sprout, which is what it was first.
-    ///
-    /// The sprout was the tempting answer, because it already grows from stage
-    /// 1 to 5 with the profile. Rendered, it was wrong twice over: `brandMark`
-    /// is a sprout too, so the row had two of them eighteen points apart, and
-    /// at stage 1, which is where somebody who has just finished onboarding
-    /// actually is, the drawing is a hairline stalk that reads as a smudge
-    /// rather than as a control. A button whose job is to be found cannot be
-    /// drawn by a glyph that is nearly blank exactly when it is new.
-    private var profileButton: some View {
-        Button { showProfile = true } label: {
-            Image(systemName: "person.crop.circle")
-                .appFont(24)
-                .foregroundStyle(Theme.textSecondary)
-                // Apple's 44 point minimum, and no smaller than the glyph
-                // itself once the reader has asked for bigger text.
-                .frame(width: max(44, Theme.scaled(28, typeSize)),
-                       height: max(44, Theme.scaled(28, typeSize)))
-                .contentShape(Rectangle())
-        }
-        .accessibilityLabel(s.tabProfile)
-    }
+    /// v1.2b moved the button itself to `Features/Shared/ProfileButton.swift`,
+    /// because it is now in all five tab headers and there is no version of
+    /// that worth writing five times.
 
     private var greeting: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -248,6 +224,18 @@ struct HomeView: View {
             .padding(.vertical, 12)
             .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 13))
             .overlay(RoundedRectangle(cornerRadius: 13).stroke(Theme.accentBorder))
+        }
+    }
+
+    /// v1.2b: how complete the profile is, said on the screen people actually
+    /// open, and above the detail rather than below it. Everything under
+    /// "DETALHE" is arithmetic on the salary alone and needs no profile at all;
+    /// everything the profile sharpens lives on other tabs. So this sits at the
+    /// boundary, which is the last moment it is still the subject.
+    @ViewBuilder
+    private var profileNudge: some View {
+        if store.profileFilledCount < store.signalTotal {
+            ProfileNudgeCard { showProfile = true }
         }
     }
 

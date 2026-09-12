@@ -42,6 +42,7 @@ struct GrowView: View {
     @State private var showSectorTenure = false
     @State private var showEditor = false
     @State private var showExplorer = false
+    @State private var showProfile = false
     @State private var askingSalaryChange = false
 
     private var s: Strings { store.s }
@@ -77,18 +78,39 @@ struct GrowView: View {
     }
 
     var body: some View {
-        ZStack {
-            Theme.background.ignoresSafeArea()
-            // v1.0.1a: the same content either way. A non-supporter gets it
-            // blurred under `SupportLock` rather than a different screen, so what
-            // they are looking at is Grow out of focus and not an advert for it.
-            if supporter.isSupporter {
-                growContent
-            } else {
-                SupportLock(title: s.lockGrowTitle, blurb: s.lockGrowBlurb) {
-                    growContent
+        NavigationStack {
+            ZStack {
+                Theme.background.ignoresSafeArea()
+                // v1.2b LIFTED THE TITLE ROW OUT OF THE LOCK.
+                //
+                // `SupportLock` blurs its content at radius 6 and sets
+                // `allowsHitTesting(false)`, and this screen handed it
+                // everything, so a non-supporter got the title out of focus
+                // along with the projection and could not have tapped anything
+                // in it. That was survivable while the header held nothing you
+                // could tap. It stops being survivable the moment the only way
+                // into Profile lives there.
+                //
+                // It also reads better. `SupportLock`'s own comment says the
+                // point is that a non-supporter is looking at Grow out of focus
+                // rather than at an advert for Grow, and a sharp title over a
+                // blurred projection is more that thing, not less.
+                VStack(spacing: 0) {
+                    growTopBar
+                    // v1.0.1a: the same content either way. A non-supporter gets
+                    // it blurred under `SupportLock` rather than a different
+                    // screen, so what they are looking at is Grow out of focus
+                    // and not an advert for it.
+                    if supporter.isSupporter {
+                        growContent
+                    } else {
+                        SupportLock(title: s.lockGrowTitle, blurb: s.lockGrowBlurb) {
+                            growContent
+                        }
+                    }
                 }
             }
+            .profileDestination(isPresented: $showProfile)
         }
         .sheet(isPresented: $showSectorTenure) { SectorTenureSheet() }
         .sheet(isPresented: $showEditor) { SalaryEditorView() }
@@ -129,20 +151,33 @@ struct GrowView: View {
         }
     }
 
-    private func header(ctx: GrowthEngine.Context) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
+    /// The title row, outside the lock, so it stays sharp and its button stays
+    /// tappable for a reader who has not paid. The sub-line that names the
+    /// sector and the tenure stays in `header(ctx:)` below, because it is the
+    /// half that needs a context to exist.
+    private var growTopBar: some View {
+        HStack(alignment: .bottom) {
             HStack(spacing: 6) {
                 SproutView(stage: store.sproutStage, size: 16)
+                    .accessibilityHidden(true)
                 Text(s.growTitle)
                     .appFont(20, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            Text(s.growSub(ctx.sector.label(pt: s.pt), years: Int(ctx.startTenure)))
-                .appFont(12)
-                .foregroundStyle(Theme.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            ProfileButton(isPresented: $showProfile)
         }
-        .padding(.top, 12)
+        .padding(.horizontal, 20)
+        .padding(.top, 8)
+    }
+
+    private func header(ctx: GrowthEngine.Context) -> some View {
+        Text(s.growSub(ctx.sector.label(pt: s.pt), years: Int(ctx.startTenure)))
+            .appFont(12)
+            .foregroundStyle(Theme.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.top, 4)
     }
 
     // MARK: The answer, first

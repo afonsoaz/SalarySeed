@@ -390,6 +390,11 @@ struct Strings {
     // v0.9.3: the sprout drawing stays, the seed vocabulary does not.
     var profileProgressTitle: String { t("Your details", "Os teus dados") }
     var profileProgressSub: String { t("Each one you add sharpens your comparison.", "Cada um que adicionas afina a tua comparação.") }
+    /// v1.2b: the one new pair the Home card needed. Everything else on it
+    /// (`profileProgressCount`, `profileProgressSub`) was already written for
+    /// the status card in Profile; this is the only line that had to be an
+    /// instruction rather than a description, because the card is a button.
+    var profileNudgeTitle: String { t("Finish your profile", "Completa o teu perfil") }
     var profileDoneTitle: String { t("All done", "Está tudo") }
     var profileDoneSub: String {
         t("Nothing left to ask. Your comparison is as precise as this app can make it.",
