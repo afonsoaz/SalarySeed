@@ -70,7 +70,7 @@ struct Strings {
     var perMonthSuffix: String { t("/mo", "/mês") }
     var okButton: String { t("OK", "OK") }
 
-    var monthsHint: String { t("14 is the norm: holiday and Christmas pay come separately. With 12, those subsidies are split across every month (duodécimos).", "14 é o normal: os subsídios de férias e Natal vêm à parte. Com 12, esses subsídios vêm repartidos por todos os meses (duodécimos).") }
+    var monthsHint: String { t("14 is the norm. Holiday and Christmas pay come separately. With 12, those subsidies are split across every month (duodécimos).", "14 é o normal. Os subsídios de férias e Natal vêm à parte. Com 12, esses subsídios vêm repartidos por todos os meses (duodécimos).") }
     /// Shown only while the field is still empty, next to a dimmed OK. Its job is
     /// to say why the button will not move yet. It used to say the salary was the
     /// only thing we needed, which the seven steps after it immediately made
@@ -186,20 +186,20 @@ struct Strings {
 
     // v0.9.4: the two assumptions behind the settlement, always stated.
     func annualJovemBoth(_ pct: Int) -> String {
-        t("IRS Jovem (\(pct)% exempt) is already in both numbers: it lowers what's withheld every month and the real IRS at the end of the year.",
-          "O IRS Jovem (\(pct)% isento) já está nos dois números: baixa o que te retêm todos os meses e também o IRS real no fim do ano.")
+        t("IRS Jovem (\(pct)% exempt) is already in both numbers. It lowers what is withheld every month and the real IRS at the end of the year.",
+          "O IRS Jovem (\(pct)% isento) já está nos dois números. Baixa o que te retêm todos os meses e também o IRS real no fim do ano.")
     }
     func annualCreditFull(_ assumed: String) -> String {
         t("Assumes \(assumed) of the usual deductions (health, education, invoices), and all of it is used here.",
           "Assume \(assumed) das deduções habituais (saúde, educação, faturas), e aqui são usados por inteiro.")
     }
     func annualCreditPartial(_ assumed: String, _ applied: String) -> String {
-        t("Assumes \(assumed) of the usual deductions (health, education, invoices), but only \(applied) fits: a deduction never pushes your IRS below zero.",
-          "Assume \(assumed) das deduções habituais (saúde, educação, faturas), mas só \(applied) cabem: uma dedução nunca faz o IRS descer abaixo de zero.")
+        t("Assumes \(assumed) of the usual deductions (health, education, invoices), but only \(applied) fits. A deduction never pushes your IRS below zero.",
+          "Assume \(assumed) das deduções habituais (saúde, educação, faturas), mas só \(applied) cabem. Uma dedução nunca faz o IRS descer abaixo de zero.")
     }
     func annualCreditUnused(_ assumed: String) -> String {
-        t("Assumes \(assumed) of the usual deductions (health, education, invoices), but none of it is used here: there is no IRS left for it to reduce.",
-          "Assume \(assumed) das deduções habituais (saúde, educação, faturas), mas aqui não são usados: já não há IRS para reduzir.")
+        t("Assumes \(assumed) of the usual deductions (health, education, invoices), but none of it is used here. There is no IRS left for it to reduce.",
+          "Assume \(assumed) das deduções habituais (saúde, educação, faturas), mas aqui não são usados. Já não há IRS para reduzir.")
     }
 
     // v0.5 ajudas de custo, always shown apart from the salary
@@ -210,12 +210,12 @@ struct Strings {
     var ajudasCardTitle: String { t("Ajudas de custo", "Ajudas de custo") }
     func ajudasCardYearly(_ yearly: String) -> String { t("\(yearly) a year, paid over 12 months", "\(yearly) por ano, pago em 12 meses") }
     var ajudasCardBody: String {
-        t("This goes straight to your net pay: no IRS, no Social Security. But it does not count as gross salary. Banks ignore it when rating you for loans, and it builds no pension or social protection.",
-          "Este valor vai direto para o teu líquido: sem IRS, sem Segurança Social. Mas não conta como salário bruto. Os bancos ignoram este valor quando avaliam um crédito, e não conta para a reforma nem para a proteção social.")
+        t("This goes straight to your net pay, with no IRS and no Social Security. But it does not count as gross salary. Banks ignore it for loans, and it builds no pension.",
+          "Este valor vai direto para o teu líquido, sem IRS e sem Segurança Social. Mas não conta como salário bruto. Os bancos ignoram-no num crédito, e não conta para a reforma.")
     }
     var ajudasExcludedNote: String {
-        t("Ajudas de custo not included: comparisons use the gross salary only.",
-          "Ajudas de custo não incluídas: as comparações usam só o salário bruto.")
+        t("Ajudas de custo not included. Comparisons use the gross salary only.",
+          "Ajudas de custo não incluídas. As comparações usam só o salário bruto.")
     }
 
 
@@ -559,8 +559,8 @@ struct Strings {
             return t("Part-time pay mixed in with full-time pay drags every average down. Telling us keeps the numbers honest.",
                      "Salários a tempo parcial misturados com tempo inteiro puxam todas as médias para baixo. Dizeres-nos mantém as contas honestas.")
         case "jobTitle":
-            return t("Your sector says where you work. Your job says what you do, and that's where the real difference in pay is. Nothing compares on it yet, it's being gathered.",
-                     "O setor diz onde trabalhas. A profissão diz o que fazes, e é aí que está a diferença real nos salários. Ainda não compara nada, está a ser reunido.")
+            return t("Your sector says where you work. Your job says what you do, and that is where the real difference in pay is.",
+                     "O setor diz onde trabalhas. A profissão diz o que fazes, e é aí que está a diferença real nos salários.")
         case "variablePay":
             return t("Bonus and commission can be a big slice of the year. Kept apart from the salary so neither number lies.",
                      "Prémios e comissões podem ser uma fatia grande do ano. Ficam à parte do salário para nenhum dos números mentir.")
@@ -577,8 +577,8 @@ struct Strings {
     var employerSheetTitle: String { t("Who do you work for?", "Para quem trabalhas?") }
     var publicCaveatTitle: String { t("This comparison doesn't cover you", "Esta comparação não te cobre") }
     var publicCaveatBody: String {
-        t("The Quadros de Pessoal leave out staff on public-function contracts, so these averages are private-sector pay. Your own pay scale isn't in here yet.",
-          "Os Quadros de Pessoal deixam de fora quem tem contrato de trabalho em funções públicas, por isso estas médias são do privado. A tua tabela remuneratória ainda não está aqui.")
+        t("These figures are private-sector pay. Public pay scales are not in them.",
+          "Estes valores são do setor privado. As tabelas remuneratórias públicas não estão aqui.")
     }
 
     // Work schedule
@@ -598,8 +598,8 @@ struct Strings {
     var jobSearchPlaceholder: String { t("Search your job", "Procura a tua profissão") }
     var jobNoResults: String { t("Nothing matched. Try a shorter word.", "Nada encontrado. Tenta uma palavra mais curta.") }
     var jobNotCompared: String {
-        t("Not compared yet. Portugal's published tables stop at broad groups, so this one is being gathered first.",
-          "Ainda não é comparada. As tabelas publicadas em Portugal ficam-se por grupos largos, por isso esta está primeiro a ser reunida.")
+        t("Not compared yet. Portugal's published tables stop at broad groups.",
+          "Ainda não é comparada. As tabelas publicadas em Portugal ficam-se por grupos largos.")
     }
 
     // Variable pay
@@ -623,8 +623,8 @@ struct Strings {
     var workSheetTitle: String { t("About your work", "Sobre o teu trabalho") }
     var workSectionTitle: String { t("Your work", "O teu trabalho") }
     var collectedNotComparedNote: String {
-        t("Stays on your phone. Some of these aren't compared yet, they're being gathered so the comparison can get sharper later.",
-          "Fica no teu telemóvel. Alguns destes ainda não são comparados, estão a ser reunidos para a comparação ficar melhor mais à frente.")
+        t("Stays on your phone. Not all of these are compared yet.",
+          "Fica no teu telemóvel. Nem todos são comparados ainda.")
     }
     var saveButton: String { t("Save", "Guardar") }
 
@@ -676,8 +676,8 @@ struct Strings {
     }
 
     var mapNoTenureNote: String {
-        t("Sector only. The official tables never cross district with time at the company, and adding the national tenure effect would shift every district by the same amount, so not a single colour or percentage here would change.",
-          "Só por setor. As tabelas oficiais nunca cruzam distrito com antiguidade na empresa, e aplicar o efeito nacional da antiguidade mexeria em todos os distritos por igual, por isso nem uma cor nem uma percentagem aqui mudariam.")
+        t("Sector only. The official tables never cross district with time at the company.",
+          "Só por setor. As tabelas oficiais nunca cruzam distrito com antiguidade na empresa.")
     }
     var mapScopeNote: String {
         t("Mainland only, private-contract employees, October 2024. These are averages for everyone in the sector, not for your job.",
@@ -694,8 +694,8 @@ struct Strings {
 
     var mapIslandNoData: String { t("no figure", "sem valor") }
     var mapIslandNote: String {
-        t("Açores and Madeira are on the map but have no colour: the Quadros de Pessoal cover the mainland only, and there is no published figure for either region in this source. Their tax is another matter, and the app does compute that properly.",
-          "Os Açores e a Madeira estão no mapa mas sem cor: os Quadros de Pessoal só cobrem o continente, e não há valor publicado para nenhuma das regiões nesta fonte. Os impostos são outra história, e esses a app já calcula bem.")
+        t("Açores and Madeira have no colour here. The Quadros de Pessoal cover the mainland only. Their tax is another matter, and the app does compute that properly.",
+          "Os Açores e a Madeira não têm cor aqui. Os Quadros de Pessoal só cobrem o continente. Os impostos são outra história, e esses a app calcula bem.")
     }
 
     /// Shown wherever a tax figure appears, when the user is in a region with its
@@ -707,8 +707,8 @@ struct Strings {
     }
     /// Shown when the app is guessing Continente because it has no município.
     var taxRegionAssumedNote: String {
-        t("Calculated with the mainland IRS tables. If you live in Açores or Madeira, add your município and the figures drop: both regions tax 30% lower.",
-          "Calculado com as tabelas de IRS do continente. Se vives nos Açores ou na Madeira, põe o teu concelho e as contas descem: as duas regiões cobram menos 30%.")
+        t("Calculated with the mainland IRS tables. If you live in Açores or Madeira, add your município and the figures drop. Both regions tax 30% lower.",
+          "Calculado com as tabelas de IRS do continente. Se vives nos Açores ou na Madeira, põe o teu concelho e as contas descem. As duas regiões cobram menos 30%.")
     }
     /// The comparison side, which the tax fix does not reach.
     /// v0.15.3 widened this. The regional average is not the only thing missing:
@@ -716,8 +716,8 @@ struct Strings {
     /// Quadros de Pessoal too, so for an islander even "all of Portugal" is really
     /// the mainland. Saying half of that would have been the flattering half.
     var islandNoCohortNote: String {
-        t("The Quadros de Pessoal cover the mainland only. So there is no regional average to put you against, the sector and tenure figures are mainland ones, and even the national percentile above is really a mainland distribution.",
-          "Os Quadros de Pessoal só cobrem o continente. Por isso não há média regional para te comparar, os valores de setor e antiguidade são do continente, e até a percentagem nacional aqui em cima é, na verdade, uma distribuição do continente.")
+        t("The Quadros de Pessoal cover the mainland only, so every comparison here is against mainland pay, including the national percentile above.",
+          "Os Quadros de Pessoal só cobrem o continente, por isso todas as comparações aqui são com o continente, incluindo a percentagem nacional aqui em cima.")
     }
     /// v0.15.3 corrected this. It used to say the district lever "does nothing"
     /// for islanders, and that was simply false: with no home district the model
@@ -725,8 +725,8 @@ struct Strings {
     /// district does move the path, just from a different starting point. Copy
     /// that describes behaviour the app does not have is worse than no copy.
     var growIslandNote: String {
-        t("There is no district figure for Açores or Madeira, so changing district compares against the national average for your sector rather than against where you are now. The tax on this path is your region's.",
-          "Não há valor por distrito para os Açores nem para a Madeira, por isso mudar de distrito compara com a média nacional do teu setor em vez de comparar com onde estás agora. O imposto deste percurso é o da tua região.")
+        t("There is no district figure for Açores or Madeira, so changing district compares against the national average for your sector. The tax on this path is your region's.",
+          "Não há valor por distrito para os Açores nem para a Madeira, por isso mudar de distrito compara com a média nacional do teu setor. O imposto deste percurso é o da tua região.")
     }
 
     // MARK: v0.9.4 salary explorer
@@ -786,8 +786,8 @@ struct Strings {
     var growBreakEvenTitle: String { t("A new job has to beat", "Um emprego novo tem de bater") }
     var growPerYearOfTenure: String { t("a year, if you stay", "por ano, se ficares") }
     func growBreakEvenBody(_ total: String, years: Int) -> String {
-        t("That is what time at one employer is worth in your sector. Over \(years) years the tenure step adds up to \(total), and you hand all of it back the day you leave, so a new job has to beat that yearly rate just to keep you level.",
-          "É isso que o tempo na mesma empresa vale no teu setor. Ao fim de \(years) anos o degrau da antiguidade soma \(total), e devolves tudo no dia em que sais, por isso um emprego novo tem de bater essa taxa anual só para ficares na mesma.")
+        t("That is what time at one employer is worth in your sector. Over \(years) years the tenure step adds up to \(total), and you hand it back the day you leave.",
+          "É isso que o tempo na mesma empresa vale no teu setor. Ao fim de \(years) anos o degrau da antiguidade soma \(total), e devolves tudo no dia em que sais.")
     }
     func growBreakEvenFlat(_ sector: String) -> String {
         t("In \(sector.lowercased()) pay does not climb with time at one employer, so staying is not buying you anything and leaving costs you nothing.",
@@ -894,8 +894,8 @@ struct Strings {
           "Isso fica \(points) pontos por ano abaixo do que ficar vale, por isso estas mudanças saem-te caras.")
     }
     func growPremiumNote(_ years: Int) -> String {
-        t("The same raise is taken at every change, measured against what you were earning the year before. Both rates above are what each path actually compounds to over \(years) years, so they always match the chart.",
-          "O mesmo aumento é levado em cada mudança, medido contra o que ganhavas no ano anterior. As duas taxas acima são o que cada percurso rende de facto ao longo de \(years) anos, por isso batem sempre certo com o gráfico.")
+        t("The same raise is taken at every change, measured against the year before. Both rates above are what each path compounds to over \(years) years.",
+          "O mesmo aumento é levado em cada mudança, medido contra o ano anterior. As duas taxas acima são o que cada percurso rende ao longo de \(years) anos.")
     }
     func growCadenceEveryAt(_ years: Int, _ premium: String) -> String {
         t("\(premium) every \(years) yrs", "\(premium) de \(years) em \(years) anos")
@@ -904,8 +904,8 @@ struct Strings {
     var growLeverSector: String { t("Sector", "Setor") }
     var growSameAsNow: String { t("Same as now", "O mesmo de agora") }
     var growSectorNote: String {
-        t("Changing sector keeps your standing: the model puts you at the same distance from the average there as you are from the average here.",
-          "Mudar de setor mantém a tua posição: o modelo põe-te à mesma distância da média de lá que estás da média daqui.")
+        t("Changing sector keeps your standing. The model puts you at the same distance from the average there as you are here.",
+          "Mudar de setor mantém a tua posição. O modelo põe-te à mesma distância da média de lá que estás da média daqui.")
     }
     var growLeverDistrict: String { t("District", "Distrito") }
     var growNoDistrict: String { t("Not set", "Por definir") }
@@ -923,8 +923,8 @@ struct Strings {
     }
     var growPayGrowth: String { t("Pay growth across the economy", "Subida geral dos salários") }
     var growPayGrowthHint: String {
-        t("Zero by default, on purpose: at zero every euro on this screen is in today's money and the path shows the tenure effect and nothing else.",
-          "Zero por omissão, de propósito: a zero todos os euros deste ecrã são dinheiro de hoje e o percurso mostra só o efeito da antiguidade.")
+        t("Zero by default, on purpose. At zero every euro here is in today's money and the path shows the tenure effect alone.",
+          "Zero por omissão, de propósito. A zero todos os euros aqui são dinheiro de hoje e o percurso mostra só o efeito da antiguidade.")
     }
     var growInflation: String { t("Inflation", "Inflação") }
     var growInflationHint: String {
@@ -950,42 +950,42 @@ struct Strings {
         }
     }
     var growWaterfallNote: String {
-        t("The pay-side steps are all multipliers, so the order they are applied in cannot change the total. Tax is not a multiplier and inflation is a change of unit, so those two always come last, in that order.",
-          "Os passos do lado do salário são todos multiplicadores, por isso a ordem em que se aplicam não muda o total. O imposto não é multiplicador e a inflação é uma mudança de unidade, por isso esses dois vêm sempre no fim, por essa ordem.")
+        t("The pay-side steps are multipliers, so their order cannot change the total. Tax and inflation always come last, in that order.",
+          "Os passos do lado do salário são multiplicadores, por isso a ordem não muda o total. O imposto e a inflação vêm sempre no fim, por essa ordem.")
     }
 
     var growAssumptionsTitle: String { t("What this takes for granted", "O que isto dá como certo") }
     var growAssumptionCrossSection: String {
-        t("This is a photograph of October 2024, not a career. The people in the 20+ tenure band are not the people in the first-year band twenty years later: they are the ones who stayed, in a different mix of jobs. So every point answers what people at that tenure earn today, never what you will earn then.",
-          "Isto é uma fotografia de outubro de 2024, não uma carreira. Quem está no escalão dos 20+ anos não é quem está no primeiro ano vinte anos depois: são os que ficaram, noutra mistura de funções. Por isso cada ponto responde ao que ganha hoje quem tem essa antiguidade, nunca ao que tu vais ganhar.")
+        t("This is a photograph of October 2024, not a career. Every point is what people at that tenure earn today, never what you will earn then.",
+          "Isto é uma fotografia de outubro de 2024, não uma carreira. Cada ponto é o que ganha hoje quem tem essa antiguidade, nunca o que tu vais ganhar.")
     }
     var growAssumptionAnchor: String {
-        t("Your path starts on your real salary and keeps your distance from the average. That assumes the shape of the tenure steps is the same for everyone in your sector and only the level differs.",
-          "O teu percurso começa no teu salário a sério e mantém a tua distância à média. Isso assume que a forma dos degraus da antiguidade é igual para toda a gente do teu setor e que só o nível é que muda.")
+        t("Your path starts on your real salary and keeps your distance from the average. It assumes the tenure steps have the same shape for everyone in your sector.",
+          "O teu percurso começa no teu salário a sério e mantém a tua distância à média. Assume que os degraus da antiguidade têm a mesma forma para toda a gente do teu setor.")
     }
     var growAssumptionGross: String {
         t("Everything on the path is gross, because that is what GEP publishes. Net appears only when you hold a single year, where it is worked out with your own tax situation.",
           "Tudo no percurso é bruto, porque é isso que o GEP publica. O líquido só aparece quando seguras um ano, e aí é calculado com a tua situação fiscal.")
     }
     func growAssumptionEntrant(_ amount: String) -> String {
-        t("First-year people in this sector average \(amount) a month. That is here as a reference only: it is full of people entering the labour market, so it is not where an experienced person lands after a move, and the model never puts you there.",
-          "Quem está no primeiro ano neste setor ganha em média \(amount) por mês. Está aqui só como referência: é um escalão cheio de gente a entrar no mercado de trabalho, por isso não é onde alguém com experiência cai depois de mudar, e o modelo nunca te põe lá.")
+        t("First-year people in this sector average \(amount) a month. It is a reference only. That band is full of people entering the labour market, so the model never puts you there.",
+          "Quem está no primeiro ano neste setor ganha em média \(amount) por mês. É só uma referência. É um escalão cheio de gente a entrar no mercado, por isso o modelo nunca te põe lá.")
     }
     var growAssumptionDip: String {
         t("In this sector pay does not rise across every tenure band. The dip you can see is what the survey found, and it is drawn rather than smoothed away.",
           "Neste setor o salário não sobe de escalão para escalão em todos eles. A descida que se vê é o que o inquérito encontrou, e está desenhada em vez de alisada.")
     }
     var growAssumptionMoverFrozen: String {
-        t("After your first change of employer, your pay only moves when you negotiate. The survey measures what time at ONE company is worth, and says nothing about what someone experienced is paid on arrival, so the model does not hand a mover a tenure raise it never measured.",
-          "Depois da tua primeira mudança de empresa, o teu salário só mexe quando negoceias. O inquérito mede o que vale o tempo numa SÓ empresa, e não diz nada sobre quanto se paga a alguém com experiência que acaba de chegar, por isso o modelo não dá a quem muda um aumento de antiguidade que nunca mediu.")
+        t("After your first change of employer, your pay only moves when you negotiate. The survey measures time at one company, so a mover gets no tenure raise here.",
+          "Depois da tua primeira mudança de empresa, o teu salário só mexe quando negoceias. O inquérito mede o tempo numa só empresa, por isso quem muda não leva aqui aumento de antiguidade.")
     }
     var growAssumptionRegion: String {
         t("The district figure comes from a table that has no tenure in it, so it moves the whole path by one ratio and cannot say whether tenure pays differently there.",
           "O valor do distrito vem de uma tabela sem antiguidade, por isso mexe no percurso todo por um só rácio e não consegue dizer se a antiguidade paga de forma diferente lá.")
     }
     var growAssumptionJovem: String {
-        t("Your IRS Jovem step-down is applied year by year, which is why the net line can fall in a year the gross line rises. The app knows your percentage but not which benefit year produced it, so it assumes the first year of that step, which is the most generous reading.",
-          "A descida do teu IRS Jovem é aplicada ano a ano, e é por isso que a linha do líquido pode cair num ano em que a do bruto sobe. A app sabe a tua percentagem mas não sabe que ano do benefício a produziu, por isso assume o primeiro ano desse degrau, que é a leitura mais generosa.")
+        t("Your IRS Jovem step-down is applied year by year, which is why the net line can fall in a year the gross line rises. It assumes the first year of your step.",
+          "A descida do teu IRS Jovem é aplicada ano a ano, e é por isso que a linha do líquido pode cair num ano em que a do bruto sobe. Assume o primeiro ano do teu degrau.")
     }
     var growAssumptionBracketsOn: String {
         t("The escalões and the IRS Jovem ceiling are being grown with prices, so bracket creep is switched off.",
@@ -1006,8 +1006,8 @@ struct Strings {
     var euroUnitPower: String { t("PPP salary (€)", "Salário PPP (€)") }
     /// Shown only under the PPP chip, because it is the only one that needs it.
     var euroPppExplainer: String {
-        t("PPP means purchasing power parity: each salary is adjusted for what things cost in that country, so €2,000 in Lisbon and €2,000 in Dublin buy the same amount. Use it to compare living standards, and the absolute figure to compare what lands in the bank.",
-          "PPP quer dizer paridade de poder de compra: cada salário é ajustado ao que as coisas custam nesse país, por isso 2.000 € em Lisboa e 2.000 € em Dublin compram o mesmo. Usa isto para comparar nível de vida, e o valor absoluto para comparar o que entra na conta.")
+        t("PPP adjusts each salary for what things cost locally, so €2,000 in Lisbon and €2,000 in Dublin buy the same. Use the absolute figure for what lands in the bank.",
+          "O PPP ajusta cada salário ao que as coisas custam localmente, por isso 2.000 € em Lisboa e 2.000 € em Dublin compram o mesmo. Usa o valor absoluto para o que entra na conta.")
     }
 
     func euroSectionLine(_ section: String) -> String {
@@ -1094,13 +1094,13 @@ struct Strings {
     var euroPickSectorButton: String { t("Pick my sector", "Escolher o meu setor") }
     var euroNoSection: String { t("No European comparison here", "Sem comparação europeia aqui") }
     func euroNoSectionBody(_ sector: String) -> String {
-        t("The European survey does not cover \(sector.lowercased()), so there is nothing to compare against. Agriculture sits outside the survey entirely, and public administration has no published Portuguese figure, which leaves no starting point.",
-          "O inquérito europeu não cobre \(sector.lowercased()), por isso não há com o que comparar. A agricultura fica fora do inquérito, e a administração pública não tem valor publicado para Portugal, o que deixa a comparação sem ponto de partida.")
+        t("The European survey does not cover \(sector.lowercased()), so there is nothing to compare against.",
+          "O inquérito europeu não cobre \(sector.lowercased()), por isso não há com o que comparar.")
     }
 
     var euroFootnoteMethod: String {
-        t("The percentages come entirely from the European survey, one country divided by Portugal. Your own salary is then moved by that ratio. The Portuguese and European figures are never added together or placed side by side, because they are different surveys of different people in different years.",
-          "As percentagens vêm todas do inquérito europeu, um país a dividir por Portugal. O teu salário é depois movido por esse rácio. Os valores portugueses e europeus nunca são somados nem postos lado a lado, porque são inquéritos diferentes, de pessoas diferentes, em anos diferentes.")
+        t("The percentages come from the European survey, one country divided by Portugal. Your salary is then moved by that ratio. The two surveys are never mixed.",
+          "As percentagens vêm do inquérito europeu, um país a dividir por Portugal. O teu salário é depois movido por esse rácio. Os dois inquéritos nunca se misturam.")
     }
     var euroFootnoteVintage: String {
         t("The European survey is from 2022 and runs every four years, so this half of the map is two years older than the Portuguese half.",
@@ -1111,8 +1111,8 @@ struct Strings {
           "Trabalhadores por conta de outrem em empresas com 10 ou mais pessoas. Valor bruto, antes de impostos e de Segurança Social.")
     }
     var euroFootnoteGaps: String {
-        t("Cyprus and Malta have no figure for mining or for electricity and gas. Length of service is in the source but is not on this screen yet.",
-          "Chipre e Malta não têm valor para as indústrias extrativas nem para a eletricidade e gás. A antiguidade existe na fonte mas ainda não está neste ecrã.")
+        t("Cyprus and Malta have no figure for mining or for electricity and gas.",
+          "Chipre e Malta não têm valor para as indústrias extrativas nem para a eletricidade e gás.")
     }
 
     /// The Eurostat attribution, which its licence requires be shown. Same fix as
@@ -1148,8 +1148,8 @@ struct Strings {
     /// before the list. The bullets make the same point by being short: if the
     /// list is modest, saying so at length is the part that sounds defensive.
     var supportBody: String {
-        t("If you like SalarySeed, help cover what it costs to build and maintain (App Store hosting, tax updates, new features). And while you are at it, you get access to a few extra tools in the app.",
-          "Se gostas do SalarySeed, ajuda a suportar os custos de desenvolvimento e manutenção da app (p.ex., alojamento na App Store, atualização de IRS, novas funcionalidades). E já agora, ganhas acesso a algumas ferramentas adicionais na app.")
+        t("If you like SalarySeed, help cover what it costs to build and keep running. You also get a few extra tools in the app.",
+          "Se gostas do SalarySeed, ajuda a cobrir o que custa construí-la e mantê-la. Também ganhas algumas ferramentas extra na app.")
     }
 
     /// Each benefit is a bold accent-coloured lead and a plain rest, so the list
@@ -1269,8 +1269,8 @@ struct Strings {
            "A Segurança Social, a 11% sobre a base certa."),
          t("The IRS withheld, against the 2026 tables for your situation.",
            "O IRS retido, face às tabelas de 2026 para a tua situação."),
-         t("That the totals add up: earnings minus deductions equals net.",
-           "Se as contas batem certo: vencimentos menos descontos igual a líquido.")]
+         t("That the totals add up. Earnings minus deductions equals net.",
+            "Se as contas batem certo. Vencimentos menos descontos igual a líquido.")]
     }
     /// The third honesty rule, on the screen rather than in a footnote.
     var payslipWhatHonesty: String {
@@ -1296,8 +1296,8 @@ struct Strings {
     var payslipPickFile: String { t("Choose a file", "Escolher ficheiro") }
     var payslipPickPhoto: String { t("Choose a photo", "Escolher foto") }
     var payslipSourceHint: String {
-        t("A PDF from your employer works best: the text is exact and nothing has to be recognised. A photo works too.",
-          "Um PDF da entidade patronal é o melhor: o texto é exato e não é preciso reconhecer nada. Uma foto também serve.")
+        t("A PDF from your employer works best, because the text is exact. A photo works too.",
+          "Um PDF da entidade patronal é o melhor, porque o texto é exato. Uma foto também serve.")
     }
     var payslipReading: String { t("Reading your payslip", "A ler o teu recibo") }
 
@@ -1350,8 +1350,8 @@ struct Strings {
     }
     var onbTypeItMyself: String { t("Type it myself", "Escrevo eu") }
     var payslipNotCheckedYet: String {
-        t("We have not checked the tax on this yet. Tell us where you live and a bit about yourself, and the payslip checker on the home screen will.",
-          "Ainda não verificámos os impostos deste recibo. Diz-nos onde vives e um pouco sobre ti, e o verificador de recibos no ecrã inicial faz isso.")
+        t("We have not checked the tax yet. Add your concelho and tax situation and we will.",
+          "Ainda não verificámos os impostos. Põe o teu concelho e a tua situação fiscal e verificamos.")
     }
 
     // v1.2: the salary question, asked AFTER the verdict and never before it.
@@ -1411,11 +1411,11 @@ struct Strings {
             return t("we could not find one of the figures it needs",
                      "não encontrámos um dos valores necessários")
         case .subsidiesPaidSeparately:
-            return t("this payslip pays the holiday or Christmas subsidy on its own line, and the tax engine treats those as part of the yearly schedule instead",
-                     "este recibo paga o subsídio de férias ou de Natal em linha própria, e o motor fiscal trata-os como parte do esquema anual")
+            return t("this payslip pays a subsidy on its own line, which we count differently",
+                     "este recibo paga um subsídio em linha própria, o que contamos de outra forma")
         case .taxBaseNotGross:
-            return t("the IRS was withheld on a different amount from the gross pay, so the engine would be answering another question",
-                     "o IRS foi retido sobre um valor diferente do vencimento, por isso o motor estaria a responder a outra pergunta")
+            return t("the IRS was withheld on a different amount from the gross pay",
+                     "o IRS foi retido sobre um valor diferente do vencimento")
         case .profileIncomplete:
             return t("we do not know enough about you yet", "ainda não sabemos o suficiente sobre ti")
         }
