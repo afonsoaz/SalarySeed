@@ -25,9 +25,19 @@ struct PayslipReviewStep: View {
     private var s: Strings { store.s }
     private var lines: [PayslipClassifiedLine] { model.reviewable(workings) }
 
+        // v1.2: the pinned button is a `safeAreaInset` on the scroll view
+        // rather than a sibling under it in a `VStack`.
+        //
+        // In a full-screen cover the two were the same thing. In a tab they are
+        // not: iOS 26's tab bar floats OVER the content and minimises as you
+        // scroll, so it does not reserve room the way a docked bar did, and a
+        // button merely stacked under the scroll view ended up beneath the bar
+        // with the bar winning the taps. `safeAreaInset` is the shape the
+        // system understands: it insets the scroll content by the button's
+        // height AND places the button inside the real safe area, above the
+        // bar, on both routes.
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
+        ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     Text(workings.reading.source == .ocr
                          ? s.payslipReviewSub : s.payslipReviewSubUnclear)
@@ -45,8 +55,8 @@ struct PayslipReviewStep: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
             }
-            .scrollDismissesKeyboard(.interactively)
-
+        .scrollDismissesKeyboard(.interactively)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
             VStack(spacing: 0) {
                 Rectangle().fill(Theme.cardBorder).frame(height: 1)
                 PrimaryButton(title: s.payslipReviewConfirm) {
@@ -55,7 +65,9 @@ struct PayslipReviewStep: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
+                .padding(.bottom, 8)
             }
+            .background(Theme.background)
         }
         .onAppear {
             for line in lines where drafts[line.lineIndex] == nil {

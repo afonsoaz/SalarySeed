@@ -67,7 +67,20 @@ struct SupportSheet: View {
                 .padding(.bottom, 14)
             }
         }
-        .presentationDetents([.large])
+        // v1.2 REMOVED `.presentationDetents([.large])`, which was why this
+        // sheet could barely be closed.
+        //
+        // Once a sheet declares detents, UIKit routes a downward drag that
+        // begins inside a scroll view to the DETENT gesture rather than to the
+        // dismiss gesture. With only `.large` in the set there is no smaller
+        // detent to travel to, so the drag rubber-banded and snapped back, and
+        // the only thing that actually dismissed the sheet was the few points
+        // of grabber at the very top. A sheet with no detents at all gets the
+        // plain drag-anywhere-to-dismiss behaviour back.
+        //
+        // The other six sheets in the app declare the same thing and were left
+        // alone: this is the one that was reported, and changing the house
+        // pattern everywhere is a separate decision.
         .presentationDragIndicator(.visible)
         .onAppear { accentOnOpen = store.accent }
         .onDisappear { revertPreview() }
@@ -75,13 +88,24 @@ struct SupportSheet: View {
 
     // MARK: Header
 
+    /// v1.2 GAVE THIS SHEET A CLOSE BUTTON.
+    ///
+    /// There was one, and only on the `thanks` path: somebody who had already
+    /// paid could close the sheet with a button, and somebody who had not could
+    /// not. So the one reader with a reason to leave without acting was the one
+    /// with no way to do it but a drag that did not work. It is an X rather
+    /// than a full-width button because the full-width button on this screen is
+    /// the one that takes money, and two of those would be a dark pattern
+    /// pointed the wrong way.
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Spacer()
                 SproutView(stage: 5, size: 78, animatesIn: true, sways: true)
+                    .accessibilityHidden(true)
                 Spacer()
             }
+            .overlay(alignment: .topTrailing) { closeButton }
             Text(s.supportTitle)
                 .appFont(26, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
@@ -94,6 +118,20 @@ struct SupportSheet: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 10)
         }
+    }
+
+    /// Scales with the glyph inside it, and sits at Apple's 44 point minimum
+    /// at the default size. Same shape as `PayslipCheckFlow.closeButton`.
+    private var closeButton: some View {
+        Button { commitAndClose() } label: {
+            Image(systemName: "xmark")
+                .appFont(14, weight: .semibold)
+                .foregroundStyle(Theme.textSecondary)
+                .frame(width: max(44, Theme.scaled(34, typeSize)),
+                       height: max(44, Theme.scaled(34, typeSize)))
+                .background(Theme.card, in: Circle())
+        }
+        .accessibilityLabel(s.closeButton)
     }
 
     // MARK: The three
@@ -128,9 +166,15 @@ struct SupportSheet: View {
     /// lose track of.
     private func benefit(_ glyph: String, lead: String, rest: String) -> some View {
         HStack(alignment: .top, spacing: 11) {
+            // v1.2: the box scales with the glyph. `appFont(17)` takes this
+            // emoji to roughly three times the size at the largest settings
+            // inside a frame hardcoded at 24, and `frame` does not clip, so it
+            // overdrew its own box and pushed into the text column beside it.
+            // Exactly the bug already fixed in `PayslipSourceStep.choice`.
             Text(glyph)
                 .appFont(17)
-                .frame(width: 24, alignment: .leading)
+                .frame(width: Theme.scaled(24, typeSize), alignment: .leading)
+                .accessibilityHidden(true)
             // The only place in the app that cannot use `.appFont`. That modifier
             // returns a View, and `Text + Text` needs both halves to still be
             // `Text`, so these two take the scaled size as a plain `Font`. Same
@@ -272,21 +316,44 @@ struct SupportSheet: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            // v1.2: this row is OUTSIDE the scroll view, so when it did not
+            // fit it could not scroll and simply ran past the edge of the
+            // sheet. Two single-line labels with no reflow branch, and in
+            // Portuguese "Restaurar compra · Pagamento único, não é
+            // subscrição" is 43 characters at 12pt against a 375pt screen
+            // less 44pt of padding. It stacks past the threshold now, the way
+            // every other row in the app that stopped fitting does.
+            footerRow
+        }
+    }
+
+    @ViewBuilder
+    private var footerRow: some View {
+        let restore = Button {
+            Task { await supporter.restore(applyingTo: store) }
+        } label: {
+            Text(s.supportRestore)
+                .appFont(12, weight: .medium)
+                .foregroundStyle(Theme.textSecondary)
+                .underline()
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        let oneOff = Text(s.supportOneOff)
+            .appFont(12)
+            .foregroundStyle(Theme.textFaint)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+
+        if typeSize.isAccessibilitySize {
+            VStack(spacing: 8) { restore; oneOff }
+                .frame(maxWidth: .infinity)
+        } else {
             HStack(spacing: 6) {
-                Button {
-                    Task { await supporter.restore(applyingTo: store) }
-                } label: {
-                    Text(s.supportRestore)
-                        .appFont(12, weight: .medium)
-                        .foregroundStyle(Theme.textSecondary)
-                        .underline()
-                }
+                restore
                 Text("·")
                     .appFont(12)
                     .foregroundStyle(Theme.textFaint)
-                Text(s.supportOneOff)
-                    .appFont(12)
-                    .foregroundStyle(Theme.textFaint)
+                oneOff
             }
             .frame(maxWidth: .infinity)
         }

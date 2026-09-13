@@ -24,54 +24,52 @@ struct ProfileView: View {
     private var s: Strings { store.s }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("profileSeed")
-                            .appFont(12)
-                            .foregroundStyle(Theme.accent)
-                        Text(s.profileTitle(store.displayName))
-                            .appFont(22, weight: .medium)
-                            .foregroundStyle(Theme.textPrimary)
-                    }
-                    .padding(.top, 8)
-
-                    supportCard
-                    progressCard
-                    currentSalaryCard
-                    nameCard
-
-                    demographicsSection
-                    workSection
-                    taxSection
-                    appSection
-
-                    Text(s.profileFooter)
-                        .appFont(10)
-                        .foregroundStyle(Theme.textFaint)
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("profileSeed")
+                        .appFont(12)
+                        .foregroundStyle(Theme.accent)
+                    Text(s.profileTitle(store.displayName))
+                        .appFont(22, weight: .medium)
+                        .foregroundStyle(Theme.textPrimary)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 24)
+                .padding(.top, 8)
+
+                supportCard
+                progressCard
+                currentSalaryCard
+                nameCard
+
+                demographicsSection
+                workSection
+                taxSection
+                appSection
+
+                Text(s.profileFooter)
+                    .appFont(10)
+                    .foregroundStyle(Theme.textFaint)
             }
-            .scrollDismissesKeyboard(.interactively)
-            .background(Theme.background)
-            .sheet(isPresented: $showEditor) { SalaryEditorView() }
-            .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
-            .salaryChangeConfirmation(
-                isPresented: $askingSalaryChange,
-                s: s,
-                onChange: { showEditor = true },
-                onExplore: { showExplorer = true }
-            )
-            .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
-            .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
-            .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
-            .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
-            .sheet(isPresented: $showSupport) { SupportSheet() }
-            .sheet(item: $activeDimension) { dim in
-                ProfilePickerSheet(dimension: dim)
-            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 24)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .background(Theme.background)
+        .sheet(isPresented: $showEditor) { SalaryEditorView() }
+        .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
+        .salaryChangeConfirmation(
+            isPresented: $askingSalaryChange,
+            s: s,
+            onChange: { showEditor = true },
+            onExplore: { showExplorer = true }
+        )
+        .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
+        .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
+        .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
+        .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
+        .sheet(isPresented: $showSupport) { SupportSheet() }
+        .sheet(item: $activeDimension) { dim in
+            ProfilePickerSheet(dimension: dim)
         }
     }
 
@@ -143,6 +141,7 @@ struct ProfileView: View {
                             .foregroundStyle(Theme.textFaint)
                             .fixedSize(horizontal: false, vertical: true)
                     }
+                    .multilineTextAlignment(.leading)
                     Spacer(minLength: 0)
                 }
                 .padding(13)
@@ -164,6 +163,7 @@ struct ProfileView: View {
                             .appFont(11)
                             .foregroundStyle(Theme.ink.opacity(0.75))
                     }
+                    .multilineTextAlignment(.leading)
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.right")
                         .appFont(13, weight: .semibold)
@@ -301,37 +301,14 @@ struct ProfileView: View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: icon)
-                    .appFont(18)
-                    .foregroundStyle(value == nil ? Theme.textSecondary : Theme.accent)
-                    .frame(width: 28)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .appFont(14, weight: .medium)
-                        .foregroundStyle(Theme.textPrimary)
-                    Text(value ?? hint)
-                        .appFont(11)
-                        .foregroundStyle(value == nil ? Theme.accent : Theme.textSecondary)
-                        .multilineTextAlignment(.leading)
-                }
-                Spacer()
-                if value == nil {
-                    Text(s.addPill)
-                        .appFont(11, weight: .medium)
-                        .foregroundStyle(Theme.ink)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4)
-                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
-                } else {
-                    Image(systemName: "pencil")
-                        .appFont(14)
-                        .foregroundStyle(Theme.accent)
-                }
+            SignalRow(icon: icon,
+                      iconTint: value == nil ? Theme.textSecondary : Theme.accent,
+                      title: title,
+                      subtitle: value ?? hint,
+                      subtitleTint: value == nil ? Theme.accent : Theme.textSecondary,
+                      dimmed: value == nil) {
+                if value == nil { AddPill() } else { EditGlyph() }
             }
-            .padding(14)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-            .opacity(value == nil ? 0.9 : 1)
         }
     }
 
@@ -533,6 +510,7 @@ struct ProfileView: View {
                         .appFont(16, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
                 }
+                .multilineTextAlignment(.leading)
                 Spacer()
                 Image(systemName: "pencil")
                     .appFont(14)
@@ -578,51 +556,15 @@ struct ProfileView: View {
     private var sectorRow: some View {
         Button { showSectorSheet = true } label: {
             if let sector = store.sector {
-                HStack(spacing: 12) {
-                    Image(systemName: "building.2")
-                        .appFont(18)
-                        .foregroundStyle(Theme.accent)
-                        .frame(width: 28)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(s.sectorRowTitle)
-                            .appFont(14, weight: .medium)
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(sectorSubtitle(sector))
-                            .appFont(11)
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-                    Spacer()
-                    Image(systemName: "pencil")
-                        .appFont(14)
-                        .foregroundStyle(Theme.accent)
-                }
-                .padding(14)
-                .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+                SignalRow(icon: "building.2", iconTint: Theme.accent,
+                          title: s.sectorRowTitle,
+                          subtitle: sectorSubtitle(sector)) { EditGlyph() }
             } else {
-                HStack(spacing: 12) {
-                    Image(systemName: "building.2")
-                        .appFont(18)
-                        .foregroundStyle(Theme.textSecondary)
-                        .frame(width: 28)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(s.sectorRowTitle)
-                            .appFont(14, weight: .medium)
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(s.sectorAddHint)
-                            .appFont(11)
-                            .foregroundStyle(Theme.accent)
-                    }
-                    Spacer()
-                    Text(s.addPill)
-                        .appFont(11, weight: .medium)
-                        .foregroundStyle(Theme.ink)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4)
-                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
-                }
-                .padding(14)
-                .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-                .opacity(0.9)
+                SignalRow(icon: "building.2",
+                          title: s.sectorRowTitle,
+                          subtitle: s.sectorAddHint,
+                          subtitleTint: Theme.accent,
+                          dimmed: true) { AddPill() }
             }
         }
     }
@@ -646,52 +588,20 @@ struct ProfileView: View {
             // v0.9.1: region is derived, so its row opens the município search.
             if dim.usesConcelhoPicker { showConcelhoSheet = true } else { activeDimension = dim }
         } label: {
+            let title = dim.usesConcelhoPicker ? s.concelhoRowTitle : s.dimShort(dim.id)
             if let option = dim.selectedOption(in: store, pt: s.pt) {
-                HStack(spacing: 12) {
-                    Image(systemName: dim.icon)
-                        .appFont(18)
-                        .foregroundStyle(Theme.accent)
-                        .frame(width: 28)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(dim.usesConcelhoPicker ? s.concelhoRowTitle : s.dimShort(dim.id))
-                            .appFont(14, weight: .medium)
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(dim.usesConcelhoPicker ? concelhoSubtitle(option.label) : option.label)
-                            .appFont(11)
-                            .foregroundStyle(Theme.textSecondary)
-                    }
-                    Spacer()
-                    Image(systemName: "pencil")
-                        .appFont(14)
-                        .foregroundStyle(Theme.accent)
+                SignalRow(icon: dim.icon, iconTint: Theme.accent, title: title,
+                          subtitle: dim.usesConcelhoPicker
+                                    ? concelhoSubtitle(option.label) : option.label) {
+                    EditGlyph()
                 }
-                .padding(14)
-                .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
             } else {
-                HStack(spacing: 12) {
-                    Image(systemName: dim.icon)
-                        .appFont(18)
-                        .foregroundStyle(Theme.textSecondary)
-                        .frame(width: 28)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(dim.usesConcelhoPicker ? s.concelhoRowTitle : s.dimShort(dim.id))
-                            .appFont(14, weight: .medium)
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(dim.usesConcelhoPicker ? s.concelhoAddHint : s.dimProfileHint(dim.id))
-                            .appFont(11)
-                            .foregroundStyle(Theme.accent)
-                    }
-                    Spacer()
-                    Text(s.addPill)
-                        .appFont(11, weight: .medium)
-                        .foregroundStyle(Theme.ink)
-                        .padding(.horizontal, 9)
-                        .padding(.vertical, 4)
-                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
+                SignalRow(icon: dim.icon, title: title,
+                          subtitle: dim.usesConcelhoPicker
+                                    ? s.concelhoAddHint : s.dimProfileHint(dim.id),
+                          subtitleTint: Theme.accent, dimmed: true) {
+                    AddPill()
                 }
-                .padding(14)
-                .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-                .opacity(0.9)
             }
         }
     }

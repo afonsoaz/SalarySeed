@@ -11,6 +11,7 @@ struct CompareView: View {
     // v0.9: progressive enrichment. `snoozed` is intentionally in-memory only,
     // so "not now" means not now and not never.
     @State private var activeSignalSheet: SignalSheet?
+    @State private var showProfile = false
     @State private var snoozed: Set<String> = []
     // v0.9.1: the region layer is answered by picking a município.
     @State private var showConcelhoSheet = false
@@ -38,6 +39,7 @@ struct CompareView: View {
             .sheet(item: $activeDimension) { dim in
                 ProfilePickerSheet(dimension: dim)
             }
+            .profileDestination(isPresented: $showProfile)
         }
     }
 
@@ -123,13 +125,11 @@ struct CompareView: View {
                     .foregroundStyle(Theme.textPrimary)
             }
             Spacer()
-            HStack(spacing: 6) {
-                SproutView(stage: store.sproutStage, size: 22)
-                Text(s.profileProgressCount(store.profileFilledCount, store.signalTotal))
-                    .appFont(10)
-                    .foregroundStyle(Theme.textFaint)
-            }
-            .padding(.bottom, 2)
+            // v1.2b: this slot held a sprout and "3 de 10", which said something
+            // true and led nowhere, next to a second sprout in the same corner
+            // of Home. The count moved to `ProfileNudgeCard`, where there is
+            // room to say what it means, and the slot now holds the way in.
+            ProfileButton(isPresented: $showProfile)
         }
         .padding(.top, 8)
     }
@@ -214,30 +214,9 @@ struct CompareView: View {
 
     private var lockedSectorRow: some View {
         Button { showSectorSheet = true } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "building.2")
-                    .appFont(18)
-                    .foregroundStyle(Theme.textSecondary)
-                    .frame(width: 28)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(s.sectorRowTitle)
-                        .appFont(14, weight: .medium)
-                        .foregroundStyle(Theme.textPrimary)
-                    Text(s.sectorAddHint)
-                        .appFont(11)
-                        .foregroundStyle(Theme.accent)
-                }
-                Spacer()
-                Text(s.addPill)
-                    .appFont(11, weight: .medium)
-                    .foregroundStyle(Theme.ink)
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 4)
-                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
-            }
-            .padding(14)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-            .opacity(0.9)
+            SignalRow(icon: "building.2", title: s.sectorRowTitle,
+                      subtitle: s.sectorAddHint, subtitleTint: Theme.accent,
+                      dimmed: true) { AddPill() }
         }
     }
 
@@ -248,29 +227,9 @@ struct CompareView: View {
 
     private func lockedLayerRow(_ dim: CompareDimension) -> some View {
         Button { open(dim) } label: {
-            HStack(spacing: 12) {
-                Image(systemName: dim.icon)
-                    .appFont(18)
-                    .foregroundStyle(Theme.textSecondary)
-                    .frame(width: 28)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(s.dimRowTitle(dim.id))
-                        .appFont(14, weight: .medium)
-                        .foregroundStyle(Theme.textPrimary)
-                    Text(s.dimAdd(dim.id))
-                        .appFont(11)
-                        .foregroundStyle(Theme.accent)
-                }
-                Spacer()
-                Text(s.addPill)
-                    .appFont(11, weight: .medium)
-                    .foregroundStyle(Theme.ink)
-                    .padding(.horizontal, 9)
-                    .padding(.vertical, 4)
-                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
-            }
-            .padding(14)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+            SignalRow(icon: dim.icon, title: s.dimRowTitle(dim.id),
+                      subtitle: s.dimAdd(dim.id), subtitleTint: Theme.accent,
+                      dimmed: true) { AddPill() }
             .opacity(0.9)
         }
     }
@@ -459,15 +418,18 @@ private struct LayerCard: View {
                         Text(s.dimRowTitle(dimension.id))
                             .appFont(12)
                             .foregroundStyle(Theme.textSecondary)
-                        HStack(spacing: 5) {
+                        HStack(alignment: .firstTextBaseline, spacing: 5) {
                             Text(s.cohortWord(dimension.id, option.label))
                                 .appFont(14, weight: .medium)
                                 .foregroundStyle(Theme.textPrimary)
+                                .fixedSize(horizontal: false, vertical: true)
                             Image(systemName: "pencil")
                                 .appFont(10)
                                 .foregroundStyle(Theme.textFaint)
+                                .accessibilityHidden(true)
                         }
                     }
+                    .multilineTextAlignment(.leading)
                     Spacer()
                     Text("\(result.percentile)%")
                         .appFont(24, weight: .medium)
@@ -542,7 +504,7 @@ private struct SectorCard: View {
                         Text(s.sectorKicker)
                             .appFont(12)
                             .foregroundStyle(Theme.textSecondary)
-                        HStack(spacing: 5) {
+                        HStack(alignment: .firstTextBaseline, spacing: 5) {
                             Text(cohortName)
                                 .appFont(14, weight: .medium)
                                 .foregroundStyle(Theme.textPrimary)
@@ -550,8 +512,10 @@ private struct SectorCard: View {
                             Image(systemName: "pencil")
                                 .appFont(10)
                                 .foregroundStyle(Theme.textFaint)
+                                .accessibilityHidden(true)
                         }
                     }
+                    .multilineTextAlignment(.leading)
                     Spacer(minLength: 8)
                     Text("\(result.percentile)%")
                         .appFont(24, weight: .medium)
@@ -627,7 +591,26 @@ private struct PercentileSlider: View {
     let salaryAt: (Double) -> Double
     let s: Strings
 
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var scrubPct: Double? = nil
+
+    private var percentileLabel: some View {
+        Text(s.percentileEarns(s.ordinalPercentile(Int(activePct.rounded()))))
+            .appFont(12)
+            .foregroundStyle(Theme.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    @ViewBuilder
+    private var salaryFigure: some View {
+        Text(eur(activeSalary))
+            .appFont(16, weight: .medium)
+            .foregroundStyle(Theme.accent)
+            .contentTransition(.numericText())
+        Text(s.perMonthSuffix)
+            .appFont(11)
+            .foregroundStyle(Theme.textSecondary)
+    }
 
     private var scrubbing: Bool { scrubPct != nil }
     private var activePct: Double { scrubPct ?? userPercentile }
@@ -637,18 +620,21 @@ private struct PercentileSlider: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(s.percentileEarns(s.ordinalPercentile(Int(activePct.rounded()))))
-                    .appFont(12)
-                    .foregroundStyle(Theme.textSecondary)
-                Spacer(minLength: 6)
-                Text(eur(activeSalary))
-                    .appFont(16, weight: .medium)
-                    .foregroundStyle(Theme.accent)
-                    .contentTransition(.numericText())
-                Text(s.perMonthSuffix)
-                    .appFont(11)
-                    .foregroundStyle(Theme.textSecondary)
+            // v1.2a: two rows past the threshold. "O percentil 62 ganha" and
+            // "2405 EUR /mes" were fighting over one line, and the label lost:
+            // it came out as four words stacked one per line beside a figure
+            // that kept its own row to itself.
+            if typeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 4) {
+                    percentileLabel
+                    HStack(alignment: .firstTextBaseline, spacing: 6) { salaryFigure }
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    percentileLabel
+                    Spacer(minLength: 6)
+                    salaryFigure
+                }
             }
 
             GeometryReader { geo in
@@ -732,26 +718,13 @@ struct LockedRow: View {
     let unlock: String
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .appFont(18)
-                .foregroundStyle(Theme.textSecondary)
-                .frame(width: 28)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .appFont(14, weight: .medium)
-                    .foregroundStyle(Theme.textPrimary)
-                Text(unlock)
-                    .appFont(11)
-                    .foregroundStyle(Theme.accent)
-            }
-            Spacer()
+        SignalRow(icon: icon, title: title, subtitle: unlock,
+                  subtitleTint: Theme.accent) {
             Image(systemName: "lock.fill")
                 .appFont(12)
                 .foregroundStyle(Theme.textFaint)
+                .accessibilityHidden(true)
         }
-        .padding(14)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
         .opacity(0.85)
     }
 }

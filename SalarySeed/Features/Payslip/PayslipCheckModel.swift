@@ -5,17 +5,21 @@ import CoreGraphics
 /// v1.1: the payslip flow's state, and the only thing in the feature that holds
 /// a picture.
 ///
-/// It is an `ObservableObject` created by `PayslipCheckFlow` and destroyed with
-/// it, which is the whole of the storage design: there is no history, nothing
-/// reaches `SalaryStore`, and nothing reaches `UserDefaults`. `discard()` runs
-/// on the way out so the image goes at dismissal rather than whenever the
-/// object happens to be collected.
+/// v1.2 CHANGED HOW LONG IT LIVES, and the change is worth stating exactly.
 ///
-/// This is a stricter version of the `growScenario` precedent. That lives on
-/// the store without a `didSet` so a hypothetical survives a tab swipe but not
-/// a relaunch. Nothing here needs to survive anything, because the flow is a
-/// full-screen cover, so it is plain view-owned state and the reading dies with
-/// the screen.
+/// Until now the checker was a full-screen cover, this object was created and
+/// destroyed with it, and the app told the reader "close this screen and it is
+/// gone". A tab has no closing moment, so that sentence had to go, and what
+/// replaced it is narrower and still true: nothing is ever written to the
+/// phone, there is no history, and the reading is replaced when the reader
+/// checks another payslip or gone when the app quits. What is genuinely weaker
+/// is the window: a verdict now sits in memory for as long as the app is alive
+/// rather than until a screen closes.
+///
+/// Everything else holds. Nothing here reaches `SalaryStore`, nothing reaches
+/// `UserDefaults`, and `restart()` still drops the image, the lines, the facts
+/// and the verdict the moment the reader starts again. The onboarding route is
+/// still a cover, and there the object still dies with the screen.
 @MainActor
 final class PayslipCheckModel: ObservableObject {
 
@@ -35,7 +39,23 @@ final class PayslipCheckModel: ObservableObject {
         case unreadable(PayslipUnreadable)
     }
 
+    /// Whether the reader has answered "should this become your salary?".
+    ///
+    /// v1.2: only needed because the checker is a tab now. In a cover, both
+    /// answers dismissed the screen and the question could not be asked twice.
+    /// Here the verdict stays on screen afterwards, so the ask has to know it
+    /// has been answered and get out of the way.
+    enum SalaryAsk {
+        case unanswered
+        /// They kept the figure they already had. Nothing more to say.
+        case kept
+        /// They took the payslip's figure. Worth confirming, because the number
+        /// it changed is on a different tab.
+        case adopted
+    }
+
     @Published private(set) var phase: Phase = .source
+    @Published private(set) var salaryAsk: SalaryAsk = .unanswered
     /// Corrections made on the review screen, keyed by line index. Cleared with
     /// everything else on the way out.
     @Published var edits: [Int: Int?] = [:]
@@ -166,7 +186,15 @@ final class PayslipCheckModel: ObservableObject {
         reading?.cancel()
         reading = nil
         edits = [:]
+        salaryAsk = .unanswered
         phase = .source
+    }
+
+    /// The reader answered the ask. Recorded here rather than in the results
+    /// view so it survives the view being rebuilt, which it is on every tab
+    /// switch.
+    func answerSalaryAsk(adopted: Bool) {
+        salaryAsk = adopted ? .adopted : .kept
     }
 
     /// Called from `onDisappear`. Nothing here is written anywhere, so this is
@@ -182,6 +210,7 @@ final class PayslipCheckModel: ObservableObject {
         reading?.cancel()
         reading = nil
         edits = [:]
+        salaryAsk = .unanswered
         phase = .source
     }
 }

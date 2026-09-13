@@ -333,7 +333,7 @@ struct OnboardingView: View {
             // remains the only writer in this file. A misread payslip is then a
             // wrong number sitting visibly in a text field, one keystroke from
             // being fixed and gone entirely if this run is abandoned.
-            PayslipCheckFlow(context: nil, onAccept: { proposal in
+            PayslipCheckCover(context: nil, onAccept: { proposal in
                 // Integer euros, because the field is a number pad and this is
                 // the same rounding `SalaryEditorView` already does. The figure
                 // the reader confirms by pressing OK is the one they can see.

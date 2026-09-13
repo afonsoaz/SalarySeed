@@ -16,7 +16,6 @@ struct PayslipResultsView: View {
     // static SwiftUI cannot observe. See SalarySeedApp.
     @EnvironmentObject private var store: SalaryStore
     @Environment(\.dynamicTypeSize) private var typeSize
-    @Environment(\.dismiss) private var dismiss
     let verdict: PayslipVerdict
     let workings: PayslipCheckModel.Workings
     /// Called when the reader taps to keep the figure. The payslip feature does
@@ -28,6 +27,17 @@ struct PayslipResultsView: View {
     /// fully filled profile too, and reading it back off the verdict would call
     /// that onboarding.
     var hasProfile: Bool = true
+    /// Whether the "use this as your salary?" question has been answered.
+    ///
+    /// v1.2: it lives on the model rather than here. In a cover both answers
+    /// dismissed the screen, so the question could not come back; in a tab the
+    /// verdict stays up afterwards, and a view's own `@State` would forget the
+    /// answer every time the reader visited another tab.
+    var ask: PayslipCheckModel.SalaryAsk = .unanswered
+    var onAnswerAsk: (Bool) -> Void = { _ in }
+    /// "Close" in the cover, "Check another payslip" in the tab.
+    var doneTitle: String = ""
+    var onDone: () -> Void = {}
 
     private var s: Strings { store.s }
 
@@ -38,8 +48,12 @@ struct PayslipResultsView: View {
     /// and which was under the minimum tap target until this release. Every
     /// other terminal step in this flow ends in a full width button. This one
     /// is the end of the whole thing and ended in a disclaimer.
+    /// v1.2: the pinned button is a `safeAreaInset` on the scroll view rather
+    /// than a sibling under it in a `VStack`. In a cover the two were the same
+    /// thing; in a tab they are not, because iOS 26's bar floats over the
+    /// content and minimises as you scroll, so a button merely stacked under
+    /// the scroll view sat beneath the bar and lost its taps to it.
     var body: some View {
-        VStack(spacing: 0) {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 if verdict.wrong.isEmpty {
@@ -61,8 +75,12 @@ struct PayslipResultsView: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 28)
         }
-        PrimaryButton(title: s.closeButton) { dismiss() }
-            .padding(.horizontal, 20)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            PrimaryButton(title: doneTitle.isEmpty ? s.closeButton : doneTitle, action: onDone)
+                .padding(.horizontal, 20)
+                .padding(.top, 8)
+                .padding(.bottom, 8)
+                .background(Theme.background)
         }
     }
 
@@ -95,9 +113,25 @@ struct PayslipResultsView: View {
         if let onAccept, case .proposal(let proposal) = PayslipSalary.propose(workings.facts) {
             VStack(alignment: .leading, spacing: 12) {
                 Divider().overlay(Theme.cardBorder)
-                SectionLabel(s.payslipUseTitle)
-                proposalCard(proposal)
-                askButtons(proposal, onAccept: onAccept)
+                switch ask {
+                case .unanswered:
+                    SectionLabel(s.payslipUseTitle)
+                    proposalCard(proposal)
+                    askButtons(proposal, onAccept: onAccept)
+                case .adopted:
+                    // Said because the figure it changed is on another tab. A
+                    // screen closing used to be the confirmation; nothing closes
+                    // now, so the screen has to say it.
+                    Text(s.payslipUseDone)
+                        .appFont(13)
+                        .foregroundStyle(Theme.accent)
+                        .fixedSize(horizontal: false, vertical: true)
+                case .kept:
+                    // Nothing. They declined; repeating the question, or
+                    // announcing that nothing happened, is the app talking to
+                    // itself.
+                    EmptyView()
+                }
             }
             .padding(.top, 6)
         }
@@ -175,10 +209,12 @@ struct PayslipResultsView: View {
     /// exit, for the same reason.
     @ViewBuilder private func askButtons(_ proposal: PayslipSalary.GrossProposal,
                                          onAccept: @escaping (PayslipSalary.GrossProposal) -> Void) -> some View {
-        let keep = askButton(title: s.payslipUseKeepMine, primary: false) { dismiss() }
+        let keep = askButton(title: s.payslipUseKeepMine, primary: false) {
+            onAnswerAsk(false)
+        }
         let use = askButton(title: s.payslipUseThis, primary: true) {
             onAccept(proposal)
-            dismiss()
+            onAnswerAsk(true)
         }
         if typeSize.isAccessibilitySize {
             VStack(spacing: 10) { keep; use }

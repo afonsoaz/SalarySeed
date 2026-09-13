@@ -15,6 +15,8 @@ struct ConcelhoPickerList: View {
 
     let s: Strings
 
+    // See `JobTitleSheet` for why this is read rather than left to UIKit.
+    @Environment(\.dynamicTypeSize) private var typeSize
     @State private var query: String = ""
     @State private var expanded: ConcelhoGroup?
 
@@ -117,7 +119,8 @@ struct ConcelhoPickerList: View {
                     Image(systemName: "map")
                         .appFont(14)
                         .foregroundStyle(Theme.accent)
-                        .frame(width: 22)
+                        .frame(width: Theme.scaled(22, typeSize))
+                        .accessibilityHidden(true)
                     Text(group.label)
                         .appFont(14)
                         .foregroundStyle(Theme.textPrimary)

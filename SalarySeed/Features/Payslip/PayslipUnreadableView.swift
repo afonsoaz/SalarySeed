@@ -21,8 +21,7 @@ struct PayslipUnreadableView: View {
     private var s: Strings { store.s }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
+        ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack(alignment: .top, spacing: 10) {
                         Image(systemName: "doc.questionmark")
@@ -50,17 +49,24 @@ struct PayslipUnreadableView: View {
                 .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.cardBorder, lineWidth: 1))
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
-            }
-            PrimaryButton(title: s.payslipTryAgain, action: onRetry)
-                .padding(.horizontal, 20)
-            if let onGiveUp {
-                Button(action: onGiveUp) {
-                    Text(s.onbTypeItMyself)
-                        .appFont(14, weight: .semibold)
-                        .foregroundStyle(Theme.textSecondary)
-                        .padding(.top, 12)
+        }
+        // See `PayslipResultsView` for why this is an inset and not a sibling.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            VStack(spacing: 0) {
+                PrimaryButton(title: s.payslipTryAgain, action: onRetry)
+                    .padding(.horizontal, 20)
+                if let onGiveUp {
+                    Button(action: onGiveUp) {
+                        Text(s.onbTypeItMyself)
+                            .appFont(14, weight: .semibold)
+                            .foregroundStyle(Theme.textSecondary)
+                            .padding(.top, 12)
+                    }
                 }
             }
+            .padding(.top, 8)
+            .padding(.bottom, 8)
+            .background(Theme.background)
         }
     }
 }
