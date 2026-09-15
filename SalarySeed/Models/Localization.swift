@@ -1434,6 +1434,31 @@ struct Strings {
         t("One number, and you can change it later.",
           "Um número, e podes mudá-lo mais tarde.")
     }
+
+    // MARK: v1.4 The intro screen
+    //
+    // Shown once, after onboarding. It names three tabs and gathers the rest,
+    // and it carries NO figures: four cards about 76 points wide hold a glyph
+    // and a word, and a card that cannot contradict the tab it names is worth
+    // more than one that could.
+    //
+    // NOTHING HERE NAMES A PRICE OR LEADS TO ONE, in a free build or a paid
+    // one. That is a rule rather than an accident of this release: the screen
+    // is allowed to exist because it asks for nothing, and one button leading
+    // to money would make it the interstitial the money rules forbid.
+
+    var introTitle: String { t("Your salary is in.", "O teu salário já está.") }
+    var introSub: String {
+        t("This is what the app does with it.", "É isto que a app faz com ele.")
+    }
+    /// The fourth card. Gathers the payslip checker, the profile and the rest,
+    /// because onboarding's step 1 already opened with the checker.
+    var introMore: String { t("More", "Mais") }
+    var introButton: String { t("Got it, let's go", "Certo, vamos lá") }
+    var introReplayTitle: String { t("What the app does", "O que a app faz") }
+    var introReplaySub: String {
+        t("The four screens, again.", "Os quatro ecrãs, outra vez.")
+    }
     var payslipNotCheckedYet: String {
         t("We have not checked the tax on this yet. Tell us where you live and a bit about yourself, and the payslip checker on the home screen will.",
           "Ainda não verificámos os impostos deste recibo. Diz-nos onde vives e um pouco sobre ti, e o verificador de recibos no ecrã inicial faz isso.")

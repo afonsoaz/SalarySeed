@@ -170,6 +170,13 @@ resets the language, so a freshly erased device runs the app in English rather t
 Portuguese. Both are useful in their own right: the erase is the only way to see a genuine
 first run, which is the one thing worth being sure about on a screen every new reader meets.
 
+The intro screen has the same problem and a much cheaper answer: **Profile has a replay
+row** ("What the app does"), which sets the session flag and leaves `hasSeenIntro` alone.
+Use that for everything except the handoff itself. The one thing it cannot show you is the
+intro arriving out of onboarding's last step, which needs the erase above, and the one
+thing to know when you do use it is that the intro then fades back onto Profile rather than
+onto Home, because Profile is a pushed screen.
+
 ## A note on the numbers in the payslip comments
 
 The worked figures throughout the payslip reader are stand-ins. Every relation they

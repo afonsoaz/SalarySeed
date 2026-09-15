@@ -7,7 +7,7 @@ grouped by the screen it belongs to.
 Editing this file changes nothing on its own; it is here to be read and marked up,
 and the edits get applied back to the Swift source afterwards.
 
-- **604** string pairs.
+- **610** string pairs.
 - `\(name)` is a value dropped in at runtime. It has to survive a rewrite,
   and it can move within the sentence.
 - `\n` is a deliberate line break.
@@ -2666,6 +2666,40 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1096`.
 
 - **EN** `One number, and you can change it later.`
 - **PT** `Um número, e podes mudá-lo mais tarde.`
+
+---
+
+## v1.4 The intro screen
+
+### `introTitle`
+
+- **EN** `Your salary is in.`
+- **PT** `O teu salário já está.`
+
+### `introSub`
+
+- **EN** `This is what the app does with it.`
+- **PT** `É isto que a app faz com ele.`
+
+### `introMore`
+
+- **EN** `More`
+- **PT** `Mais`
+
+### `introButton`
+
+- **EN** `Got it, let's go`
+- **PT** `Certo, vamos lá`
+
+### `introReplayTitle`
+
+- **EN** `What the app does`
+- **PT** `O que a app faz`
+
+### `introReplaySub`
+
+- **EN** `The four screens, again.`
+- **PT** `Os quatro ecrãs, outra vez.`
 
 ### `payslipNotCheckedYet`
 

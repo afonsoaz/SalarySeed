@@ -108,6 +108,18 @@ struct ProfileView: View {
             // the card at the top, and the lock on the colour picker. A third
             // line that only ever reads "free version" would be wrong for
             // everyone who paid.
+            // v1.4: the way back to the intro screen.
+            //
+            // It exists because a screen that can only be reached once is a
+            // screen nobody can check, including whoever has to change it next.
+            // It sets ONLY the session flag: `hasSeenIntro` stays true, so
+            // nothing about the once-only promise changes and the screen still
+            // never appears on its own again.
+            Button { store.showingIntro = true } label: {
+                SignalRow(icon: "sparkles", iconTint: Theme.accent,
+                          title: s.introReplayTitle,
+                          subtitle: s.introReplaySub) { EmptyView() }
+            }
             InfoRow(label: s.privacyLabel, value: s.privacyValue)
             InfoRow(label: s.sourcesLabel, value: s.sourcesValue)
             // v1.0: which build this is. Nobody needs it until something is

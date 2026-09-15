@@ -67,6 +67,12 @@ final class SalaryStore: ObservableObject {
     @Published var ajudasMonthly: Double { didSet { save() } }
     @Published var employment: EmploymentType { didSet { save() } }
     @Published var hasOnboarded: Bool { didSet { save() } }
+    /// v1.4: whether the one-time intro screen has already run.
+    ///
+    /// Separate from `hasOnboarded` on purpose, so that quitting part way
+    /// through the intro keeps the profile and `OnboardingView.finish()` stays
+    /// the only writer of `hasOnboarded`.
+    @Published var hasSeenIntro: Bool { didSet { save() } }
     /// v1.2: the one place a figure read off a payslip becomes the salary.
     ///
     /// Called from `HomeView`, never from inside `Features/Payslip/`, which goes
@@ -174,6 +180,17 @@ final class SalaryStore: ObservableObject {
     /// since v0.10.1 took away the Home card that used to jump to Grow.
     @Published var selectedTab: Int = 0
 
+    /// Whether the intro screen is on screen right now.
+    ///
+    /// No `didSet { save() }` and absent from `save()`, for the same reason
+    /// `growScenario` is: it is what the app is doing at this moment, not
+    /// something it knows about the reader.
+    ///
+    /// It exists as a second value rather than a view reading `!hasSeenIntro`
+    /// because the intro marks itself seen the moment it appears, and a view
+    /// gated on the persisted flag would remove itself in the same frame.
+    @Published var showingIntro = false
+
     private let defaults = UserDefaults.standard
 
     init() {
@@ -183,6 +200,7 @@ final class SalaryStore: ObservableObject {
         ajudasMonthly = defaults.double(forKey: "ajudasMonthly")
         employment = EmploymentType(rawValue: defaults.string(forKey: "employment") ?? "") ?? .employee
         hasOnboarded = defaults.bool(forKey: "hasOnboarded")
+        hasSeenIntro = defaults.bool(forKey: "hasSeenIntro")
         inputYearly = defaults.bool(forKey: "inputYearly")
         maritalSituation = MaritalSituation(rawValue: defaults.string(forKey: "maritalSituation") ?? "") ?? .single
         dependents = defaults.integer(forKey: "dependents")
@@ -210,6 +228,16 @@ final class SalaryStore: ObservableObject {
         // The static mirror has to be right before the first view is built, so it
         // is set here rather than waiting for the first `didSet`.
         Theme.current = accent
+        // v1.4: THE INTRO ARMS ITSELF ONLY FOR SOMEBODY WHO HAS NOT ONBOARDED
+        // YET, and both halves of that condition matter.
+        //
+        // Without `!hasOnboarded`, upgrading to v1.4 would put a full-screen
+        // intro over an existing install on its next cold launch, which is the
+        // launch-time interstitial the money rules forbid. With it, the screen
+        // can only ever appear in the same session as onboarding: this is read
+        // before the first view is built, and `finish()` sets `hasOnboarded`
+        // afterwards, so the flag is still false here for a first run.
+        showingIntro = !hasSeenIntro && !hasOnboarded
         // v1.0: the consent keys are deliberately NOT read, and not cleared
         // either. Nobody ever ran a build that could send anything, so there is
         // nothing to migrate; leaving the old keys alone costs a few bytes and
@@ -223,6 +251,7 @@ final class SalaryStore: ObservableObject {
         defaults.set(ajudasMonthly, forKey: "ajudasMonthly")
         defaults.set(employment.rawValue, forKey: "employment")
         defaults.set(hasOnboarded, forKey: "hasOnboarded")
+        defaults.set(hasSeenIntro, forKey: "hasSeenIntro")
         defaults.set(inputYearly, forKey: "inputYearly")
         defaults.set(maritalSituation.rawValue, forKey: "maritalSituation")
         defaults.set(dependents, forKey: "dependents")

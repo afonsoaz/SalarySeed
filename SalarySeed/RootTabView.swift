@@ -38,7 +38,27 @@ struct RootTabView: View {
 
     private var s: Strings { store.s }
 
+    /// v1.4: the intro screen is a SIBLING IN A ZSTACK, not a `fullScreenCover`.
+    ///
+    /// A cover would work now that nothing has to reach the tab bar, but its
+    /// dismissal slides the screen down off the top, and the right ending for
+    /// "here is your app" is the app fading up underneath. `.transition(.opacity)`
+    /// on a sibling gives that for one line more.
+    ///
+    /// `finish()` and `SalarySeedApp` are untouched by this, there is still no
+    /// `.id()` anywhere on the root (see the note at the top of SalarySeedApp),
+    /// and every `@State` in the tab tree stays alive behind it.
     var body: some View {
+        ZStack {
+            tabs
+            if store.showingIntro {
+                FeatureIntroView(onDone: { store.showingIntro = false })
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    private var tabs: some View {
         TabView(selection: $store.selectedTab) {
             HomeView()
                 .tabItem { Label(s.tabHome, systemImage: "house.fill") }

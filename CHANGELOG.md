@@ -94,17 +94,48 @@ genuinely localized for the first time and put the app's whole PT/EN auto-detect
 for one dialog. The bilingual explanation is on the row instead, before the button is
 tapped, so the system alert confirms rather than explains.
 
-**Two bugs found by looking at the screen, both invisible to the compiler.** The scan is
+**The app introduces itself now.** Onboarding used to end in a hard cut to five tabs, with
+nobody ever saying what Compare, Map or Grow were for. One screen, shown once, does that: a
+headline, four cards, a button, and a staggered entrance that is the app's first and only
+reduce-motion path.
+
+It was designed as a four-card tour first, and throwing that away was the best decision in
+this release. A tour needs a figure per card to be worth paging through, and three of the
+four figures have a bare-profile case to get right, because Grow needs both a sector and a
+tenure and the last onboarding step is the most commonly skipped one. That is four cards to
+keep honest instead of one screen to read. An earlier draft also tried to fly the four tab
+icons into the real tab bar; that is not possible, because `.tabItem`'s label is read for
+its text and image and turned into a `UITabBarItem`, so there is no view at the item's
+position to carry a geometry id. Both dead ends are written into CLAUDE.md so nobody spends
+the afternoon again.
+
+The cards carry no figures at all, which is what makes the screen safe: a card that cannot
+contradict the tab it names is worth more than one that could. Nothing on it names a price
+or leads to one. It arms itself only when `!hasSeenIntro && !hasOnboarded`, so it can only
+ever appear in the same session as onboarding and an upgrade never sees it, and it marks
+itself seen on appear rather than on the button, because somebody who backgrounds the app
+has seen it and chose to leave. Profile has a replay row, because a screen reachable
+exactly once is a screen nobody can check.
+
+**Three bugs found by looking at the screen, all invisible to the compiler.** The scan is
 handed over in the cover's `onDismiss` and not in the delegate callback, because loading it
 moves the flow to `.reading`, which replaces the very view presenting the scanner: doing
 both in one turn tears down a presenter mid-dismissal and the check screen silently never
 appears. And the onboarding header's wordmark wrapped to "SalarySee / d" at an accessibility
 text size. `HomeView.brandMark` has carried `lineLimit(1)` since v1.0.3 with a note that a
 wrapped wordmark reads as a typo; this was the second copy of that mark and never got the
-fix. `lineLimit(1)` alone only trades the wrap for "SalaryS…", so past the accessibility
+fix, so it had been wrapping for four releases on a screen every new reader sees.
+`lineLimit(1)` alone only trades the wrap for "SalaryS…", so past the accessibility
 threshold the wordmark now comes off entirely and the leaf stays: the arrow and the dots are
 functional, the wordmark is decoration on a screen that already has a headline, and
 "reflow, do not shrink" applies to a row as much as to a paragraph.
+
+The third was Home's, and it is the one worth remembering. The fold is sized to a measured
+viewport, and the obvious formula subtracted `safeAreaInsets` from a `GeometryReader`'s
+height, which takes them off a number they have come off already: 584 points against 756 on
+an iPhone 17. The symptom was a fold ending a third of the way up the screen with the next
+section sitting in plain sight beneath an invitation to scroll to it. It was found by
+putting the number on screen in red, which is the only thing that would have found it.
 
 **v1.3**: Everything is free, and the payment is switched off rather than deleted.
 
