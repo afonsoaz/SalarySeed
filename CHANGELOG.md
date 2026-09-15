@@ -4,6 +4,55 @@ What changed in each version and why, including the bugs that shipped and what t
 Versions before 1.0 were never released; they are here because the mistakes in them are
 the reason later versions are shaped the way they are.
 
+**v1.4**: Home holds one number, and the rest is a scroll away.
+
+Home had eleven blocks in one scroll, and the first screenful carried the pay figures, a
+percentage card, an edit button and a share-of-cost bar before the reader had read anything.
+It now holds the top bar, a one-line greeting and the net figure, sized to exactly one
+screen, with an invitation at the bottom. Everything about what comes off the salary lives
+below that line, which is where somebody goes looking for it.
+
+**The default look moved, deliberately.** 30pt gross and net side by side became a 44pt net
+figure over a 20pt gross annotation. The locked Type rules say `UIFontMetrics` returns the
+design size unchanged at the default setting, so a change that moves the default look is a
+design decision and has to be named as one. This is that. 44 was measured rather than
+judged: it resolves to 67pt at `accessibility-extra-large`, where the widest figure the
+screen ever draws is 334 points of the 335 available, so `minimumScaleFactor` never
+engages. The old pair was in fact the cramped one, with 153 points per column.
+
+Four things came off the screen and one merged. The "Update my salary" row is gone, and its
+job moved onto the figure: the whole hero block is the button, with an 11pt pencil on the
+label as the affordance, because a bare figure is not discoverable as a control and nothing
+else in the app makes one tappable. The percentage card merged INTO `BreakdownBar` rather
+than moving next to it, because the two were an echo: the card printed the percentage that
+the bar's own net segment draws, forty points above it, with a second sentence saying the
+same thing. The bar gained the headline it never had and `shareOfCost` was deleted rather
+than left unreferenced. The period picker left the top bar for the fold, under the figure it
+changes, which also deleted the v1.0.3 two-row accessibility branch: that branch existed
+only because the 188pt picker was the immovable thing in the row, and a reflow for a row
+that no longer overflows is a branch nobody can check.
+
+**The fold had to be measured, and the obvious formula was wrong.** `minHeight` comes from a
+`GeometryReader` in a `.background` on the ScrollView, never from its content, so the
+measurement cannot feed back into itself. It uses `g.size.height` raw. Subtracting
+`safeAreaInsets` looks obviously right and takes them off a number they have come off
+already: on an iPhone 17 that is 584 points against 756, and the symptom is a fold ending a
+third of the way up the screen with the next section sitting in plain sight beneath an
+invitation to scroll to it. That was found by putting the number on screen rather than by
+reasoning about it, which is the only reason it was found at all.
+
+The see-more prompt is inline and not pinned, and rule 24 is the reason rather than an
+oversight: `safeAreaInset(edge: .bottom)` is the right way to pin a control in a tab, but it
+reserves its height permanently and would shrink the very viewport the fold is sized to,
+and animating that inset away to hide the prompt is the layout feedback loop. It hides with
+opacity and never with `if`, because removing it shortens the content, which can move the
+scroll offset, which can flip the condition that hid it straight back. Two thresholds 16
+points apart stop it fluttering at the boundary.
+
+Known and not fixed: `SegmentedPicker` at an accessibility size runs "Mês ×12" and "Mês ×14"
+together with no gap. It did that before on its own row too, so nothing regressed, but the
+picker is now a permanent resident of the fold and it is more visible there.
+
 **v1.3**: Everything is free, and the payment is switched off rather than deleted.
 
 Afonso is on a J-1 visa and is not authorised to work, so a launch that earns nothing is the

@@ -6,9 +6,48 @@ import SwiftUI
 /// v0.10.1: the percentile teaser and the pointer to Grow both came off. Home
 /// answers one question, what your salary means right now, and hands the other
 /// questions to the tabs that own them instead of previewing them badly.
+/// Names for the one coordinate space and the one scroll anchor this screen
+/// uses. Strings in two places that have to match are a typo waiting to happen.
+private enum HomeScroll {
+    static let space = "homeScroll"
+    static let detailAnchor = "homeDetail"
+}
+
+/// How tall the VISIBLE region of the scroll view is, which is what `fold` is
+/// sized to.
+///
+/// Read from a `.background` on the ScrollView and never from its content. A
+/// background is sized by its host, and the host's frame comes from the
+/// NavigationStack inside the TabView, so it is not a function of the content
+/// and the measurement cannot feed back into itself.
+///
+/// `g.size.height` RAW, with nothing subtracted, and that was measured rather
+/// than reasoned about. Subtracting `safeAreaInsets` looks obviously right and
+/// is wrong twice over: SwiftUI has already sized the scroll view to the region
+/// it may occupy, so the insets come off a number they have come off once
+/// already. On an iPhone 17 the difference is 584 points against 756, and the
+/// symptom is a fold that ends a third of the way up the screen with the next
+/// section sitting in plain sight under the invitation to scroll to it.
+private struct ViewportHeightKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+/// Where the top of the content sits relative to the scroll view, so the
+/// see-more prompt can retire once the reader has taken its advice.
+private struct ScrollTopKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
 struct HomeView: View {
     @EnvironmentObject private var store: SalaryStore
-    /// Drives the two-row top bar. See `topBar`.
+    /// Read for `leafSize`, and for the scaled glyph boxes further down. It
+    /// drove the two-row top bar until v1.4 moved the picker out of it.
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var period: ResultPeriod = .m14
     @State private var pickedInitial = false
@@ -21,6 +60,13 @@ struct HomeView: View {
     /// own hanging off it and a sheet on a sheet is a stack of cards.
     @State private var showProfile = false
     @State private var askingSalaryChange = false
+    /// v1.4: true once the reader has scrolled past the fold, which retires the
+    /// see-more prompt. A Bool and not the offset: `body` holds `RollingEuro`'s
+    /// content transition and the leaf's springs, and storing a CGFloat here
+    /// would redraw all of it on every scroll frame.
+    @State private var hasScrolled = false
+    /// The visible height of the scroll view, measured. See `ViewportHeightKey`.
+    @State private var viewport: CGFloat = 0
 
     /// v0.8: three ways to read the result. Two are monthly (the yearly pay spread
     /// over 12, or over the 14 real payments) and one is the yearly total.
@@ -52,16 +98,38 @@ struct HomeView: View {
     private var isAnnual: Bool { period.isAnnual }
     private var factor: Double { period.factor(months: b.months) }
 
+    /// v1.4: HOME IS TWO SCREENS NOW, and the first one holds one number.
+    ///
+    /// It held eleven blocks in one scroll, and the first screenful carried the
+    /// pay figures, a percentage card, an edit button and a share-of-cost bar
+    /// before anybody had read anything. `fold` is now exactly the top bar, a
+    /// one-line greeting and the net figure, sized to the screen, with an
+    /// invitation at the bottom. Everything about what comes off the salary
+    /// lives below it, which is where somebody goes looking for it.
+    ///
+    /// The default look moves, deliberately: 30pt side-by-side figures became a
+    /// 44pt net figure over a 20pt gross annotation. That is a design decision,
+    /// not a Dynamic Type one, and the locked Type rules say to name it as such.
     var body: some View {
         NavigationStack {
+            ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    topBar
-                    greeting
-                    heroNumbers
-                    updateSalaryButton
-                    efficiencyCard
+                    fold(proxy)
+                    // The first thing below the fold, so it is what the prompt
+                    // scrolls to.
+                    //
+                    // The extra top padding is for that landing. `anchor: .top`
+                    // puts this at the top of the scroll region, which runs
+                    // under the clock, and `RootTabView.statusBarScrim` is 96
+                    // points tall there: without it the section label arrives
+                    // inside the scrim's fade and reads as half erased. Padding
+                    // rather than a negative UnitPoint on `scrollTo`, because
+                    // this also widens the gap between a full-screen fold and
+                    // the first section below it, which is wanted anyway.
                     BreakdownBar(breakdown: b)
+                        .padding(.top, 28)
+                        .id(HomeScroll.detailAnchor)
                     profileNudge
                     detailsSection
                     annualSettlementCard
@@ -70,6 +138,23 @@ struct HomeView: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
+            }
+            .coordinateSpace(.named(HomeScroll.space))
+            .background {
+                GeometryReader { g in
+                    Color.clear.preference(key: ViewportHeightKey.self, value: g.size.height)
+                }
+            }
+            .onPreferenceChange(ViewportHeightKey.self) { h in
+                // `> 1` rather than `!=`: a sub-point difference re-entering
+                // state is the shape that turns a measurement into a loop.
+                if abs(h - viewport) > 1 { viewport = h }
+            }
+            .onPreferenceChange(ScrollTopKey.self) { y in
+                // Two thresholds, 16 points apart, so a rubber-band settle at
+                // exactly the boundary cannot flutter the prompt in and out.
+                if !hasScrolled, y < -24 { hasScrolled = true }
+                else if hasScrolled, y > -8 { hasScrolled = false }
             }
             .background(alignment: .top) {
                 RadialGradient(
@@ -95,35 +180,84 @@ struct HomeView: View {
                 period = store.schedule == .twelve ? .m12 : .m14
                 pickedInitial = true
             }
+            }
         }
     }
 
-    /// v1.0.3: three things share this row, and at an accessibility text size
-    /// they stop fitting. The 188pt picker is the immovable one, so the wordmark
-    /// was the part that got squeezed: it wrapped to "Salar / ySee / d" while the
-    /// three segments overlapped each other. Rather than shrink any of them, the
-    /// row becomes two rows past the accessibility threshold, and the picker,
-    /// which is the only thing here anybody taps repeatedly, gets a full width of
-    /// its own. Below that threshold nothing changes at all.
-    private var topBar: some View {
-        Group {
-            if typeSize.isAccessibilitySize {
-                VStack(spacing: 10) {
-                    HStack {
-                        brandMark
-                        Spacer()
-                        ProfileButton(isPresented: $showProfile)
+    // MARK: The fold
+
+    /// The first screen: one number, and a way down to the rest.
+    ///
+    /// `minHeight: viewport` is what makes it a fold at all. The content here is
+    /// about 314 points at the default text size against a screen of 600 to 730,
+    /// so with fixed spacing there is no fold: three or four hundred points of
+    /// the next section sit on screen and the invitation is pointless. The two
+    /// Spacers absorb the difference, which lands the figure optically centred
+    /// and the prompt at the bottom edge.
+    ///
+    /// Past an accessibility text size the natural content is taller than the
+    /// screen, `minHeight` goes inert, both Spacers collapse to their minLength,
+    /// and the prompt moves below the fold. That is correct: the content being
+    /// cut off at the bottom is its own scroll affordance.
+    private func fold(_ proxy: ScrollViewProxy) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            topBar
+                // The scroll sentinel rides in a BACKGROUND, not as a child of
+                // this stack. A bare GeometryReader in a VStack claims all the
+                // height it is offered, and even a zero-height Color.clear
+                // child would still take a gap from the parent's spacing. In a
+                // background it is sized by its host and contributes no layout.
+                .background {
+                    GeometryReader { g in
+                        Color.clear.preference(
+                            key: ScrollTopKey.self,
+                            value: g.frame(in: .named(HomeScroll.space)).minY
+                        )
                     }
-                    periodPicker
                 }
-            } else {
-                HStack {
-                    brandMark
-                    Spacer()
-                    periodPicker.frame(width: 188)
-                    ProfileButton(isPresented: $showProfile)
-                }
-            }
+
+            greeting
+                .padding(.top, 14)
+
+            Spacer(minLength: 32)
+
+            heroNet
+            heroFootnotes
+
+            // The picker changes the number, so it sits under the number rather
+            // than in the top bar. See the note on `topBar`.
+            periodPicker
+                .padding(.top, 24)
+
+            Spacer(minLength: 28)
+
+            seeMorePrompt(proxy)
+        }
+        .frame(minHeight: max(0, viewport - Self.foldBottomSlack), alignment: .top)
+    }
+
+    /// Breathing room between the see-more prompt and the tab bar.
+    ///
+    /// The measured viewport ends exactly at the top of iOS 26's floating bar,
+    /// which left the chevron about eight points off it: legible, but it read as
+    /// jammed against the glass. One number, turned by looking at it.
+    private static let foldBottomSlack: CGFloat = 12
+
+    /// v1.0.3 made this two rows past an accessibility text size, and v1.4
+    /// DELETED THAT BRANCH by moving the thing it existed for.
+    ///
+    /// Three things shared the row and the 188pt picker was the immovable one,
+    /// so the wordmark was what got squeezed: it wrapped to "Salar / ySee / d"
+    /// while the three segments overlapped each other. The picker now lives in
+    /// the fold, under the figure it changes, so what is left is a wordmark and
+    /// a 44pt button. Those fit on one row at every text size, including AX5,
+    /// and a reflow branch for a row that no longer overflows is a branch
+    /// nobody can check.
+    private var topBar: some View {
+        HStack {
+            brandMark
+            Spacer()
+            ProfileButton(isPresented: $showProfile)
         }
         .padding(.top, 8)
     }
@@ -148,83 +282,193 @@ struct HomeView: View {
     /// v1.2: PROFILE LIVES HERE NOW, and it cost nothing to put it here.
     ///
     /// This slot held a pencil that opened `askingSalaryChange`, which is what
-    /// `updateSalaryButton` two rows below in the same scroll view already
-    /// does. One action, twice, on one screen, which is the thing "no echoes"
-    /// forbids. So the row did not have to grow to take a fourth item; it had
-    /// to lose a third.
+    /// the row two below in the same scroll view already did. One action, twice,
+    /// on one screen, which is the thing "no echoes" forbids. So the row did not
+    /// have to grow to take a fourth item; it had to lose a third.
     ///
     /// v1.2b moved the button itself to `Features/Shared/ProfileButton.swift`,
     /// because it is now in all five tab headers and there is no version of
     /// that worth writing five times.
+    ///
+    /// v1.4 deleted that row and the pencil came back, but NOT to this slot: it
+    /// sits on the net figure's own label, because the affordance only works
+    /// while it is adjacent to the thing it edits. Three hundred points away
+    /// from the number is how it became a floating pencil the first time.
 
+    /// v1.4: one line. The subtitle said "here's what your salary really means",
+    /// which is a sentence about the screen rather than about the reader's pay,
+    /// and the whole point of the fold is that there is less to read on it.
+    ///
+    /// 18pt on the `.body` curve, deliberately not 20: 20 crosses into `.title3`
+    /// and the greeting would then grow more slowly than the figure beneath it.
+    /// No lineLimit, because "reflow, do not shrink" is locked and a long name
+    /// wrapping to two lines is the correct outcome.
     private var greeting: some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(s.hey(store.displayName))
-                .appFont(20, weight: .medium)
-                .foregroundStyle(Theme.textPrimary)
-            Text(s.greetSub)
-                .appFont(13)
-                .foregroundStyle(Theme.textSecondary)
-        }
+        Text(s.hey(store.displayName))
+            .appFont(18)
+            .foregroundStyle(Theme.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
-    private var heroNumbers: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 14) {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("\(s.grossWord) / \(s.periodSuffix(period.modeIndex))")
-                        .appFont(12)
-                        .foregroundStyle(Theme.textSecondary)
-                    RollingEuro(value: b.grossMonthly * factor, color: Theme.textPrimary, fontSize: 30)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                Rectangle().fill(Color.white.opacity(0.08)).frame(width: 1, height: 44)
-
-                VStack(alignment: .leading, spacing: 3) {
+    /// v1.4: one figure, and it is the way into the editor.
+    ///
+    /// Net leads at 44pt with gross as a 20pt annotation under it, rather than
+    /// the two side by side at 30. Two signals make the gross read as secondary
+    /// before the sizes do: it is in `textSecondary` against the accent, and the
+    /// word "Bruto" sits in front of it in `textFaint`.
+    ///
+    /// 44 is not too big, and it is measured rather than judged. `band(for: 44)`
+    /// is `.largeTitle`, so it resolves to 67pt at accessibility-extra-large,
+    /// where the widest figure anybody will see ("140 000 €", plus the leaf) is
+    /// 334 points of the 335 available. `minimumScaleFactor` never engages. The
+    /// old side-by-side pair was in fact the cramped one: each column had 153
+    /// points and already shrank at that size.
+    ///
+    /// THE WHOLE BLOCK IS THE BUTTON, because the row that used to say "Update
+    /// my salary" is gone. A bare figure is not discoverable as a control, so
+    /// the 11pt pencil on the label is the affordance: the same glyph that row
+    /// used, in a tenth of the space, and on the LABEL rather than the figure so
+    /// the number stays undecorated and the pencil never shares a baseline with
+    /// the unfurling leaf.
+    private var heroNet: some View {
+        Button { askingSalaryChange = true } label: {
+            VStack(alignment: .leading, spacing: 0) {
+                // `.center`, not `.firstTextBaseline`. Rule 31: the pencil is an
+                // Image, has no baseline of its own, and a baseline alignment
+                // would drag its bottom edge down to meet the text's.
+                HStack(alignment: .center, spacing: 5) {
                     Text("\(s.netWord) / \(s.periodSuffix(period.modeIndex))")
                         .appFont(12)
                         .foregroundStyle(Theme.textSecondary)
-                    HStack(alignment: .firstTextBaseline, spacing: 5) {
-                        RollingEuro(value: b.netMonthly * factor, color: Theme.accent, fontSize: 30)
-                        UnfurlingLeaf(trigger: b.netMonthly * factor)
-                    }
+                    Image(systemName: "pencil")
+                        .appFont(11)
+                        .foregroundStyle(Theme.accent)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+                // `.firstTextBaseline` here is DELIBERATE and is not the rule 31
+                // mistake it looks like. LeafGlyph is a Shape with no baseline,
+                // so SwiftUI aligns its bottom edge, which is exactly where the
+                // leaf's own `.bottomLeading` unfurl anchor wants to be: it
+                // sprouts from the baseline of the number. Changing this to
+                // `.bottom` detaches it.
+                HStack(alignment: .firstTextBaseline, spacing: 5) {
+                    RollingEuro(value: b.netMonthly * factor, color: Theme.accent, fontSize: 44)
+                    UnfurlingLeaf(trigger: b.netMonthly * factor, size: leafSize)
+                }
+                .padding(.top, 2)
+
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(s.grossWord)
+                        .appFont(13)
+                        .foregroundStyle(Theme.textFaint)
+                    // No period suffix: the label above already named it, and
+                    // the gross is the same period by construction.
+                    Text(eur(b.grossMonthly * factor))
+                        .appFont(20, weight: .medium)
+                        .foregroundStyle(Theme.textSecondary)
+                }
+                .padding(.top, 6)
             }
-            // A short note on what the 12x / 14x monthly view means.
-            if let cap = s.resultCaption(period.modeIndex) {
-                Text(cap)
-                    .appFont(11)
-                    .foregroundStyle(Theme.textFaint)
-            }
-            // Net above is from the salary alone. Ajudas de custo show as their own line,
-            // so it is always clear which net comes from gross and which comes on top.
-            if b.ajudasMonthly > 0 {
-                let ajudasPart = isAnnual ? b.ajudasYearly : b.ajudasMonthly
-                let pocket = b.netMonthly * factor + ajudasPart
-                Text(s.heroAjudas(eur(ajudasPart), total: eur(pocket)))
-                    .appFont(12)
-                    .foregroundStyle(Theme.textSecondary)
-            }
+            // SwiftUI centres text inside a Button label unless told otherwise,
+            // and this label is a left-aligned column of three. Rule 27.
+            .multilineTextAlignment(.leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            // So the 2pt and 6pt gaps between the rows are live too.
+            .contentShape(Rectangle())
         }
-        .padding(.top, 2)
+        // Without this the default style press-dims a 335x90 area, and a flash
+        // across a 44pt figure reads as a rendering glitch rather than a tap.
+        .buttonStyle(.plain)
+        // One element, with an explicit label rather than `.combine`: combined,
+        // VoiceOver reads four fragments and speaks "(x14)" as punctuation.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            s.heroVoice(net: eur(b.netMonthly * factor),
+                        gross: eur(b.grossMonthly * factor),
+                        per: s.periodVoice(period.modeIndex))
+        )
+        .accessibilityHint(s.heroEditHint)
     }
 
-    private var updateSalaryButton: some View {
-        Button { askingSalaryChange = true } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "pencil")
-                    .appFont(13)
-                Text(s.updateSalaryButton)
-                    .appFont(14, weight: .medium)
+    /// 18 points beside a 44 point figure keeps the ratio the 13pt leaf had
+    /// beside the old 30pt one, and it is scaled on the FIGURE's curve rather
+    /// than its own. See the note in `UnfurlingLeaf`.
+    private var leafSize: CGFloat { 18 * Theme.scaled(44, typeSize) / 44 }
+
+    /// What the figure above takes for granted. Outside the button on purpose:
+    /// these are explanation rather than the figure, and the button's
+    /// `children: .ignore` would otherwise swallow them.
+    ///
+    /// Both stay in the fold. The caption is the only thing that says what the
+    /// 44pt number IS, and the ajudas line is a pay figure rather than detail:
+    /// without it the net shown here understates what actually reaches the
+    /// reader. The cost is honest and it is the least calm the fold gets, since
+    /// at an accessibility size the Portuguese ajudas sentence runs to three or
+    /// four lines right under the figures. A calm fold that understates
+    /// somebody's pay would be the worse trade.
+    @ViewBuilder
+    private var heroFootnotes: some View {
+        // A short note on what the 12x / 14x monthly view means. Nil for annual.
+        if let cap = s.resultCaption(period.modeIndex) {
+            Text(cap)
+                .appFont(11)
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 10)
+        }
+        // Net above is from the salary alone. Ajudas de custo show as their own
+        // line, so it is always clear which net comes from gross and which comes
+        // on top.
+        if b.ajudasMonthly > 0 {
+            let ajudasPart = isAnnual ? b.ajudasYearly : b.ajudasMonthly
+            let pocket = b.netMonthly * factor + ajudasPart
+            Text(s.heroAjudas(eur(ajudasPart), total: eur(pocket)))
+                .appFont(12)
+                .foregroundStyle(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 6)
+        }
+    }
+
+    /// The invitation down to everything that comes off the salary.
+    ///
+    /// INLINE, not pinned, and rule 24 is the reason rather than an oversight. A
+    /// `safeAreaInset(edge: .bottom)` is the correct way to pin a control in a
+    /// tab, but it reserves its height permanently, which would shrink the very
+    /// viewport `fold` is sized to; and animating that inset away to hide the
+    /// prompt IS the layout feedback loop. It would also sit on top of a
+    /// floating glass tab bar already carrying five items. Scrolling away is
+    /// itself the affordance: the prompt moving proves the screen moves.
+    ///
+    /// The arrow goes BELOW the text, not beside it, for two reasons. It points
+    /// where it goes, and "Vê o que te descontam" is 331 points of the 335
+    /// available at an accessibility size, so a chevron beside it would wrap.
+    ///
+    /// Hidden with opacity and never with `if`: removing it would shorten the
+    /// content, which can move the scroll offset, which can flip the condition
+    /// that hid it straight back.
+    private func seeMorePrompt(_ proxy: ScrollViewProxy) -> some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.55)) {
+                proxy.scrollTo(HomeScroll.detailAnchor, anchor: .top)
+            }
+        } label: {
+            VStack(spacing: 4) {
+                Text(s.homeSeeMore)
+                    .appFont(13, weight: .medium)
+                Image(systemName: "chevron.down")
+                    .appFont(11, weight: .semibold)
             }
             .foregroundStyle(Theme.accent)
+            .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 13))
-            .overlay(RoundedRectangle(cornerRadius: 13).stroke(Theme.accentBorder))
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityHint(s.homeSeeMoreHint)
+        .opacity(hasScrolled ? 0 : 1)
+        .animation(.easeOut(duration: 0.25), value: hasScrolled)
     }
 
     /// v1.2b: how complete the profile is, said on the screen people actually
@@ -239,56 +483,10 @@ struct HomeView: View {
         }
     }
 
-    /// v1.2: one figure and one sentence, where there were two lines and a
-    /// division to do in your head.
-    ///
-    /// It used to read "Of every €100 your company spends," over "€63 reaches
-    /// your pocket". `efficiency` is a ratio, so €100 was a device for turning
-    /// it into something a reader could picture, and a percentage is what that
-    /// device was standing in for.
-    ///
-    /// Whole percent, where the rates in the detail trees below carry one
-    /// decimal. A headline is a number you glance at; the decimal belongs where
-    /// somebody is comparing two rows, not where they are reading one figure.
-    ///
-    /// v1.2a: `pct` below is locale-correct now, so this no longer has to avoid
-    /// it to avoid a POSIX decimal point. `percent(_:decimals:)` in `Theme` is
-    /// the one path, and the 0 here is a design choice rather than a dodge.
-    private var efficiencyCard: some View {
-        Group {
-            if typeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 3) { efficiencyFigure; efficiencyLabel }
-            } else {
-                // `.center`, not `.firstTextBaseline`. The sentence beside the
-                // figure runs to two lines on most phones, and a baseline
-                // alignment pins the figure to the FIRST of them, so the second
-                // hangs below it and the pair reads as misaligned. Centring is
-                // what makes one number and one sentence look like one row.
-                HStack(alignment: .center, spacing: 10) {
-                    efficiencyFigure
-                    efficiencyLabel
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accentBorder))
-    }
-
-    private var efficiencyFigure: some View {
-        Text("\(Int((b.efficiency * 100).rounded()))%")
-            .appFont(26, weight: .medium)
-            .foregroundStyle(Theme.accent)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
-    private var efficiencyLabel: some View {
-        Text(s.effPocket)
-            .appFont(13)
-            .foregroundStyle(Theme.textSecondary)
-            .fixedSize(horizontal: false, vertical: true)
-    }
+    // v1.4: `efficiencyCard` moved into `BreakdownBar`, comment and all. It
+    // printed the same percentage the bar's net segment draws, forty points
+    // above it, with a second sentence saying the same thing. See the note at
+    // the top of BreakdownBar.swift for why that is a merge and not a move.
 
     /// v0.5 "in detail": two branching trees plus the red ajudas de custo highlight.
     /// Company side: total cost splits into gross salary and employer SS.

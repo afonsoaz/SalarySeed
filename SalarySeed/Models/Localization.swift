@@ -100,7 +100,6 @@ struct Strings {
         if let name { return t("Hey \(name)", "Olá, \(name)") }
         return t("Hey there", "Olá")
     }
-    var greetSub: String { t("here's what your salary really means.", "isto é o que o teu salário significa na prática.") }
     // v0.8: three-way result view (monthly ÷12, monthly ÷14, annual)
     var grossWord: String { t("Gross", "Bruto") }
     var netWord: String { t("Net", "Líquido") }
@@ -124,6 +123,46 @@ struct Strings {
         default: return nil
         }
     }
+
+    /// v1.4: the invitation at the bottom of Home's first screen. It names the
+    /// destination rather than the gesture: "scroll down" describes what the
+    /// reader does, this describes what they get for doing it.
+    var homeSeeMore: String {
+        t("See what comes off it", "Vê o que te descontam")
+    }
+    var homeSeeMoreHint: String {
+        t("Scrolls down to the deductions and the yearly IRS.",
+          "Desce até aos descontos e ao IRS do ano.")
+    }
+
+    /// v1.4: the net figure is the way into the salary editor now that the row
+    /// under it is gone. VoiceOver reads `heroVoice`, then "button", then this.
+    var heroEditHint: String {
+        t("Update the salary these figures come from.",
+          "Atualiza o salário de onde vêm estes valores.")
+    }
+
+    /// The hero block spoken as ONE element, because its parts read as four
+    /// fragments with a parenthetical in the middle of them.
+    ///
+    /// It RESTATES both figures, so a change to either one has to grep this
+    /// member too. That is rule 8, and it is the whole cost of an explicit label.
+    func heroVoice(net: String, gross: String, per: String) -> String {
+        t("Net \(net) per \(per). Gross \(gross).",
+          "Líquido \(net) por \(per). Bruto \(gross).")
+    }
+
+    /// `periodSuffix` for speech. The visible label says "mês (×14)", and
+    /// VoiceOver reads those brackets as punctuation, so the parenthetical is
+    /// spelt out here instead. A separate member rather than a reuse, because
+    /// the two are read by an eye and an ear and want different things.
+    func periodVoice(_ mode: Int) -> String {
+        switch mode {
+        case 2: return t("year", "ano")
+        case 1: return t("month, 14 payments", "mês, 14 pagamentos")
+        default: return t("month, 12 payments", "mês, 12 pagamentos")
+        }
+    }
     /// v1.2: was two lines, "Of every €100 your company spends," above
     /// "€63 reaches your pocket". The number is a ratio, so it is now shown as
     /// one: a percentage with this sentence beside it. One line, one figure, and
@@ -138,7 +177,6 @@ struct Strings {
     var legendIRS: String { "IRS" }
     var legendYourSS: String { t("Your SS", "A tua SS") }
     var legendEmployerSS: String { t("Employer SS", "SS da empresa") }
-    var shareOfCost: String { t("Share of total cost to your company", "Parte do custo total para a tua empresa") }
 
     var theDetails: String { t("Details", "Detalhe") }
     /// v1.2: two `t()` calls rather than one with a ternary in each argument.
@@ -493,7 +531,6 @@ struct Strings {
           "Total do ano. Dividimos pelos teus \(months) pagamentos.")
     }
     var updateButton: String { t("Update", "Atualizar") }
-    var updateSalaryButton: String { t("Update my salary", "Atualizar o meu salário") }
     var editorAjudasLabel: String { t("Meal allowance & ajudas de custo / month (optional)", "Subsídio de alimentação e ajudas de custo / mês (opcional)") }
     var editorAjudasNote: String {
         t("Amounts paid straight to net, like the meal allowance (subsídio de alimentação) or ajudas de custo. Not included in percentiles or comparisons, which use the gross salary.",

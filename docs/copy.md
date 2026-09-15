@@ -7,7 +7,7 @@ grouped by the screen it belongs to.
 Editing this file changes nothing on its own; it is here to be read and marked up,
 and the edits get applied back to the Swift source afterwards.
 
-- **591** string pairs.
+- **595** string pairs.
 - `\(name)` is a value dropped in at runtime. It has to survive a rewrite,
   and it can move within the sentence.
 - `\n` is a deliberate line break.
@@ -187,11 +187,6 @@ and the edits get applied back to the Swift source afterwards.
 - **EN** `Hey there`
 - **PT** `Olá`
 
-### `greetSub`
-
-- **EN** `here's what your salary really means.`
-- **PT** `isto é o que o teu salário significa na prática.`
-
 ### `grossWord`
 
 - **EN** `Gross`
@@ -242,6 +237,41 @@ and the edits get applied back to the Swift source afterwards.
 - **EN** `What lands in each of your 14 payments.`
 - **PT** `O que entra em cada um dos teus 14 pagamentos.`
 
+### `homeSeeMore`
+
+- **EN** `See what comes off it`
+- **PT** `Vê o que te descontam`
+
+### `homeSeeMoreHint`
+
+- **EN** `Scrolls down to the deductions and the yearly IRS.`
+- **PT** `Desce até aos descontos e ao IRS do ano.`
+
+### `heroEditHint`
+
+- **EN** `Update the salary these figures come from.`
+- **PT** `Atualiza o salário de onde vêm estes valores.`
+
+### `heroVoice`
+
+- **EN** `Net \(net) per \(per). Gross \(gross).`
+- **PT** `Líquido \(net) por \(per). Bruto \(gross).`
+
+### `periodVoice[0]`
+
+- **EN** `year`
+- **PT** `ano`
+
+### `periodVoice[1]`
+
+- **EN** `month, 14 payments`
+- **PT** `mês, 14 pagamentos`
+
+### `periodVoice[2]`
+
+- **EN** `month, 12 payments`
+- **PT** `mês, 12 pagamentos`
+
 ### `effPocket`
 
 - **EN** `reaches your pocket, out of what your company pays`
@@ -259,7 +289,7 @@ and the edits get applied back to the Swift source afterwards.
 
 ### `legendIRS` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:138`.
+Assembled in Swift rather than written as a pair. `Localization.swift:177`.
 
 ### `legendYourSS`
 
@@ -270,11 +300,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:138`.
 
 - **EN** `Employer SS`
 - **PT** `SS da empresa`
-
-### `shareOfCost`
-
-- **EN** `Share of total cost to your company`
-- **PT** `Parte do custo total para a tua empresa`
 
 ### `theDetails`
 
@@ -512,7 +537,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:138`.
 
 ### `ordinalPercentile` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:262`.
+Assembled in Swift rather than written as a pair. `Localization.swift:300`.
 
 ### `youMarker`
 
@@ -759,7 +784,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:262`.
 
 ### `sectorCohort` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:374`.
+Assembled in Swift rather than written as a pair. `Localization.swift:412`.
 
 ---
 
@@ -841,7 +866,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:374`.
 
 ### `appSection` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:410`.
+Assembled in Swift rather than written as a pair. `Localization.swift:448`.
 
 ### `languageLabel`
 
@@ -870,7 +895,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:410`.
 
 ### `sourcesValue` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:418`.
+Assembled in Swift rather than written as a pair. `Localization.swift:456`.
 
 ### `profileFooter`
 
@@ -1070,11 +1095,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:418`.
 
 - **EN** `Update`
 - **PT** `Atualizar`
-
-### `updateSalaryButton`
-
-- **EN** `Update my salary`
-- **PT** `Atualizar o meu salário`
 
 ### `editorAjudasLabel`
 
@@ -1901,7 +1921,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:418`.
 
 ### `growStepArrow` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:884`.
+Assembled in Swift rather than written as a pair. `Localization.swift:921`.
 
 ### `growMoreTitle`
 
@@ -2139,7 +2159,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:884`.
 
 ### `euroDash` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1003`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1040`.
 
 ### `euroUnitEuros`
 
@@ -2218,7 +2238,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1003`.
 
 ### `ordinal` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1059`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1096`.
 
 ### `euroRank[0]`
 

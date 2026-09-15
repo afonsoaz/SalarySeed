@@ -193,13 +193,25 @@ struct UnfurlingLeaf: View {
     @EnvironmentObject private var accentObserver: SalaryStore
     /// Replay the unfurl whenever this value changes.
     var trigger: Double
+    /// An ALREADY-SCALED point width, because this leaf is a decoration on a
+    /// figure and has to grow on that figure's own type curve rather than on
+    /// the curve its own point size would pick.
+    ///
+    /// v1.4: Home's net figure went from 30pt to 44pt and this was a hard 13,
+    /// so it read as a speck beside it and did not grow with the reader's text
+    /// size at all. The obvious fix, `Theme.scaled(18, typeSize)` in here, is
+    /// the opposite bug: `band(for: 18)` is `.body`, which grows 2.35x at
+    /// accessibility-extra-large where `.largeTitle` grows 1.53x, so the leaf
+    /// would end up half again bigger than the number it sprouts from. The
+    /// caller scales it. See `HomeView.leafSize`.
+    var size: CGFloat = 13
 
     @State private var open = false
 
     var body: some View {
         LeafGlyph()
             .fill(Theme.accent)
-            .frame(width: 13, height: 16)
+            .frame(width: size, height: size * 16 / 13)
             .scaleEffect(open ? 1 : 0.01, anchor: .bottomLeading)
             .rotationEffect(.degrees(open ? 0 : -50), anchor: .bottomLeading)
             .onAppear {
