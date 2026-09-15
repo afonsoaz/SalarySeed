@@ -118,7 +118,14 @@ struct ProfileView: View {
 
     // MARK: Support (v0.16)
 
-    /// The first thing on the tab, above even the sprout.
+    /// The first thing on the tab, above even the sprout, in a paid build.
+    ///
+    /// v1.3: THERE IS NO CARD AT ALL IN A FREE BUILD, and drawing the thank-you
+    /// state instead would have been the easy mistake. `isSupporter` is forced
+    /// true when `AppConfig.monetisation` is `.free`, so the second branch below
+    /// would otherwise draw "You are a SalarySeed supporter" at somebody who
+    /// never paid anything. Profile simply starts with the progress card instead.
+    /// A nil branch adds no spacing to the enclosing `VStack`, so nothing moves.
     ///
     /// Accent-filled before purchase and quiet after, because the two states are
     /// asking for different things: one wants to be noticed, the other only needs
@@ -126,61 +133,71 @@ struct ProfileView: View {
     /// every time they open their own profile.
     @ViewBuilder
     private var supportCard: some View {
-        if supporter.isSupporter {
-            Button { showSupport = true } label: {
-                HStack(spacing: 10) {
-                    Image(systemName: "heart.fill")
-                        .appFont(13)
-                        .foregroundStyle(Theme.accent)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(s.supportThanksTitle)
-                            .appFont(13, weight: .medium)
-                            .foregroundStyle(Theme.textPrimary)
-                        Text(s.supportThanksBody)
-                            .appFont(10.5)
-                            .foregroundStyle(Theme.textFaint)
-                            .fixedSize(horizontal: false, vertical: true)
+        if AppConfig.monetisation == .supporter {
+            if supporter.isSupporter {
+                Button { showSupport = true } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: "heart.fill")
+                            .appFont(13)
+                            .foregroundStyle(Theme.accent)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(s.supportThanksTitle)
+                                .appFont(13, weight: .medium)
+                                .foregroundStyle(Theme.textPrimary)
+                            Text(s.supportThanksBody)
+                                .appFont(10.5)
+                                .foregroundStyle(Theme.textFaint)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .multilineTextAlignment(.leading)
+                        Spacer(minLength: 0)
                     }
-                    .multilineTextAlignment(.leading)
-                    Spacer(minLength: 0)
+                    .padding(13)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 14))
+                    .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accentBorder, lineWidth: 1))
                 }
-                .padding(13)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accentBorder, lineWidth: 1))
-            }
-        } else {
-            Button { showSupport = true } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: "heart.fill")
-                        .appFont(18)
-                        .foregroundStyle(Theme.ink)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(s.supportButton)
-                            .appFont(16, weight: .semibold)
+            } else {
+                Button { showSupport = true } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "heart.fill")
+                            .appFont(18)
                             .foregroundStyle(Theme.ink)
-                        Text(s.supportOneOff)
-                            .appFont(11)
-                            .foregroundStyle(Theme.ink.opacity(0.75))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(s.supportButton)
+                                .appFont(16, weight: .semibold)
+                                .foregroundStyle(Theme.ink)
+                            Text(s.supportOneOff)
+                                .appFont(11)
+                                .foregroundStyle(Theme.ink.opacity(0.75))
+                        }
+                        .multilineTextAlignment(.leading)
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .appFont(13, weight: .semibold)
+                            .foregroundStyle(Theme.ink.opacity(0.6))
                     }
-                    .multilineTextAlignment(.leading)
-                    Spacer(minLength: 0)
-                    Image(systemName: "chevron.right")
-                        .appFont(13, weight: .semibold)
-                        .foregroundStyle(Theme.ink.opacity(0.6))
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
                 }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
             }
         }
     }
 
-    /// The colour picker: always visible, only usable by supporters.
+    /// The colour picker. Always visible; usable by everyone in a free build, and
+    /// only by supporters in a paid one.
     ///
-    /// Visible-but-locked rather than hidden, because the thing being sold should
-    /// be something you can see. Tapping a locked swatch opens the sheet rather
-    /// than doing nothing, so the lock explains itself instead of just refusing.
+    /// v1.3: the padlock, the dimmed swatches and the "supporters choose the
+    /// colour" line below all read `supporter.isSupporter`, which is forced true
+    /// in a free build, so this card comes right on its own with no edit. The
+    /// note under the swatches already picks `supportIconNote`, which is the
+    /// correct sentence for a free app.
+    ///
+    /// In a paid build it is visible-but-locked rather than hidden, because the
+    /// thing being sold should be something you can see. Tapping a locked swatch
+    /// opens the sheet rather than doing nothing, so the lock explains itself
+    /// instead of just refusing.
     private var accentCard: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {

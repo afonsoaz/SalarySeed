@@ -4,6 +4,54 @@ What changed in each version and why, including the bugs that shipped and what t
 Versions before 1.0 were never released; they are here because the mistakes in them are
 the reason later versions are shaped the way they are.
 
+**v1.3**: Everything is free, and the payment is switched off rather than deleted.
+
+Afonso is on a J-1 visa and is not authorised to work, so a launch that earns nothing is the
+one he can make. Grow, the European half of the map, the five accents and the alternate
+icons were behind a €4.99 non-consumable and are now simply part of the app.
+
+The interesting part is what was NOT done. The payment is not on a branch and it is not
+deleted: `AppConfig.monetisation` is a constant with two cases, and `.free` is what ships.
+`SupporterStore.isSupporter` is forced true in `init`, `start` returns before the first
+StoreKit call, and `ProfileView.supportCard` draws nothing. That is the whole change. All
+five gates in the app read that one boolean, so Grow, the European grid, the padlock on the
+accent swatches and the dimmed swatches themselves all came right with no edit at the call
+sites, and `SupportLock` and `SupportSheet` are still compiled on every build with nothing
+able to reach them.
+
+A branch was the obvious alternative and this repo already ran that experiment. `pool-backend`
+was parked at v1.0, and by v1.2 it was two releases and about two hundred files behind
+master, because nothing compiles a branch nobody checks out. A constant cannot rot that way:
+both halves go through the compiler every time, and the release check is to flip it to
+`.supporter`, confirm the gates and the simulator purchase still work, and flip it back.
+That was done, and they do.
+
+**One thing that looks like a shortcut and is a bug.** Making the free build entitled by
+calling the existing `apply(true, to:)` would also write `true` into the
+`supporter.entitled` cache. The cache exists to stop a first-frame flicker, so a stale
+`true` would show the paid screens to somebody who had not paid for exactly one frame on
+the day the payment came back. Free mode sets the published property and leaves the cache
+alone. A v1.2 payer's own cached `true` is left alone too, which is the same rule pointing
+the other way.
+
+**The thank-you card was the near miss.** With `isSupporter` true, Profile's support card
+would have drawn "You are a SalarySeed supporter. Whatever comes later is yours." at every
+single user, none of whom paid anything. The card is gone entirely in a free build. No copy
+was added or changed anywhere, so `docs/copy.md` still round-trips at 591 pairs, and the
+roughly 26 support and lock pairs sit in `Localization.swift` waiting.
+
+If the payment ever returns it cannot be taken from the people who already have these
+screens. `AppTransaction.shared.originalAppVersion` says which version somebody first
+downloaded, it is iOS 16 and up so the iOS 17 floor is fine, and anyone at or below 1.3 has
+to stay entitled for nothing. That is retroactive, so it needs no flag stored now, and there
+is none.
+
+`README.md` and `PRIVACY.md` were rewritten in the same commit. The privacy claim got
+stronger rather than weaker: there is no longer one exception for StoreKit, because in a
+free build no code path in the app opens a network connection at all. The App Store privacy
+answers and `PrivacyInfo.xcprivacy` did not change, because they were always about storage
+and nothing about storage moved.
+
 **v1.2**: The payslip checker becomes a tab, the bottom bar becomes Apple's, and the reader
 gets measured.
 

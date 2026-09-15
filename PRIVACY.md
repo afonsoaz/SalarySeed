@@ -24,18 +24,16 @@ All of it is deleted when you delete the app.
 
 ## What leaves your phone
 
-One thing, and it is not about you.
+Nothing.
 
-When you open the support screen, the app asks Apple for the current price of the
-€4.99 supporter unlock, and if you buy it, Apple handles the purchase and tells
-the app whether you own it. That traffic is between your device and Apple. It
-carries nothing from the app: no salary, no profile, no identifier of ours.
+SalarySeed is free. There is no in-app purchase, no subscription, no advertising
+and no analytics, so the app has nothing to send and nowhere to send it. Every
+figure it shows is computed on your iPhone from tables bundled inside it.
 
-**Apple is the seller.** We never see your Apple ID, your name, your email or any
-payment detail. What we receive from Apple is an anonymous monthly sales total.
-
-Apple's own handling of that purchase is covered by Apple's privacy policy, not
-this one.
+Until v1.2 there was one exception, and it was not about you: the app asked Apple
+for the price of a supporter unlock and let Apple handle the purchase. v1.3
+switched that off, and switched off means the code does not run. There is now no
+code path in the app that opens a network connection at all.
 
 ## Payslips
 

@@ -3,6 +3,12 @@ import StoreKit
 
 /// v0.16: the one purchase in the app.
 ///
+/// v1.3 SWITCHED IT OFF. `AppConfig.monetisation` is `.free`, so everything below
+/// this line is code that compiles, is still correct, and never runs. Nothing
+/// here was deleted or weakened for the free build: the entitlement is forced
+/// true in `init`, `start` returns before touching StoreKit, and the rest waits.
+/// Read the rest of this comment as a description of the paid build.
+///
 /// A €4.99 NON-CONSUMABLE (€2.99 until v1.0.1). Not a donation, and the
 /// distinction is not pedantry:
 /// Apple does not allow a pure "support the developer" payment through IAP, so
@@ -57,7 +63,11 @@ final class SupporterStore: ObservableObject {
     private var updatesTask: Task<Void, Never>?
 
     init() {
-        isSupporter = UserDefaults.standard.bool(forKey: Self.cacheKey)
+        // A free build is entitled to everything from the first frame, and the
+        // cache is deliberately NOT consulted and NOT written. See `start`.
+        isSupporter = AppConfig.monetisation == .free
+            ? true
+            : UserDefaults.standard.bool(forKey: Self.cacheKey)
     }
 
     deinit { updatesTask?.cancel() }
@@ -65,7 +75,25 @@ final class SupporterStore: ObservableObject {
     // MARK: Lifecycle
 
     /// Called once from the app entry point.
+    ///
+    /// v1.3: IN A FREE BUILD THIS MAKES NO STOREKIT CALL AT ALL. Not a call that
+    /// fails, not a product that comes back nil: none. The app then has no code
+    /// path that reaches the network, which is a stronger sentence than the one
+    /// v1.0 could write and is what `PRIVACY.md` now says.
+    ///
+    /// THE CACHE IS NOT WRITTEN HERE, and reaching for `apply(true, to:)` is the
+    /// obvious shortcut that gets this wrong. It would leave `true` sitting in
+    /// `UserDefaults`, and the day `AppConfig.monetisation` goes back to
+    /// `.supporter` that stale flag would show a non-payer the paid screens for a
+    /// frame and then take them away. A v1.2 payer's own cached `true` is left
+    /// alone for the same reason, in the other direction: it is still theirs.
     func start(applyingTo store: SalaryStore) {
+        guard AppConfig.monetisation == .supporter else {
+            // The one thing `apply` did that still has to happen: the home-screen
+            // icon follows the stored accent on every launch.
+            AppIcon.apply(store.accent)
+            return
+        }
         listenForUpdates(applyingTo: store)
         Task { await loadProduct() }
         Task { await refresh(applyingTo: store) }

@@ -6,7 +6,7 @@ be in twenty years, and how it compares across the European Union. It will also 
 payslip and tell you whether the arithmetic holds.
 
 Every figure comes from a published, openly licensed table. Nothing you type ever leaves
-the phone, because there is no networking code in the app outside StoreKit.
+the phone, because the app has no networking code at all.
 
 **[Watch the demo](https://afonsoaz.github.io/SalarySeed)**
 
@@ -34,14 +34,17 @@ If you only have a minute, the three parts worth reading about are:
 | Tab | What it answers |
 |---|---|
 | **Home** | What you earn now. Gross and net either way round, yearly figures, total cost to your employer, the full breakdown, and the annual IRS settlement with every assumption written out. |
-| **Payslip** | Whether your last payslip adds up. Give it a PDF or a photograph and it checks ten things, on the device, and says which ones it could not check and why. Free, and the most interesting part of the app. |
+| **Payslip** | Whether your last payslip adds up. Give it a PDF or a photograph and it checks ten things, on the device, and says which ones it could not check and why. The most interesting part of the app. |
 | **Compare** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region. |
-| **Map** | Where it would sit differently. A Portuguese district choropleth, free, and a 27-tile grid of the European Union, for supporters. |
-| **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. For supporters. |
+| **Map** | Where it would sit differently. A Portuguese district choropleth, and a 27-tile grid of the European Union. |
+| **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. |
 
 The sixth thing is not a tab. **Profile** holds the inputs behind all of it, each with what
-it unlocks, and the one place the app asks for money. It is reached from the top of Home,
-because a native iPhone tab bar shows five items and the checker earned one of them.
+it unlocks. It is reached from the top of Home, because a native iPhone tab bar shows five
+items and the checker earned one of them.
+
+Everything above is free. There is no in-app purchase, no subscription, no advertising and
+no analytics.
 
 ## One country, three tax tables
 
@@ -194,14 +197,19 @@ way.
 - **Recording is not exploring.** Changing your stored salary and trying a hypothetical
   are separate acts with separate UI. Grow's whole scenario lives in memory and never
   reaches `UserDefaults`.
-- **Ask for money once, where they came looking.** The support sheet opens from a button
-  in the profile and from nowhere else. No countdown, no crossed-out price, no
-  interstitial, no nagging on the tenth launch. An app whose whole argument is that it does
-  not manipulate the reader cannot manipulate the reader at the till.
-- **The receipt is the truth, never the cache.** `UserDefaults` mirrors the entitlement
-  only so the first frame does not flicker. `Transaction.currentEntitlements` overwrites it
-  on every launch and `Transaction.updates` overwrites it on every refund, so a paid flag
-  can never outlive the payment.
+- **Ask for money once, where they came looking.** Written when there was a payment, and
+  kept because the rule outlived it: the support sheet opened from one button in the
+  profile and from nowhere else. No countdown, no crossed-out price, no interstitial, no
+  nagging on the tenth launch. An app whose whole argument is that it does not manipulate
+  the reader cannot manipulate the reader at the till. The easiest way to keep that promise
+  turned out to be not charging.
+- **The receipt is the truth, never the cache.** In the paid build `UserDefaults` mirrors
+  the entitlement only so the first frame does not flicker, and
+  `Transaction.currentEntitlements` overwrites it on every launch while
+  `Transaction.updates` overwrites it on every refund, so a paid flag can never outlive the
+  payment. The free build never writes that cache, for the mirror image of the same
+  reason: a stale `true` left behind would hand the paid screens to somebody who had not
+  paid, on the day the payment came back.
 
 ## How it is put together
 
@@ -272,17 +280,27 @@ returns nothing: there is no code path that could send your salary anywhere, whi
 stronger statement than a privacy policy and the reason the App Store label reads "Data
 Not Collected" without qualification.
 
-The one exception is not about you. StoreKit talks to Apple to fetch the product price and
-complete the €4.99 purchase. Apple is the seller of record, so the app never sees an Apple
-ID, a name or a payment detail.
+Until v1.2 there was one exception, and it was not about you: StoreKit talked to Apple to
+fetch a product price and complete a €4.99 purchase. v1.3 ships free and switched that off,
+so there is now no exception to make. See below for what "switched off" means here.
 
-A contribution pool was also built, and deliberately not shipped. It worked: rows reached
-Firestore through a Cloud Function, documents were named by keyed hash so the token was
-never stored, erasure deleted and could not be used as an oracle, and the security rules
-denied every client path. It is not here because collecting pay data turns a one-person
-app into something with real compliance obligations, and that was out of proportion to
-what the pool would have been worth in its first year. The payment is unaffected either
-way. Full detail in [`PRIVACY.md`](PRIVACY.md).
+Two things were built and are deliberately not switched on. The first is the supporter
+payment, and it is still in this repo, still compiled on every build, behind one constant
+in [`AppConfig.swift`](SalarySeed/Models/AppConfig.swift). `.free` is what ships: the
+entitlement is forced true, StoreKit is never called, and the sell card, the two blurred
+gates over Grow and the European map and the padlock on the accent swatches all disappear.
+`.supporter` brings the whole thing back, because all five gates read one boolean and that
+boolean reads the constant. It is a constant rather than a branch because this repo already
+tried a branch, and the second unshipped thing is what happened to it.
+
+That second thing is a contribution pool, and it was deliberately not shipped. It worked:
+rows reached Firestore through a Cloud Function, documents were named by keyed hash so the
+token was never stored, erasure deleted and could not be used as an oracle, and the
+security rules denied every client path. It is not here because collecting pay data turns
+a one-person app into something with real compliance obligations, and that was out of
+proportion to what the pool would have been worth in its first year. It has sat on a
+`pool-backend` branch ever since, and is now two releases behind master, because nothing
+compiles a branch nobody checks out. Full detail in [`PRIVACY.md`](PRIVACY.md).
 
 ## What it does not do
 
@@ -316,9 +334,10 @@ Open `SalarySeed.xcodeproj` in Xcode 16 or newer, pick a simulator, and run. iOS
 minimum. There are no dependencies to fetch, no account to sign in to and no backend to
 start.
 
-The shared scheme points at `SalarySeed.storekit`, so the purchase, the restore and even a
-refund all work in the simulator with no App Store Connect product and no paid developer
-account.
+The shared scheme still points at `SalarySeed.storekit`, which does nothing in a free
+build and is kept for the paid one: set `AppConfig.monetisation` to `.supporter` and the
+purchase, the restore and even a refund all work in the simulator with no App Store Connect
+product and no paid developer account.
 
 ```bash
 xcodebuild -scheme SalarySeed -destination 'platform=iOS Simulator,name=iPhone 17' build

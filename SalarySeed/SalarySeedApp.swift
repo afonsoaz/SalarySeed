@@ -35,10 +35,12 @@ struct SalarySeedApp: App {
             .preferredColorScheme(.dark)
             // Read on every store change, so the system tint follows the accent.
             .tint(store.accent.accent)
-            // The only thing in this app that touches the network, and it talks
-            // to Apple rather than to us: the product price, the purchase and
-            // the entitlement. Nothing about a salary is transmitted anywhere,
-            // by any code path, because there is no other code path.
+            // v1.3: THIS NOW TOUCHES NOTHING. `AppConfig.monetisation` is
+            // `.free`, so `start` returns before the first StoreKit call and the
+            // app has no code path to the network at all, rather than one that
+            // talks only to Apple. In a paid build this is the product price, the
+            // purchase and the entitlement, and it was still the only one: nothing
+            // about a salary is transmitted anywhere, by any code path, either way.
             .task { supporter.start(applyingTo: store) }
         }
     }
