@@ -98,14 +98,22 @@ struct HomeView: View {
     private var isAnnual: Bool { period.isAnnual }
     private var factor: Double { period.factor(months: b.months) }
 
-    /// v1.4: HOME IS TWO SCREENS NOW, and the first one holds one number.
+    /// v1.4: HOME IS TWO SCREENS NOW, and the first one leads with one number.
     ///
     /// It held eleven blocks in one scroll, and the first screenful carried the
     /// pay figures, a percentage card, an edit button and a share-of-cost bar
-    /// before anybody had read anything. `fold` is now exactly the top bar, a
-    /// one-line greeting and the net figure, sized to the screen, with an
-    /// invitation at the bottom. Everything about what comes off the salary
-    /// lives below it, which is where somebody goes looking for it.
+    /// before anybody had read anything. `fold` is the top bar, a one-line
+    /// greeting, the net figure, and then where the money goes; the detail
+    /// trees and the annual settlement live below it, which is where somebody
+    /// goes looking for them.
+    ///
+    /// v1.4a PUT "WHERE THE MONEY GOES" BACK IN THE FOLD. The first cut left
+    /// the fold holding the figures alone, and it read as empty rather than as
+    /// calm: most of a screen of nothing between the period picker and an
+    /// invitation to scroll. The bar is one section label, one percentage and
+    /// four segments, so it fills that space with the one thing a reader
+    /// glancing at their pay actually wants next, and the invitation now has
+    /// something to be at the bottom of.
     ///
     /// The default look moves, deliberately: 30pt side-by-side figures became a
     /// 44pt net figure over a 20pt gross annotation. That is a design decision,
@@ -116,25 +124,7 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     fold(proxy)
-                    // The first thing below the fold, so it is what the prompt
-                    // scrolls to.
-                    //
-                    // The extra top padding is for that landing. `anchor: .top`
-                    // puts this at the top of the scroll region, which runs
-                    // under the clock, and `RootTabView.statusBarScrim` is 96
-                    // points tall there: without it the section label arrives
-                    // inside the scrim's fade and reads as half erased. Padding
-                    // rather than a negative UnitPoint on `scrollTo`, because
-                    // this also widens the gap between a full-screen fold and
-                    // the first section below it, which is wanted anyway.
-                    BreakdownBar(breakdown: b)
-                        .padding(.top, 28)
-                        .id(HomeScroll.detailAnchor)
-                    profileNudge
-                    detailsSection
-                    annualSettlementCard
-                    nudges
-                    disclaimer
+                    belowFold
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
@@ -184,6 +174,30 @@ struct HomeView: View {
         }
     }
 
+    /// Everything the prompt scrolls to.
+    ///
+    /// One group rather than five siblings, so the scroll anchor has something
+    /// to be on. The extra top padding is for that landing: `anchor: .top` puts
+    /// this at the top of the scroll region, which runs under the clock, and
+    /// `RootTabView.statusBarScrim` is 96 points tall there, so without it the
+    /// section label arrives inside the scrim's fade and reads as half erased.
+    /// Padding rather than a negative UnitPoint on `scrollTo`, because it also
+    /// widens the gap between a full-screen fold and what follows it, which is
+    /// wanted anyway.
+    ///
+    /// The inner spacing matches the outer stack's, so nothing moved by being
+    /// grouped.
+    private var belowFold: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            detailsSection
+            annualSettlementCard
+            nudges
+            disclaimer
+        }
+        .padding(.top, 28)
+        .id(HomeScroll.detailAnchor)
+    }
+
     // MARK: The fold
 
     /// The first screen: one number, and a way down to the rest.
@@ -219,7 +233,7 @@ struct HomeView: View {
             greeting
                 .padding(.top, 14)
 
-            Spacer(minLength: 32)
+            Spacer(minLength: 24)
 
             heroNet
             heroFootnotes
@@ -229,7 +243,17 @@ struct HomeView: View {
             periodPicker
                 .padding(.top, 24)
 
-            Spacer(minLength: 28)
+            BreakdownBar(breakdown: b)
+                .padding(.top, 26)
+
+            // Still directly above the detail, so its own note about sitting
+            // "at the boundary, the last moment the profile is still the
+            // subject" stays literally true: everything below the fold is
+            // arithmetic on the salary alone.
+            profileNudge
+                .padding(.top, 14)
+
+            Spacer(minLength: 20)
 
             seeMorePrompt(proxy)
         }

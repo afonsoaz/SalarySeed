@@ -124,11 +124,16 @@ struct Strings {
         }
     }
 
-    /// v1.4: the invitation at the bottom of Home's first screen. It names the
-    /// destination rather than the gesture: "scroll down" describes what the
-    /// reader does, this describes what they get for doing it.
+    /// v1.4: the invitation at the bottom of Home's first screen.
+    ///
+    /// v1.4a shortened it from "See what comes off it" / "Vê o que te
+    /// descontam". That named the destination, which was the right instinct
+    /// while the fold held only the figures; now that "where the money goes" is
+    /// in the fold, the reader has already been shown what comes off it and the
+    /// line was describing the screen they were looking at. What is below is
+    /// the detail, and two words is the honest size of that promise.
     var homeSeeMore: String {
-        t("See what comes off it", "Vê o que te descontam")
+        t("See more", "Vê mais")
     }
     var homeSeeMoreHint: String {
         t("Scrolls down to the deductions and the yearly IRS.",

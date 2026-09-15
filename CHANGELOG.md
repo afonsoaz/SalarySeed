@@ -53,6 +53,35 @@ Known and not fixed: `SegmentedPicker` at an accessibility size runs "Mês ×12"
 together with no gap. It did that before on its own row too, so nothing regressed, but the
 picker is now a permanent resident of the fold and it is more visible there.
 
+### v1.4a
+
+Two things Afonso pointed at after looking at v1.4.
+
+**Home's fold read as empty rather than calm.** Cutting it back to the figures alone left
+most of a screen of nothing between the period picker and an invitation to scroll, which is
+not the same thing as quiet. "Where the money goes" and the profile nudge moved back up
+into it, so the fold now leads with the net figure and answers the obvious next question in
+the same screenful, and the invitation has something to be at the bottom of. The detail
+trees and the annual settlement stay below. The prompt shortened from "See what comes off
+it" to "See more", because now that the breakdown is in the fold the old line was
+describing the screen the reader was already looking at.
+
+**A header was able to move, and on Grow it did.** GrowView is a `ZStack` over a `VStack`
+of top bar and content. The content is a `ScrollView` whenever there is a projection to
+draw, and a ScrollView is greedy, so the bar sat at the top and nobody noticed. The empty
+state is a plain column with no Spacer and no flexible height, so the VStack shrank to fit
+it and the ZStack centred the pair: the word "Grow" and the profile button dropped a third
+of the way down the screen, on the one screen where a reader most needs that button.
+
+The fix is structural rather than local. Both screens with that shape, Grow and the payslip
+flow, now pin the column to the top, so no content state can move the header again;
+`PayslipCheckFlow` had the same latent bug and escaped it only because all five of its
+phases happen to be flexible. Grow's empty state fills and centres the space below the bar
+on its own, and gained a scroll view while it was being touched, because a 64pt sprout, a
+title, three lines and a button stop fitting at a large text size and without one SwiftUI
+takes the space back out of the text. A header is furniture; it is now impossible for it to
+move.
+
 ### v1.4, the payslip leads
 
 Onboarding used to ask for a number and mention, in a 14pt link under the OK button, that

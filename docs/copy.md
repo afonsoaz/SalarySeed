@@ -239,8 +239,8 @@ and the edits get applied back to the Swift source afterwards.
 
 ### `homeSeeMore`
 
-- **EN** `See what comes off it`
-- **PT** `Vê o que te descontam`
+- **EN** `See more`
+- **PT** `Vê mais`
 
 ### `homeSeeMoreHint`
 
@@ -289,7 +289,7 @@ and the edits get applied back to the Swift source afterwards.
 
 ### `legendIRS` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:177`.
+Assembled in Swift rather than written as a pair. `Localization.swift:182`.
 
 ### `legendYourSS`
 
@@ -537,7 +537,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:177`.
 
 ### `ordinalPercentile` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:300`.
+Assembled in Swift rather than written as a pair. `Localization.swift:305`.
 
 ### `youMarker`
 
@@ -784,7 +784,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:300`.
 
 ### `sectorCohort` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:412`.
+Assembled in Swift rather than written as a pair. `Localization.swift:417`.
 
 ---
 
@@ -866,7 +866,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:412`.
 
 ### `appSection` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:448`.
+Assembled in Swift rather than written as a pair. `Localization.swift:453`.
 
 ### `languageLabel`
 
@@ -895,7 +895,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:448`.
 
 ### `sourcesValue` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:456`.
+Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 
 ### `profileFooter`
 
@@ -1921,7 +1921,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:456`.
 
 ### `growStepArrow` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:921`.
+Assembled in Swift rather than written as a pair. `Localization.swift:926`.
 
 ### `growMoreTitle`
 
@@ -2159,7 +2159,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:921`.
 
 ### `euroDash` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1040`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1045`.
 
 ### `euroUnitEuros`
 
@@ -2238,7 +2238,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1040`.
 
 ### `ordinal` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1096`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 
 ### `euroRank[0]`
 

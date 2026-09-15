@@ -95,6 +95,21 @@ struct GrowView: View {
                 // point is that a non-supporter is looking at Grow out of focus
                 // rather than at an advert for Grow, and a sharp title over a
                 // blurred projection is more that thing, not less.
+                // v1.4a: THE TOP BAR IS PINNED, and it was not before.
+                //
+                // `growContent` is a ScrollView when there is a projection to
+                // draw, and a ScrollView is greedy, so the bar sat at the top
+                // and everything looked right. The empty state is a plain
+                // column with no Spacer and no flexible height, so this VStack
+                // shrank to fit it and the ZStack centred the pair: the word
+                // "Grow" and the profile button dropped to a third of the way
+                // down the screen, on the one screen where a reader is most
+                // likely to want the profile button.
+                //
+                // `maxHeight: .infinity, alignment: .top` makes that
+                // impossible for any content, including whatever gets added
+                // next. The empty state fills the space below on its own; see
+                // `growContent`.
                 VStack(spacing: 0) {
                     growTopBar
                     // v1.0.1a: the same content either way. A non-supporter gets
@@ -109,6 +124,7 @@ struct GrowView: View {
                         }
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
             .profileDestination(isPresented: $showProfile)
         }
@@ -320,7 +336,20 @@ struct GrowView: View {
         if let ctx, let result = GrowthEngine.result(ctx: ctx, scenario: store.growScenario) {
             loaded(ctx: ctx, result: result)
         } else {
-            emptyState
+            // The GeometryReader is greedy, so the top bar above stays put, and
+            // `minHeight` centres the empty state in the space that is left
+            // rather than parking it under the bar. The ScrollView is the
+            // `OnboardingView.scrollingStep` shape and is here for the same
+            // reason: this column is a 64 point sprout, a title, three lines of
+            // body and a button, which stops fitting at a large text size, and
+            // without a scroll view SwiftUI takes the space back out of the
+            // text. Nothing inside it scrolls, so rule 17 is clear.
+            GeometryReader { geo in
+                ScrollView {
+                    emptyState
+                        .frame(maxWidth: .infinity, minHeight: geo.size.height)
+                }
+            }
         }
     }
 

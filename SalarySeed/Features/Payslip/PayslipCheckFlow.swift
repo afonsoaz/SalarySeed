@@ -73,6 +73,14 @@ struct PayslipCheckFlow: View {
                 header
                 content
             }
+            // v1.4a: the header is pinned, whatever `content` turns out to be.
+            //
+            // All five phases happen to be flexible today, four ScrollViews and
+            // one column with Spacers top and bottom, so this changes nothing
+            // now. It is here because GrowView had exactly this shape and one
+            // inflexible state, and the whole title row slid to the middle of
+            // the screen. A sixth phase should not be able to do that.
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
 
