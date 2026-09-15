@@ -53,6 +53,59 @@ Known and not fixed: `SegmentedPicker` at an accessibility size runs "Mês ×12"
 together with no gap. It did that before on its own row too, so nothing regressed, but the
 picker is now a permanent resident of the fold and it is more visible there.
 
+### v1.4, the payslip leads
+
+Onboarding used to ask for a number and mention, in a 14pt link under the OK button, that
+you could read one off a payslip instead. The comment above that link argued for its own
+quietness: "somebody on their first run has no reason to trust this app yet, and asking
+them for a document before asking them for a number would be the wrong first thing to say."
+
+That argument is half right and it lost on the other half. Trust does have to come first,
+but the screen order is not the only way to give it: the welcome step still comes first and
+still carries the privacy line, so nothing is asked for before the app has said what it is.
+And a payslip gives the exact figure and gets checked on the way past, where a typed number
+is a guess the whole app then does arithmetic on. Burying the better route to protect
+somebody from being offered it is not a kindness. Step 1 is now a fork with three rows:
+choose a file, photograph it, or type it myself. All three land on the same amount screen,
+the payslip routes with the field already filled.
+
+**The dots count questions, not screens.** There are ten screens and nine questions now,
+because the fork stores nothing and cannot be skipped, so it shares the salary's dot.
+`totalSteps` was renamed `totalQuestions` for the same reason: a constant called
+`totalSteps` that is not the number of steps is a comment that lies, in a property name.
+
+**The camera is real, and it is the first permission this app has ever asked for.** That
+sentence used to read "the app requests no permissions at all", in CLAUDE.md and twice in
+PRIVACY.md, and all three were rewritten in the same commit. It is
+`VNDocumentCameraViewController` rather than a plain camera, because it finds the page
+edges, corrects the perspective and raises the contrast before the app sees a byte, and
+every one of those is something `PayslipOCR` and `PayslipLayout` would otherwise have to
+survive. Access is pre-flighted in three states rather than two, so a refusal is explained
+on the screen with both other routes still working, instead of being discovered inside a
+black scanner with a Cancel button and no reason.
+
+The privacy manifest did **not** change, and the reasoning is written into it: VisionKit
+and AVFoundation's authorization check are not required-reason APIs, and "Data Not
+Collected" is about data leaving the device, which a JPEG that lives in memory and dies
+with the screen does not do. The prompt itself is English only, deliberately: iOS draws it
+out of the bundle and follows the phone's language rather than the app's own setting, so no
+`.lproj` could make it agree with the app anyway, and adding one would have made the bundle
+genuinely localized for the first time and put the app's whole PT/EN auto-detection at risk
+for one dialog. The bilingual explanation is on the row instead, before the button is
+tapped, so the system alert confirms rather than explains.
+
+**Two bugs found by looking at the screen, both invisible to the compiler.** The scan is
+handed over in the cover's `onDismiss` and not in the delegate callback, because loading it
+moves the flow to `.reading`, which replaces the very view presenting the scanner: doing
+both in one turn tears down a presenter mid-dismissal and the check screen silently never
+appears. And the onboarding header's wordmark wrapped to "SalarySee / d" at an accessibility
+text size. `HomeView.brandMark` has carried `lineLimit(1)` since v1.0.3 with a note that a
+wrapped wordmark reads as a typo; this was the second copy of that mark and never got the
+fix. `lineLimit(1)` alone only trades the wrap for "SalaryS…", so past the accessibility
+threshold the wordmark now comes off entirely and the leaf stays: the arrow and the dots are
+functional, the wordmark is decoration on a screen that already has a headline, and
+"reflow, do not shrink" applies to a row as much as to a paragraph.
+
 **v1.3**: Everything is free, and the payment is switched off rather than deleted.
 
 Afonso is on a J-1 visa and is not authorised to work, so a launch that earns nothing is the

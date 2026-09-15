@@ -1332,6 +1332,33 @@ struct Strings {
     }
     var payslipPickFile: String { t("Choose a file", "Escolher ficheiro") }
     var payslipPickPhoto: String { t("Choose a photo", "Escolher foto") }
+    /// v1.4: the camera.
+    ///
+    /// THIS SUBTITLE IS DOING A JOB THE SYSTEM PROMPT CANNOT. iOS draws the
+    /// camera permission alert out of the bundle, from
+    /// `INFOPLIST_KEY_NSCameraUsageDescription`, which cannot read this table
+    /// and follows the PHONE's language rather than the app's setting. It is
+    /// deliberately English only. So the explanation lives here, on screen, in
+    /// the reader's language, BEFORE the button is tapped, and the system alert
+    /// is left to be a confirmation rather than the explanation.
+    var payslipPickCamera: String { t("Photograph it", "Fotografar") }
+    var payslipPickCameraSub: String {
+        t("The camera finds the page, straightens it, and reads it here on your phone.",
+          "A câmara encontra a folha, endireita-a e lê-a aqui no teu telemóvel.")
+    }
+    var payslipCameraNoLibrary: String {
+        t("The photo is not saved to your library.",
+          "A foto não fica guardada na tua galeria.")
+    }
+    var payslipCameraRefused: String {
+        t("The camera is off for SalarySeed. You can turn it on in Settings, or use a file instead.",
+          "A câmara está desligada para a SalarySeed. Podes ligá-la nas Definições, ou usar um ficheiro.")
+    }
+    var payslipCameraOpenSettings: String { t("Open Settings", "Abrir Definições") }
+    var payslipCameraFailed: String {
+        t("The camera could not start. Use a file or a photo instead.",
+          "A câmara não conseguiu arrancar. Usa um ficheiro ou uma foto.")
+    }
     var payslipSourceHint: String {
         t("A PDF from your employer works best: the text is exact and nothing has to be recognised. A photo works too.",
           "Um PDF da entidade patronal é o melhor: o texto é exato e não é preciso reconhecer nada. Uma foto também serve.")
@@ -1379,13 +1406,34 @@ struct Strings {
         t("Nothing on this payslip contradicts itself.",
           "Nada neste recibo se contradiz.")
     }
-    // v1.2: the payslip as a second way through the salary step.
-    var onbReadFromPayslip: String { t("Read it off a payslip", "Ler de um recibo") }
+    // v1.2 made the payslip a second way through the salary step, as a quiet
+    // link under the OK button. v1.4 made it the FIRST way and gave it a screen
+    // of its own, so `onbReadFromPayslip` ("Read it off a payslip") is gone:
+    // the choice screen's own rows say it. This subtitle survived the move and
+    // is now that screen's footnote.
     var onbReadFromPayslipSub: String {
         t("It is read here on your phone and nothing is saved.",
           "É lido aqui no teu telemóvel e nada fica guardado.")
     }
     var onbTypeItMyself: String { t("Type it myself", "Escrevo eu") }
+
+    // v1.4: the payslip leads. The first thing onboarding asks after the name
+    // is where the salary should come from, rather than for the number itself.
+    var onbSourceTitle: String {
+        t("Where should we get\nyour salary?", "De onde vem\no teu salário?")
+    }
+    var onbSourceSub: String {
+        t("Off a payslip, which gives the exact figure and gets it checked along the way, or typed by you.",
+          "De um recibo, que dá o valor exato e fica conferido pelo caminho, ou escrito por ti.")
+    }
+    var onbSourceFileSub: String {
+        t("A PDF from your employer is the most exact.",
+          "Um PDF da entidade patronal é o mais exato.")
+    }
+    var onbSourceTypeSub: String {
+        t("One number, and you can change it later.",
+          "Um número, e podes mudá-lo mais tarde.")
+    }
     var payslipNotCheckedYet: String {
         t("We have not checked the tax on this yet. Tell us where you live and a bit about yourself, and the payslip checker on the home screen will.",
           "Ainda não verificámos os impostos deste recibo. Diz-nos onde vives e um pouco sobre ti, e o verificador de recibos no ecrã inicial faz isso.")

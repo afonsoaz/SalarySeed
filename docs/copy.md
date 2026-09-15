@@ -7,7 +7,7 @@ grouped by the screen it belongs to.
 Editing this file changes nothing on its own; it is here to be read and marked up,
 and the edits get applied back to the Swift source afterwards.
 
-- **595** string pairs.
+- **604** string pairs.
 - `\(name)` is a value dropped in at runtime. It has to survive a rewrite,
   and it can move within the sentence.
 - `\n` is a deliberate line break.
@@ -2542,6 +2542,36 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1096`.
 - **EN** `Choose a photo`
 - **PT** `Escolher foto`
 
+### `payslipPickCamera`
+
+- **EN** `Photograph it`
+- **PT** `Fotografar`
+
+### `payslipPickCameraSub`
+
+- **EN** `The camera finds the page, straightens it, and reads it here on your phone.`
+- **PT** `A câmara encontra a folha, endireita-a e lê-a aqui no teu telemóvel.`
+
+### `payslipCameraNoLibrary`
+
+- **EN** `The photo is not saved to your library.`
+- **PT** `A foto não fica guardada na tua galeria.`
+
+### `payslipCameraRefused`
+
+- **EN** `The camera is off for SalarySeed. You can turn it on in Settings, or use a file instead.`
+- **PT** `A câmara está desligada para a SalarySeed. Podes ligá-la nas Definições, ou usar um ficheiro.`
+
+### `payslipCameraOpenSettings`
+
+- **EN** `Open Settings`
+- **PT** `Abrir Definições`
+
+### `payslipCameraFailed`
+
+- **EN** `The camera could not start. Use a file or a photo instead.`
+- **PT** `A câmara não conseguiu arrancar. Usa um ficheiro ou uma foto.`
+
 ### `payslipSourceHint`
 
 - **EN** `A PDF from your employer works best: the text is exact and nothing has to be recognised. A photo works too.`
@@ -2607,11 +2637,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1096`.
 - **EN** `Nothing on this payslip contradicts itself.`
 - **PT** `Nada neste recibo se contradiz.`
 
-### `onbReadFromPayslip`
-
-- **EN** `Read it off a payslip`
-- **PT** `Ler de um recibo`
-
 ### `onbReadFromPayslipSub`
 
 - **EN** `It is read here on your phone and nothing is saved.`
@@ -2621,6 +2646,26 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1096`.
 
 - **EN** `Type it myself`
 - **PT** `Escrevo eu`
+
+### `onbSourceTitle`
+
+- **EN** `Where should we get\nyour salary?`
+- **PT** `De onde vem\no teu salário?`
+
+### `onbSourceSub`
+
+- **EN** `Off a payslip, which gives the exact figure and gets it checked along the way, or typed by you.`
+- **PT** `De um recibo, que dá o valor exato e fica conferido pelo caminho, ou escrito por ti.`
+
+### `onbSourceFileSub`
+
+- **EN** `A PDF from your employer is the most exact.`
+- **PT** `Um PDF da entidade patronal é o mais exato.`
+
+### `onbSourceTypeSub`
+
+- **EN** `One number, and you can change it later.`
+- **PT** `Um número, e podes mudá-lo mais tarde.`
 
 ### `payslipNotCheckedYet`
 

@@ -63,7 +63,14 @@ all.
 
 Choosing a file does not hand over your photo library or your documents. Both
 pickers run outside the app, in Apple's own interface, and give the app only the
-one item you picked. That is why the app still asks for no permissions at all.
+one item you picked, so neither asks you for anything.
+
+Photographing a payslip is different, and it is the one permission this app asks
+for. The camera is requested only when you tap Photograph, and only for that. If
+you say no, nothing breaks: choosing a file and choosing a photo both still work,
+and the screen says so instead of leaving you on a dead end. The photograph is
+read on your phone, it is never written to your phone, and it is never added to
+your photo library.
 
 ## What the app does not do
 
@@ -73,10 +80,12 @@ one item you picked. That is why the app still asks for no permissions at all.
   frameworks and has no dependencies.
 - No location access. The app asks which município you live in and never asks
   your device where it is.
-- No access to your photo library, contacts, calendar, health data or any other
-  permission. The app requests no permissions at all. When you check a payslip you
-  hand it one file through Apple's own picker, which runs outside the app; the app
-  never sees anything else, and does not keep the one thing it is given.
+- No access to your photo library, contacts, calendar, health data or location.
+  The camera is the only permission the app ever asks for, only when you choose to
+  photograph a payslip, and refusing it leaves the rest of the app untouched. When
+  you check a payslip you hand it one file or one photograph through Apple's own
+  picker or the camera; the app never sees anything else, and does not keep the one
+  thing it is given.
 
 ## Children
 

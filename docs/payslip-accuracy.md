@@ -261,13 +261,29 @@ costs one tap and a false proposal costs every figure in the app, but it means t
 honest expectation for real payslips is "refuses more often than this", not
 "proposes correctly 95% of the time". Nothing here measures how much more often.
 
-One more belongs here rather than there. **No printed payslip has been
-photographed and measured.** The degraded images are simulations: seeded grain,
-a gaussian blur, a keystone, a shadow gradient. An iPhone does its own
-sharpening, tone mapping and JPEG, and Vision was trained on the output of
-pipelines like it. Every photograph number above is a lower bound on realism and
-not a measurement of the camera path. Closing that needs a printer and ten
-minutes and has not been done.
+One more belongs here rather than there, and **v1.4 promoted it from a footnote
+to the leading gap in this document.** **No printed payslip has been photographed
+and measured.** The degraded images are simulations: seeded grain, a gaussian
+blur, a keystone, a shadow gradient. An iPhone does its own sharpening, tone
+mapping and JPEG, and Vision was trained on the output of pipelines like it.
+Every photograph number above is a lower bound on realism and not a measurement
+of the camera path. Closing that needs a printer and ten minutes and has not been
+done.
+
+That mattered less when a photograph was something the reader had already taken
+elsewhere. v1.4 added an in-app camera, so the camera path is now a first-class
+route into the reader and the one route nothing here measures. It is also not the
+same input as a hand-held snapshot: `VNDocumentCameraViewController` finds the
+page edges, corrects the perspective and raises the contrast before the app sees
+a single byte, which should be *better* than anything simulated here, and
+"should be" is exactly the kind of claim this document exists to replace with a
+number. Two things make the gap survivable in the meantime: a camera scan is
+always `PayslipSource.ocr`, so `needsReview` is unconditionally true and every
+figure stops on the review screen where the reader can correct it; and the
+safety rules retract a reading that does not add up rather than proposing it.
+Neither is a measurement. Printing a payslip, scanning it with the camera and
+running `tools/score_payslip_corpus.py` over the result is the first piece of
+work on this document.
 
 Two corrections worth recording, because both were believed for a while during
 the measurement itself. Vision appeared to beat the PDF text layer outright; it

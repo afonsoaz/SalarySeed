@@ -20,6 +20,12 @@ import CoreGraphics
 /// `UserDefaults`, and `restart()` still drops the image, the lines, the facts
 /// and the verdict the moment the reader starts again. The onboarding route is
 /// still a cover, and there the object still dies with the screen.
+///
+/// v1.4 CHANGED NOTHING ABOUT THE LIFETIME. It added one way in, `init(opensReading:)`
+/// plus `load(_:context:)`, for a cover that is handed a file before it is
+/// presented, so the reader is not asked where the payslip comes from twice.
+/// Nothing is written to the phone, there is still no history, and `discard()`
+/// and `restart()` drop exactly what they dropped before.
 @MainActor
 final class PayslipCheckModel: ObservableObject {
 
@@ -63,7 +69,30 @@ final class PayslipCheckModel: ObservableObject {
     /// The read in flight, held only so leaving can cancel it. See `discard`.
     private var reading: Task<Void, Never>?
 
+    /// `opensReading` exists so a cover that was handed a file on the way in
+    /// does not flash its own picker first.
+    ///
+    /// The phase is set HERE and not in a `.task`, because a task runs after
+    /// the first render: with `.source` as the initial phase the reader watches
+    /// a file picker slide up and vanish again.
+    init(opensReading: Bool = false) {
+        if opensReading { phase = .reading }
+    }
+
     // MARK: Loading
+
+    /// The one entry point for an input picked before the flow was presented.
+    ///
+    /// Dispatches to the two loaders below rather than adding a third path into
+    /// recognition. Rule 22 was earned by the same photograph giving different
+    /// figures through the file and the Photos routes; the camera adds a new
+    /// SOURCE, not a new decode path.
+    func load(_ input: PayslipInput, context: PayslipContext?) {
+        switch input.kind {
+        case .file(let url): load(url: url, context: context)
+        case .image(let data): load(imageData: data, context: context)
+        }
+    }
 
     func load(url: URL, context: PayslipContext?) {
         phase = .reading

@@ -262,15 +262,36 @@ struct PayslipTabView: View {
 /// everything read from them are gone.
 struct PayslipCheckCover: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var model = PayslipCheckModel()
+    @StateObject private var model: PayslipCheckModel
 
     let context: PayslipContext?
+    /// v1.4: what the reader already handed over on the way in.
+    ///
+    /// Onboarding's step 1 is now the choice of file, camera or typing, so by
+    /// the time this cover appears the question has been answered. Opening on
+    /// `PayslipSourceStep` would be the same question asked twice. `nil` keeps
+    /// the old behaviour, where the cover opens on its own picker.
+    let starting: PayslipInput?
     var onAccept: ((PayslipSalary.GrossProposal) -> Void)?
+
+    init(context: PayslipContext?,
+         starting: PayslipInput? = nil,
+         onAccept: ((PayslipSalary.GrossProposal) -> Void)? = nil) {
+        self.context = context
+        self.starting = starting
+        self.onAccept = onAccept
+        _model = StateObject(wrappedValue: PayslipCheckModel(opensReading: starting != nil))
+    }
 
     var body: some View {
         PayslipCheckFlow(model: model, chrome: .cover,
                          context: context, onAccept: onAccept,
                          onClose: { dismiss() })
+            // `.task` and not `.onChange`: rule 11. `starting` is a value this
+            // view already has on its first render, so no onChange would fire.
+            .task {
+                if let starting { model.load(starting, context: context) }
+            }
             .onDisappear { model.discard() }
     }
 }

@@ -133,7 +133,7 @@
 				"$(SRCROOT)/tools/check_privacy_manifest.sh",
 				"$(SRCROOT)/SalarySeed/PrivacyInfo.xcprivacy",
 			);
-			name = "Check privacy manifest";
+			name = "Check privacy manifest and camera prompt";
 			outputFileListPaths = (
 			);
 			outputPaths = (
@@ -272,6 +272,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = SalarySeed;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_NSCameraUsageDescription = "SalarySeed uses the camera only to photograph your payslip and read it on this phone. Nothing is uploaded and no photo is saved.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -303,6 +304,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = SalarySeed;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_NSCameraUsageDescription = "SalarySeed uses the camera only to photograph your payslip and read it on this phone. Nothing is uploaded and no photo is saved.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

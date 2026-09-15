@@ -130,6 +130,46 @@ is that it does nothing until asked.
 xcrun simctl ui <device> content_size accessibility-extra-large
 ```
 
+**15. The camera cannot be checked in the Simulator, and it is the first thing in this app
+that a simulator screenshot cannot confirm.** `VNDocumentCameraViewController.isSupported`
+is true on an iOS 26 simulator, so the Photograph row IS drawn there and the permission
+prompt really appears, which is enough to check the prompt's wording, the refusal path and
+the Open Settings link. What cannot happen is a scan: there is no camera behind it. The
+deskew, the contrast, the JPEG and everything `PayslipOCR` then does with them need a
+device build, which is free on the personal team with a 7-day expiry. On device, check all
+three permission states and all four ways out of the check, and open Photos afterwards to
+confirm the scan was not saved.
+
+## Resetting onboarding, which is harder than it looks
+
+`hasOnboarded` lives in `UserDefaults.standard`, and on the Simulator that is **not** the
+plist inside the app's data container. Three things that look like they should reset it and
+do not:
+
+- `xcrun simctl uninstall` removes the container, but `cfprefsd` keeps serving the old
+  values to the reinstalled app. The plist on disk reads `{}` while the app still sees
+  `hasOnboarded = 1`.
+- Rebooting the simulator does not clear it either.
+- `xcrun simctl spawn booted defaults write com.afonsoazevedo.salaryseed hasOnboarded
+  -bool false` reports success, and `defaults read` shows `0`, and **the app still sees
+  true**: `simctl spawn` and the app sandbox are not the same preference context. Passing a
+  file PATH instead of the bundle id is worse again, because it silently addresses an empty
+  domain and reports nothing at all.
+
+What actually works, and it is the only thing that does:
+
+```bash
+xcrun simctl shutdown booted
+xcrun simctl erase <udid>
+xcrun simctl boot <udid>
+./tools/run_sim.sh
+```
+
+An erase resets the device's text size too, so set `content_size` again afterwards, and it
+resets the language, so a freshly erased device runs the app in English rather than
+Portuguese. Both are useful in their own right: the erase is the only way to see a genuine
+first run, which is the one thing worth being sure about on a screen every new reader meets.
+
 ## A note on the numbers in the payslip comments
 
 The worked figures throughout the payslip reader are stand-ins. Every relation they

@@ -55,6 +55,22 @@
 	     those stop being true in the same commit, and so do the App Privacy
 	     answers in App Store Connect.
 
+	     v1.4 ADDED THE CAMERA, and neither array changed.
+
+	     `VNDocumentCameraViewController` (VisionKit) and
+	     `AVCaptureDevice.authorizationStatus` / `requestAccess` (AVFoundation)
+	     are not required-reason APIs either, so NSPrivacyAccessedAPITypes above
+	     keeps its single UserDefaults entry. NSPrivacyCollectedDataTypes stays
+	     empty because that question is about data leaving the device, and a
+	     photographed payslip is a JPEG in memory that goes to Vision on this
+	     phone and dies with the screen. The scan is never written to disk and
+	     never added to the photo library, so there is no
+	     NSPhotoLibraryAddUsageDescription either.
+
+	     What DID change is that the app now asks for one permission. That is a
+	     promise in PRIVACY.md rather than a line in this file, and it was
+	     rewritten in the same commit.
+
 	     v1.2 made the checker a tab, and this array did not change either. What
 	     changed is only how long the reading lives in MEMORY: it used to die
 	     with the cover, and it now survives a trip to another tab, until the
