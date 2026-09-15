@@ -238,6 +238,34 @@ drawn at 30 points, which at three of ten is a thin seedling in an empty column:
 the card spends most of its life in was the state it looked worst in.
 
 
+**A copy pass, after Afonso read all 591 lines of it.** Three instructions: cut anything
+written as if to ourselves, simplify, and sharpen the language.
+
+The clearest cut was the housekeeping. The app was telling people which of its own answers
+were "being gathered", that a field exists in the source "but is not on this screen yet",
+and that some profile signals "aren't compared yet, they're being gathered so the comparison
+can get sharper later". That is a roadmap, and nobody reading a payslip wants one.
+
+The limits that actually change what a number means all stayed, shortened. Public-sector pay
+not being in the Quadros de Pessoal, the islands having no regional figure, a sector the
+European survey does not cover: cutting those would let somebody read a percentile that is
+describing other people. The payslip checker's skip reasons stayed for the same reason and
+are only tighter, because a check that quietly did not happen still reads as a check that
+passed.
+
+Everything long got shorter. The longest string in the app was 309 characters and is now
+172, and the English copy as a whole lost about 8%. Most of what went was the second-order
+justification underneath a claim that was already clear: the Grow assumptions no longer
+explain why a cross-section is not a career for three sentences, they say it in one.
+
+Fifteen sentences bolted an explanation on with a colon, which reads like a semicolon and
+was the thing Afonso actually wanted gone. There were no semicolons in the copy at all, and
+the only one in the review document turned out to be in the header the generator writes.
+
+**And the pass caught a stale line that shipped in v1.2.** The payslip checker still told
+people to find it "on the home screen", which is where it lived until this release moved it
+to its own tab.
+
 **v1.1**: The payslip checker, and the reader gets something that can actually run it.
 
 Give it a PDF or a photograph of a recibo de vencimento and it tells you what is wrong, what checks out, and what is worth knowing. Free, on the device, and nothing is kept: the file is read into memory, checked, and gone when the screen closes. There is no history, and adding one would change `PRIVACY.md`, the privacy manifest and the App Store privacy answers in the same commit, which is why the manifest now says so in a comment.
