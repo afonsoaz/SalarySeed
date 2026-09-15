@@ -11,14 +11,14 @@ the phone, because the app has no networking code at all.
 **[Watch the demo](https://afonsoaz.github.io/SalarySeed)**
 
 <p align="center">
-  <img src="docs/img/home.png" width="24%" alt="Home: gross to net, cost to employer, the breakdown">
-  <img src="docs/img/payslip.png" width="24%" alt="Payslip result, including a check that declined to run">
+  <img src="docs/img/home.png" width="24%" alt="Home: one net figure, and where the money goes">
+  <img src="docs/img/payslip.png" width="24%" alt="Payslip result, including the checks that declined to run">
   <img src="docs/img/compare.png" width="24%" alt="Compare: national percentile with its caveat">
   <img src="docs/img/map.png" width="24%" alt="A district choropleth of what your sector pays">
 </p>
 
-SwiftUI, iOS 17, no dependencies and no backend. 70 Swift files, and the tax and payslip
-engines are about a third of them. Built for the App Store, not yet submitted.
+SwiftUI, iOS 17, no dependencies and no backend. 76 Swift files, and the tax and payslip
+engines are a quarter of them. Built for the App Store, not yet submitted.
 
 If you only have a minute, the three parts worth reading about are:
 
@@ -33,7 +33,7 @@ If you only have a minute, the three parts worth reading about are:
 
 | Tab | What it answers |
 |---|---|
-| **Home** | What you earn now. Gross and net either way round, yearly figures, total cost to your employer, the full breakdown, and the annual IRS settlement with every assumption written out. |
+| **Home** | What you earn now. One net figure, read as a month over twelve, a month over fourteen or a year, and the share of what your employer spends that reaches you. A scroll below that: the full breakdown, the total cost to your employer, and the annual IRS settlement with every assumption written out. |
 | **Payslip** | Whether your last payslip adds up. Give it a PDF, photograph it with the camera, or pick a photo, and it checks ten things, on the device, and says which ones it could not check and why. The most interesting part of the app. |
 | **Compare** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region. |
 | **Map** | Where it would sit differently. A Portuguese district choropleth, and a 27-tile grid of the European Union. |
@@ -42,6 +42,17 @@ If you only have a minute, the three parts worth reading about are:
 The sixth thing is not a tab. **Profile** holds the inputs behind all of it, each with what
 it unlocks. It is reached from the top of Home, because a native iPhone tab bar shows five
 items and the checker earned one of them.
+
+Before any of that there are nine questions, and the first one offers to read a payslip
+rather than asking you to type a number, because the number is on a document most people
+already have. Answer them and the app introduces itself once, on a single screen of four
+cards: Compare, Map, Grow, and one for everything else. The checker is deliberately not the
+fourth, because naming the app's best screen here would be introducing something the reader
+has already used. The cards carry no figures at all, which is what makes the screen safe: a
+card that cannot contradict the tab it names is worth more than one that could. Nothing on
+it leads to a price, it is armed only for an install that has neither onboarded nor seen it,
+and Profile has a row that replays it, because a screen you can reach exactly once is a
+screen nobody can check.
 
 Everything above is free. There is no in-app purchase, no subscription, no advertising and
 no analytics.
@@ -127,12 +138,19 @@ Three rules keep the feature honest, and they are why it is allowed to exist:
   its own lines do not add up to is not believed. That rule has already retracted a real
   reading rather than let the app accuse somebody's employer of underpaying them.
 
-Nothing about the payslip is stored. The file is read into memory, checked, and discarded
-when the screen closes, and leaving mid-read cancels the recognition rather than letting it
-finish over a screen that has gone. One figure can outlive it, and only one: from v1.2 the
-screen ends by asking whether the monthly gross it read should become your salary, and a yes
-keeps that number and nothing else. Not the document, not the lines, not the employer or the
-name on the page, and not the fact that a payslip was ever opened.
+Nothing about the payslip is ever written to disk. The file is read into memory, checked,
+and dropped when you check another one or quit the app, and leaving mid-read cancels the
+recognition rather than letting it finish over a screen that has gone. There is no history.
+The promise is "never written to disk" rather than "gone when you close the screen", which
+is the narrower thing a tab can actually keep: since v1.2 the checker is a tab, so a verdict
+survives a trip to Compare and back.
+
+One figure can outlive the reading, and only one: the screen ends by asking whether the
+monthly gross it read should become your salary, and a yes keeps that number, which is the
+same datum you would otherwise have typed. Not the document, not the lines, not the employer
+or the name on the page, and not the fact that a payslip was ever opened. There is
+deliberately no flag recording where your salary came from, because a flag like that is a
+one-bit payslip history and is forbidden by the same rule as a full one.
 
 ## Testing a judgement
 
@@ -166,8 +184,18 @@ script could not have.
 ```bash
 python3 tools/verify_tax_engine.py        # must pass before any release
 python3 tools/verify_payslip_reader.py    # must pass before any release
+python3 tools/dump_copy.py --verify       # must pass before any release
+python3 tools/audit_layout.py             # should print "0 places to look at"
 tools/payslip_probe/build.sh              # then: .build/payslip_probe <file.pdf|.png>
 ```
+
+Two of those are about the words and the layout rather than the arithmetic.
+`dump_copy.py` regenerates every copy pair in both languages straight out of
+`Localization.swift` and reads the document back to compare, and it fails rather than
+skipping a call it cannot parse, because a review document that is quietly shorter than the
+app is worse than no document. `audit_layout.py` looks for the two mistakes that produce no
+warning and nothing visible at the default text size: text in a button label with no
+alignment set, and a glyph in a fixed-width frame that does not scale with its type.
 
 A fresh clone cannot run all of it. The source workbooks are not in the repo, so the
 verifier skips its round trip and says so, and the probe needs a payslip you supply
@@ -235,9 +263,12 @@ SalarySeed/
     PayslipFacts         what was read and how sure we are of each figure
     PayslipReconciler    facts against TaxEngine, into findings
     PayslipFinding       the findings model and the one function that tiers them
+    PayslipSalary        the one value the checker may hand back, and nothing else
   Features/    one folder per screen
+    Onboarding/            the nine questions, led by the payslip
+    Intro/                 the one-screen tour, shown once to a new install
+    Payslip/               the checker: PDF, camera and Vision extraction, then the flow
     Shared/SupportLock     the real screen, blurred, where Grow and the Europe map live
-    Payslip/               the checker: PDF and Vision extraction, then the flow
   Models/      SalaryStore (the single source of truth), Localization, catalogues
   Theme.swift  design tokens, the OKLCH diverging ramp, and .appFont, which is
                how every point size in the app becomes the reader's point size
@@ -275,10 +306,18 @@ repository's [LICENSE](LICENSE).
 
 Nowhere.
 
-The app has no server, no account and no analytics. `grep -r URLSession SalarySeed`
-returns nothing: there is no code path that could send your salary anywhere, which is a
-stronger statement than a privacy policy and the reason the App Store label reads "Data
-Not Collected" without qualification.
+The app has no server, no account and no analytics.
+`grep -r URLSession SalarySeed --include="*.swift"` returns nothing: there is no code path
+that could send your salary anywhere, which is a stronger statement than a privacy policy
+and the reason the App Store label reads "Data Not Collected" without qualification.
+
+The app asks for one permission, the camera, and until v1.4 it asked for none. It is
+requested only when you tap Photograph on the payslip screen, it is explained on that screen
+in your own language before the system asks, and refusing it leaves the file picker and the
+photo picker working. Those two need no permission of their own: they run out of process in
+Apple's interface and hand the app exactly one item. The photograph goes to Vision on the
+device and dies with the screen, which is why "Data Not Collected" is still the right answer
+and why the privacy manifest did not change.
 
 Until v1.2 there was one exception, and it was not about you: StoreKit talked to Apple to
 fetch a product price and complete a €4.99 purchase. v1.3 ships free and switched that off,
@@ -299,8 +338,8 @@ token was never stored, erasure deleted and could not be used as an oracle, and 
 security rules denied every client path. It is not here because collecting pay data turns
 a one-person app into something with real compliance obligations, and that was out of
 proportion to what the pool would have been worth in its first year. It has sat on a
-`pool-backend` branch ever since, and is now two releases behind master, because nothing
-compiles a branch nobody checks out. Full detail in [`PRIVACY.md`](PRIVACY.md).
+`pool-backend` branch since v1.0 and has not been compiled since, because nothing compiles
+a branch nobody checks out. Full detail in [`PRIVACY.md`](PRIVACY.md).
 
 ## What it does not do
 

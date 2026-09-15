@@ -83,10 +83,11 @@
 </header>
 
 <p class="note">
-  Everything below is the real app, recorded in the iOS Simulator. The clips run at speed
-  because the pauses were mine, not the app's. The app is bilingual and auto-detects; these
-  are in English. Every figure comes from a published table, and nothing typed into the app
-  ever leaves the phone.
+  Everything below is the real app, recorded in the iOS Simulator. The clips have the waiting
+  cut out of them, because the pauses were mine and not the app's; nothing else is edited, and
+  every screen runs at the speed it actually runs at. The app is bilingual and auto-detects;
+  these are in English. Every figure comes from a published table, and nothing typed into the
+  app ever leaves the phone.
 </p>
 
 <h2>The salary</h2>
@@ -100,36 +101,45 @@
   <div class="beside">
     <h3>What to watch for</h3>
     <ul>
-      <li><strong>2 400 € gross becomes 1 700 € net</strong>, and costs the employer 2 970 €.
-          The annual settlement card writes out every assumption it made, including the ones
-          that might not apply.</li>
+      <li><strong>Home holds one figure</strong>, and the three buttons under it are three
+          ways to read the same year: a month over twelve, a month over the fourteen real
+          payments, or the year itself. 2 400 € gross is 1 700 € net, and 57% of what the
+          employer spends reaches the pocket.</li>
+      <li><strong>The rest is a scroll away</strong>: the breakdown, the 2 970 € the employer
+          actually pays, and an annual settlement that writes out every assumption it made,
+          including the ones that might not apply.</li>
       <li><strong>The distribution is scrubbable.</strong> Drag anywhere on it to see what
           that percentile earns, then let go and it returns to you.</li>
       <li><strong>Açores and Madeira are drawn with no colour</strong> and labelled "no
           figure", because the survey behind the map covers the mainland only. The app says
           so rather than inventing a shade.</li>
+      <li><strong>Germany pays 222% more in this sector</strong>, and the app applies that
+          ratio to your own salary instead of putting a foreign average beside a Portuguese
+          one. The second toggle redraws all 27 in purchasing power instead of euros.</li>
       <li><strong>The projection is a staircase, not a curve</strong>, because the source
           publishes six tenure bands and not a smooth function.</li>
       <li><strong>Set the negotiated raise to zero</strong> and the app says moving jobs
           costs you 0.9 points a year. Raise it and the verdict flips.</li>
-      <li><strong>Germany pays 142% more in this sector</strong>, and the app applies that
-          ratio to your own salary instead of putting a foreign average beside a Portuguese
-          one.</li>
     </ul>
   </div>
 </div>
 
 <h2>The payslip</h2>
 <p class="note">
-  You hand it a PDF or a photograph of a Portuguese payslip and it tells you whether the
-  arithmetic holds. It runs entirely on the phone, nothing is uploaded, and nothing is kept:
-  close the screen and the file is gone.
+  You hand it a PDF, photograph it, or pick a photo, and it tells you whether the arithmetic
+  holds. It runs entirely on the phone, nothing is uploaded, and nothing about the payslip is
+  ever written to the phone. There is no history. One figure can outlive the reading, and only
+  because you tapped to keep it.
 </p>
 <div class="clip">
   <video src="video/payslip.mp4" autoplay muted loop playsinline controls></video>
   <div class="beside">
     <h3>What to watch for</h3>
     <ul>
+      <li><strong>Three ways in, and only one of them needs anything from you.</strong> The
+          file and photo pickers run in Apple's own interface and hand over a single item.
+          The camera is the one permission the app asks for, and the screen explains why
+          before you tap it.</li>
       <li><strong>It asks you to confirm what it read</strong> before it will judge anything,
           because this one came from a photograph and recognition can misread a digit.</li>
       <li><strong>Four checks pass.</strong> The lines add up to the total, gross minus
@@ -140,6 +150,9 @@
           reads as a check that passed, so this app will not do that.</li>
       <li><strong>It names the tables it used</strong>: the 2026 rules for mainland Portugal,
           on a fourteen month year.</li>
+      <li><strong>The ask comes last, after the verdict.</strong> Only then does it offer to
+          keep the gross it read as your salary, so you are deciding that knowing what it
+          just found. That one number is the only thing that can outlive the screen.</li>
     </ul>
   </div>
 </div>
@@ -147,8 +160,12 @@
 <h2>Screens</h2>
 <div class="shots">
   <figure>
-    <img src="img/home.png" alt="Home, showing deductions, the annual IRS settlement and its assumptions">
-    <figcaption>Home. The deductions, and an annual settlement that states what it assumed.</figcaption>
+    <img src="img/home.png" alt="Home, showing one net figure and where the money goes">
+    <figcaption>Home. One figure, three ways to read it, and where the rest of it went.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/home-detail.png" alt="Home below the fold, showing deductions and the annual IRS settlement">
+    <figcaption>Below the fold. The deductions, and a settlement that states what it assumed.</figcaption>
   </figure>
   <figure>
     <img src="img/compare.png" alt="Compare, showing the national distribution and cohort percentiles">
@@ -168,7 +185,7 @@
   </figure>
   <figure>
     <img src="img/payslip.png" alt="Payslip result, four checks passing and six declining to run">
-    <figcaption>The payslip verdict, including the checks that declined to run.</figcaption>
+    <figcaption>The payslip verdict, including the six checks that declined to run.</figcaption>
   </figure>
 </div>
 
@@ -176,7 +193,9 @@
   <p>
     The payslip in the demo is fictional and its figures come from the app's own tax engine.
     It is committed to the repository as <code>docs/fixtures/exemplo-recibo.pdf</code> so
-    anyone can run the checker.
+    anyone can run the checker. The clip feeds it in as an image rather than as the PDF,
+    which is the harder of the two paths: it goes through recognition, so the figures have to
+    survive being read off a picture before anything is checked.
   </p>
   <p>
     SwiftUI, iOS 17, no dependencies and no backend.
