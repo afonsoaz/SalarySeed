@@ -1,6 +1,6 @@
 # SalarySeed
 
-**DISCLAIMER: SalarySeed used AI heavily to support its development (e.g., Claude Code)**
+**DISCLAIMER: I have used AI (e.g., Claude Code) heavily to support SalarySeed's development**
 
 An iOS app that tells you what a salary in Portugal actually means. What lands in your
 account, what it costs your employer, where it sits against everyone else, what it might
