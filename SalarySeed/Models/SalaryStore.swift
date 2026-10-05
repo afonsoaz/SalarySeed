@@ -195,6 +195,16 @@ final class SalaryStore: ObservableObject {
     /// right now, so it is never saved, and a relaunch opens on Home.
     @Published var path: [HubRoute] = []
 
+    /// The profile questions Compare was told "not now" about this session.
+    ///
+    /// v0.9 kept this in the view, deliberately in memory only, so "not now"
+    /// means not now and not never. That held for as long as the tab did, which
+    /// was the whole session. A pushed screen is rebuilt on every visit, so in
+    /// the view it would have meant "not this visit" and the same question
+    /// would be back the next time Compare opened. Here it lasts the session
+    /// again, and it is still never saved.
+    @Published var compareSnoozed: Set<String> = []
+
     /// Whether the intro screen is on screen right now.
     ///
     /// No `didSet { save() }` and absent from `save()`, for the same reason

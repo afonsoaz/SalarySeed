@@ -14,6 +14,10 @@ import Foundation
 /// compiles three files in Models/ on their own and none of them may come to
 /// depend on a screen.
 enum HubRoute: Hashable {
-    case profile
+    case tax
+    case comparePortugal
+    case compareEurope
     case offer
+    case tools
+    case profile
 }

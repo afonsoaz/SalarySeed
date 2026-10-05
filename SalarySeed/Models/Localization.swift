@@ -52,6 +52,18 @@ struct Strings {
     /// VoiceOver.
     var tabProfile: String { t("Profile", "Perfil") }
 
+    // MARK: The hub
+
+    /// The Tax screen's title. Not "where the money goes": that is the label on
+    /// the bar directly under it, and a title saying the same would be an echo.
+    var taxTitle: String { t("What comes off your pay", "O que te descontam") }
+    var toolsTitle: String { t("Other tools", "Outras ferramentas") }
+    /// The two views of Compare in Portugal. What you are being compared
+    /// against, in one word each, because the title above already says which
+    /// question each one answers.
+    var compareScopePeople: String { t("People", "Pessoas") }
+    var compareScopeDistricts: String { t("Districts", "Distritos") }
+
     // MARK: Onboarding
 
     var welcomeTitle: String { t("Let's work out\nwhat you earn.", "Vamos perceber\nquanto ganhas.") }

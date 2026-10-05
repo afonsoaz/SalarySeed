@@ -1,20 +1,10 @@
 import SwiftUI
 
-/// compareSeed: national percentile + layered "people like you" comparisons.
-/// Each filled profile signal adds a layer on top of the national number, never
-/// replacing it. Layers are honest: thin cohorts and edge results are flagged,
-/// and every number carries its source and reference year.
+/// compareSeed's tab, for as long as there is a tab bar: a stack, a header with
+/// the way into Profile, and the sections below.
 struct CompareView: View {
     @EnvironmentObject private var store: SalaryStore
-    @State private var activeDimension: CompareDimension?
-    @State private var showSectorSheet = false
-    // v0.9: progressive enrichment. `snoozed` is intentionally in-memory only,
-    // so "not now" means not now and not never.
-    @State private var activeSignalSheet: SignalSheet?
     @State private var showProfile = false
-    @State private var snoozed: Set<String> = []
-    // v0.9.1: the region layer is answered by picking a município.
-    @State private var showConcelhoSheet = false
 
     private var s: Strings { store.s }
 
@@ -23,23 +13,63 @@ struct CompareView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     header
-                    percentileHero
-                    distributionChart
-                    layers
-                    enrichment
-                    sourceNote
+                    CompareSections()
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
             .background(Theme.background)
-            .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
-            .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
-            .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
-            .sheet(item: $activeDimension) { dim in
-                ProfilePickerSheet(dimension: dim)
-            }
             .profileDestination(isPresented: $showProfile)
+        }
+    }
+
+    private var header: some View {
+        HStack(alignment: .bottom) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("compareSeed")
+                    .appFont(12)
+                    .foregroundStyle(Theme.accent)
+                Text(s.compareTitle)
+                    .appFont(22, weight: .medium)
+                    .foregroundStyle(Theme.textPrimary)
+            }
+            Spacer()
+            ProfileButton { showProfile = true }
+        }
+        .padding(.top, 8)
+    }
+}
+
+/// compareSeed: national percentile + layered "people like you" comparisons.
+/// Each filled profile signal adds a layer on top of the national number, never
+/// replacing it. Layers are honest: thin cohorts and edge results are flagged,
+/// and every number carries its source and reference year.
+///
+/// The sections without the screen around them, so the tab and Compare in
+/// Portugal draw exactly the same thing.
+struct CompareSections: View {
+    @EnvironmentObject private var store: SalaryStore
+    @State private var activeDimension: CompareDimension?
+    @State private var showSectorSheet = false
+    @State private var activeSignalSheet: SignalSheet?
+    // v0.9.1: the region layer is answered by picking a município.
+    @State private var showConcelhoSheet = false
+
+    private var s: Strings { store.s }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            percentileHero
+            distributionChart
+            layers
+            enrichment
+            sourceNote
+        }
+        .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
+        .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
+        .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
+        .sheet(item: $activeDimension) { dim in
+            ProfilePickerSheet(dimension: dim)
         }
     }
 
@@ -48,12 +78,12 @@ struct CompareView: View {
     /// already been given.
     @ViewBuilder
     private var enrichment: some View {
-        if let next = store.nextEnrichment(skipping: snoozed) {
+        if let next = store.nextEnrichment(skipping: store.compareSnoozed) {
             EnrichmentCard(
                 signal: next,
                 onOpenSheet: { activeSignalSheet = SignalSheet.from($0) },
                 onSkip: {
-                    withAnimation(.easeOut(duration: 0.2)) { _ = snoozed.insert(next.rawValue) }
+                    withAnimation(.easeOut(duration: 0.2)) { _ = store.compareSnoozed.insert(next.rawValue) }
                 }
             )
         }
@@ -112,26 +142,6 @@ struct CompareView: View {
                 .foregroundStyle(Theme.danger)
                 .fixedSize(horizontal: false, vertical: true)
         }
-    }
-
-    private var header: some View {
-        HStack(alignment: .bottom) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("compareSeed")
-                    .appFont(12)
-                    .foregroundStyle(Theme.accent)
-                Text(s.compareTitle)
-                    .appFont(22, weight: .medium)
-                    .foregroundStyle(Theme.textPrimary)
-            }
-            Spacer()
-            // v1.2b: this slot held a sprout and "3 de 10", which said something
-            // true and led nowhere, next to a second sprout in the same corner
-            // of Home. The count moved to `ProfileNudgeCard`, where there is
-            // room to say what it means, and the slot now holds the way in.
-            ProfileButton { showProfile = true }
-        }
-        .padding(.top, 8)
     }
 
     private var percentileHero: some View {

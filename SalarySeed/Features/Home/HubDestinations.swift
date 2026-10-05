@@ -6,26 +6,38 @@ extension View {
     /// One `navigationDestination(for:)` rather than a flag per screen, so the
     /// stack's whole state is `SalaryStore.path` and nothing can be on screen
     /// that `path = []` would not take away.
-    func hubDestinations() -> some View {
+    ///
+    /// `period` is Home's own, handed to the screens that read the salary
+    /// through it, so Tax and Home cannot show the same pay in two lenses.
+    func hubDestinations(period: Binding<ResultPeriod>) -> some View {
         navigationDestination(for: HubRoute.self) { route in
-            HubDestination(route: route)
+            HubDestination(route: route, period: period)
         }
     }
 }
 
 private struct HubDestination: View {
     let route: HubRoute
+    @Binding var period: ResultPeriod
 
     var body: some View {
+        destination
+            // Set ONCE, here, for every screen Home pushes. Each draws its own
+            // eyebrow and title in its content, so the bar carries nothing but
+            // the back chevron; without this, a screen that was a tab root and
+            // never needed it gets an empty large-title band under the chevron.
+            .navigationBarTitleDisplayMode(.inline)
+    }
+
+    @ViewBuilder
+    private var destination: some View {
         switch route {
-        case .profile:
-            // The bar this creates carries nothing but a back chevron:
-            // `ProfileView` draws its own "profileSeed" header, so a title here
-            // would say the same thing twice.
-            ProfileView()
-                .navigationBarTitleDisplayMode(.inline)
-        case .offer:
-            OfferView()
+        case .tax: TaxView(period: $period)
+        case .comparePortugal: ComparePortugalView()
+        case .compareEurope: EuropeView()
+        case .offer: OfferView()
+        case .tools: ToolsView()
+        case .profile: ProfileView()
         }
     }
 }
