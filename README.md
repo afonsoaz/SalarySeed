@@ -1,5 +1,7 @@
 # SalarySeed
 
+**DISCLAIMER: I have used AI (e.g., Claude Code) heavily to support SalarySeed's development**
+
 An iOS app that tells you what a salary in Portugal actually means. What lands in your
 account, what it costs your employer, where it sits against everyone else, what it might
 be in twenty years, and how it compares across the European Union. It will also read your
