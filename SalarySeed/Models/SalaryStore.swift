@@ -323,13 +323,7 @@ final class SalaryStore: ObservableObject {
     /// neutral one. It is the safe direction to be wrong in, because the mainland
     /// rates are the higher ones, so an unplaced islander is overcharged on paper
     /// rather than undercharged. The tax screens say so rather than leaving it.
-    var taxRegion: TaxEngine.TaxRegion {
-        switch region {
-        case .acores: return .acores
-        case .madeira: return .madeira
-        default: return .continente
-        }
-    }
+    var taxRegion: TaxEngine.TaxRegion { region?.taxRegion ?? .continente }
 
     /// True when mainland tax is being shown to someone whose location the app
     /// does not know. Drives the one caveat that assumption earns.
@@ -427,6 +421,46 @@ final class SalaryStore: ObservableObject {
     /// carry annual bonuses, so folding them in would compare unlike with unlike.
     var percentile: Double {
         PercentileEngine.percentile(grossMonthly: breakdown.grossMonthly)
+    }
+
+    // MARK: Grow's inputs (v1.5: shared with the offer screen)
+
+    /// Everything Grow's model takes from the reader's real situation, or nil
+    /// when the two answers it is built on, sector and time at the employer, are
+    /// missing.
+    ///
+    /// v1.5 moved this out of `GrowView`. The offer screen projects staying with
+    /// the same model, and two builders of this one value would be two places
+    /// for the projection to start from a different salary, district or tax
+    /// region without anything saying so.
+    var growthContext: GrowthEngine.Context? {
+        guard let sector, let tenureYears else { return nil }
+        let b = breakdown
+        guard b.grossMonthly > 0 else { return nil }
+        return GrowthEngine.Context(
+            sector: sector,
+            startTenure: Double(tenureYears),
+            grossToday: b.grossMonthly,
+            months: b.months,
+            marital: maritalSituation,
+            dependents: dependents,
+            jovemBenefitYear: jovemBenefitYear,
+            homeDistrict: district,
+            taxRegion: taxRegion
+        )
+    }
+
+    /// The store keeps the exemption percentage, not which benefit year produced
+    /// it, so the year is read back from the rate. A rate that spans three years
+    /// resolves to the FIRST of them, which is the most generous reading, and the
+    /// assumptions block says so rather than letting it pass as precision.
+    var jovemBenefitYear: Int? {
+        let e = irsJovemExemption
+        if e >= 0.99 { return 1 }
+        if e >= 0.74 { return 2 }
+        if e >= 0.49 { return 5 }
+        if e >= 0.24 { return 8 }
+        return nil
     }
 
     // MARK: Supporter (v0.16)

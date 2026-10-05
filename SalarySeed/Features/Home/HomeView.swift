@@ -68,30 +68,8 @@ struct HomeView: View {
     /// The visible height of the scroll view, measured. See `ViewportHeightKey`.
     @State private var viewport: CGFloat = 0
 
-    /// v0.8: three ways to read the result. Two are monthly (the yearly pay spread
-    /// over 12, or over the 14 real payments) and one is the yearly total.
-    enum ResultPeriod: String, CaseIterable, Identifiable {
-        case m12, m14, year
-        var id: String { rawValue }
-        /// 0 = monthly ÷12, 1 = monthly ÷14, 2 = annual. Drives the copy helpers.
-        var modeIndex: Int { self == .m12 ? 0 : (self == .m14 ? 1 : 2) }
-        var isAnnual: Bool { self == .year }
-        func label(_ s: Strings) -> String {
-            switch self {
-            case .m12: return s.resultM12
-            case .m14: return s.resultM14
-            case .year: return s.resultYear
-            }
-        }
-        /// Multiplier on a per-payment monthly value to reach this view.
-        func factor(months: Double) -> Double {
-            switch self {
-            case .m12: return months / 12
-            case .m14: return months / 14
-            case .year: return months
-            }
-        }
-    }
+    // `ResultPeriod` lived here until v1.5. It is in Features/Shared now, so the
+    // offer screen reads its two salaries through the very same picker.
 
     private var s: Strings { store.s }
     private var b: SalaryBreakdown { store.breakdown }
@@ -444,9 +422,9 @@ struct HomeView: View {
         // line, so it is always clear which net comes from gross and which comes
         // on top.
         if b.ajudasMonthly > 0 {
-            let ajudasPart = isAnnual ? b.ajudasYearly : b.ajudasMonthly
-            let pocket = b.netMonthly * factor + ajudasPart
-            Text(s.heroAjudas(eur(ajudasPart), total: eur(pocket)))
+            // `pocket(in:)` since v1.5, shared with the offer screen so its
+            // "now" cannot drift from this line.
+            Text(s.heroAjudas(eur(b.allowance(in: period)), total: eur(b.pocket(in: period))))
                 .appFont(12)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -562,7 +540,7 @@ struct HomeView: View {
 
             if b.ajudasMonthly > 0 {
                 AjudasCard(
-                    value: eur(isAnnual ? b.ajudasYearly : b.ajudasMonthly),
+                    value: eur(b.allowance(in: period)),
                     yearlyLine: isAnnual ? nil : s.ajudasCardYearly(eur(b.ajudasYearly)),
                     body_: s.ajudasCardBody,
                     title: s.ajudasCardTitle

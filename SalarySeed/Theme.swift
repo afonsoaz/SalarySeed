@@ -195,6 +195,16 @@ func points(_ fraction: Double, decimals: Int = 1) -> String {
     return String(text.dropLast())
 }
 
+/// A difference in euros, always signed, so "ahead" and "behind" read off the
+/// figure itself.
+///
+/// v1.5 moved this here. Grow and its levers sheet each carried a private copy,
+/// and the offer screen would have been the third: the shape rule 29 is about,
+/// where a fix made to one copy cannot reach the others.
+func signedEur(_ value: Double) -> String {
+    (value >= 0 ? "+" : "-") + eur(abs(value))
+}
+
 // MARK: Dynamic Type (v1.0.3)
 //
 // WHY THIS EXISTS. SwiftUI's `.system(size:)` is a FIXED size. It is not a

@@ -61,6 +61,25 @@ enum PTRegion: String, CaseIterable, Identifiable {
         case .madeira: "Madeira"
         }
     }
+
+    /// v1.5: which of the three withholding tables a município in this region
+    /// is taxed on. The seven mainland regions share Continente's.
+    ///
+    /// It lived inside `SalaryStore.taxRegion` until a second município needed
+    /// it: an offer can be somewhere other than where the reader lives, and a
+    /// second copy of this switch is exactly how an island gets taxed as the
+    /// mainland on one screen and not on the next.
+    ///
+    /// Here rather than in `TaxEngine.swift` on purpose. Both payslip probes
+    /// compile that file without this one, so a `PTRegion` there would break
+    /// their builds.
+    var taxRegion: TaxEngine.TaxRegion {
+        switch self {
+        case .acores: return .acores
+        case .madeira: return .madeira
+        default: return .continente
+        }
+    }
 }
 
 /// Education levels, kept to a few meaningful bands (deliberate product choice).

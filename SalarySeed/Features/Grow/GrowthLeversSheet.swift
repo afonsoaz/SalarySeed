@@ -186,10 +186,6 @@ struct GrowthLeversSheet: View {
         }
     }
 
-    private func signedEur(_ value: Double) -> String {
-        (value >= 0 ? "+" : "-") + eur(abs(value))
-    }
-
     /// The whole point of the percentage: both rates, side by side, built the
     /// same way, so the comparison needs no arithmetic.
     private var expectedFootnotes: some View {

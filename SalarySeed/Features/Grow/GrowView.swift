@@ -47,35 +47,9 @@ struct GrowView: View {
 
     private var s: Strings { store.s }
 
-    private var ctx: GrowthEngine.Context? {
-        guard let sector = store.sector, let tenure = store.tenureYears else { return nil }
-        let b = store.breakdown
-        guard b.grossMonthly > 0 else { return nil }
-        return GrowthEngine.Context(
-            sector: sector,
-            startTenure: Double(tenure),
-            grossToday: b.grossMonthly,
-            months: b.months,
-            marital: store.maritalSituation,
-            dependents: store.dependents,
-            jovemBenefitYear: jovemBenefitYear,
-            homeDistrict: store.district,
-            taxRegion: store.taxRegion
-        )
-    }
-
-    /// The store keeps the exemption percentage, not which benefit year produced
-    /// it, so the year is read back from the rate. A rate that spans three years
-    /// resolves to the FIRST of them, which is the most generous reading, and the
-    /// assumptions block says so rather than letting it pass as precision.
-    private var jovemBenefitYear: Int? {
-        let e = store.irsJovemExemption
-        if e >= 0.99 { return 1 }
-        if e >= 0.74 { return 2 }
-        if e >= 0.49 { return 5 }
-        if e >= 0.24 { return 8 }
-        return nil
-    }
+    /// Built on the store since v1.5, because the offer screen projects staying
+    /// with the same model and must start from exactly the same place.
+    private var ctx: GrowthEngine.Context? { store.growthContext }
 
     var body: some View {
         NavigationStack {
@@ -675,7 +649,7 @@ struct GrowView: View {
             if store.district == nil, store.taxRegion != .continente {
                 line(s.growIslandNote)
             }
-            if jovemBenefitYear != nil {
+            if store.jovemBenefitYear != nil {
                 line(s.growAssumptionJovem)
             }
         }
@@ -729,9 +703,5 @@ struct GrowView: View {
     private func moneyScale(_ year: Int) -> Double {
         guard store.growScenario.inTodaysMoney else { return 1 }
         return 1 / pow(1 + store.growScenario.inflation, Double(year))
-    }
-
-    private func signedEur(_ value: Double) -> String {
-        (value >= 0 ? "+" : "-") + eur(abs(value))
     }
 }
