@@ -92,24 +92,7 @@ struct MapView: View {
     /// Portugal or Europe. The sector picker sits below it because it applies to
     /// both, and moving it would make the two halves feel like two screens.
     private var scopePicker: some View {
-        HStack(spacing: 8) {
-            ForEach(MapScope.allCases) { option in
-                let isOn = scope == option
-                Button {
-                    withAnimation(.easeOut(duration: 0.15)) { scope = option }
-                } label: {
-                    Text(option.label(s))
-                        .appFont(13, weight: isOn ? .medium : .regular)
-                        .foregroundStyle(isOn ? Theme.ink : Theme.textPrimary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(isOn ? Theme.accent : Color.white.opacity(0.05),
-                                    in: RoundedRectangle(cornerRadius: 11))
-                        .overlay(RoundedRectangle(cornerRadius: 11)
-                            .stroke(isOn ? Theme.accent : Theme.cardBorder, lineWidth: 1))
-                }
-            }
-        }
+        ScopeChips(options: MapScope.allCases, selection: $scope) { $0.label(s) }
     }
 
     @ViewBuilder
@@ -160,31 +143,9 @@ struct MapView: View {
         }
     }
 
-    /// Which sector the map is showing. Tapping it opens the same sheet
-    /// compareSeed uses, so the two screens can never disagree.
+    /// Which sector the map is showing. See `SectorRow`.
     private var sectorRow: some View {
-        Button { showSectorSheet = true } label: {
-            HStack(spacing: 10) {
-                Image(systemName: "building.2")
-                    .appFont(15)
-                    .foregroundStyle(Theme.accent)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(store.sector?.label(pt: s.pt) ?? s.mapAllSectors)
-                        .appFont(15, weight: .medium)
-                        .foregroundStyle(Theme.textPrimary)
-                    Text(store.sector == nil ? s.mapPickSector : s.mapSectorHint)
-                        .appFont(10.5)
-                        .foregroundStyle(store.sector == nil ? Theme.accent : Theme.textFaint)
-                }
-                .multilineTextAlignment(.leading)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .appFont(11)
-                    .foregroundStyle(Theme.textFaint)
-            }
-            .padding(13)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-        }
+        SectorRow { showSectorSheet = true }
     }
 
     /// v0.15.3: the home chip only appears when there IS a home district.
