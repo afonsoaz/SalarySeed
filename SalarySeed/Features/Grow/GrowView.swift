@@ -24,7 +24,8 @@ import SwiftUI
 /// GROW WRITES NOTHING. It is an exploring surface in the v0.9.4 sense: the
 /// scenario lives in memory for the session and never reaches UserDefaults. The
 /// single deliberate way to change the real salary is the year-0 card, which
-/// routes through the same salaryChangeConfirmation every other entry point uses.
+/// asks the same "has your salary changed, or are you just trying a number?"
+/// that Profile asks. Home's own way in is its "Update my salary" bubble.
 ///
 /// v1.0.1: THE WHOLE SCREEN IS BEHIND THE SUPPORT PAYMENT. Non-supporters see
 /// this same screen through `SupportLock`: blurred, inert, with a small card over
@@ -42,7 +43,6 @@ struct GrowView: View {
     @State private var showSectorTenure = false
     @State private var showEditor = false
     @State private var showExplorer = false
-    @State private var showProfile = false
     @State private var askingSalaryChange = false
 
     private var s: Strings { store.s }
@@ -51,56 +51,55 @@ struct GrowView: View {
     /// with the same model and must start from exactly the same place.
     private var ctx: GrowthEngine.Context? { store.growthContext }
 
+    /// Pushed from Home's row, onto Home's one stack. It was a tab root with a
+    /// stack of its own, which went with the tab bar: a stack inside a stack is
+    /// two sets of navigation state for one screen.
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Theme.background.ignoresSafeArea()
-                // v1.2b LIFTED THE TITLE ROW OUT OF THE LOCK.
-                //
-                // `SupportLock` blurs its content at radius 6 and sets
-                // `allowsHitTesting(false)`, and this screen handed it
-                // everything, so a non-supporter got the title out of focus
-                // along with the projection and could not have tapped anything
-                // in it. That was survivable while the header held nothing you
-                // could tap. It stops being survivable the moment the only way
-                // into Profile lives there.
-                //
-                // It also reads better. `SupportLock`'s own comment says the
-                // point is that a non-supporter is looking at Grow out of focus
-                // rather than at an advert for Grow, and a sharp title over a
-                // blurred projection is more that thing, not less.
-                // v1.4a: THE TOP BAR IS PINNED, and it was not before.
-                //
-                // `growContent` is a ScrollView when there is a projection to
-                // draw, and a ScrollView is greedy, so the bar sat at the top
-                // and everything looked right. The empty state is a plain
-                // column with no Spacer and no flexible height, so this VStack
-                // shrank to fit it and the ZStack centred the pair: the word
-                // "Grow" and the profile button dropped to a third of the way
-                // down the screen, on the one screen where a reader is most
-                // likely to want the profile button.
-                //
-                // `maxHeight: .infinity, alignment: .top` makes that
-                // impossible for any content, including whatever gets added
-                // next. The empty state fills the space below on its own; see
-                // `growContent`.
-                VStack(spacing: 0) {
-                    growTopBar
-                    // v1.0.1a: the same content either way. A non-supporter gets
-                    // it blurred under `SupportLock` rather than a different
-                    // screen, so what they are looking at is Grow out of focus
-                    // and not an advert for it.
-                    if supporter.isSupporter {
+        ZStack {
+            Theme.background.ignoresSafeArea()
+            // v1.2b LIFTED THE TITLE ROW OUT OF THE LOCK.
+            //
+            // `SupportLock` blurs its content at radius 6 and sets
+            // `allowsHitTesting(false)`, and this screen handed it
+            // everything, so a non-supporter got the title out of focus
+            // along with the projection. It held the way into Profile then;
+            // since the hub, Profile is reached from Home alone and the row
+            // holds only the title, and it stays outside the lock anyway,
+            // because it reads better.
+            //
+            // It does. `SupportLock`'s own comment says the
+            // point is that a non-supporter is looking at Grow out of focus
+            // rather than at an advert for Grow, and a sharp title over a
+            // blurred projection is more that thing, not less.
+            // v1.4a: THE TOP BAR IS PINNED, and it was not before.
+            //
+            // `growContent` is a ScrollView when there is a projection to
+            // draw, and a ScrollView is greedy, so the bar sat at the top
+            // and everything looked right. The empty state is a plain
+            // column with no Spacer and no flexible height, so this VStack
+            // shrank to fit it and the ZStack centred the pair: the word
+            // "Grow" and the profile button that sat beside it then dropped
+            // to a third of the way down the screen.
+            //
+            // `maxHeight: .infinity, alignment: .top` makes that
+            // impossible for any content, including whatever gets added
+            // next. The empty state fills the space below on its own; see
+            // `growContent`.
+            VStack(spacing: 0) {
+                growTopBar
+                // v1.0.1a: the same content either way. A non-supporter gets
+                // it blurred under `SupportLock` rather than a different
+                // screen, so what they are looking at is Grow out of focus
+                // and not an advert for it.
+                if supporter.isSupporter {
+                    growContent
+                } else {
+                    SupportLock(title: s.lockGrowTitle, blurb: s.lockGrowBlurb) {
                         growContent
-                    } else {
-                        SupportLock(title: s.lockGrowTitle, blurb: s.lockGrowBlurb) {
-                            growContent
-                        }
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
-            .profileDestination(isPresented: $showProfile)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .sheet(isPresented: $showSectorTenure) { SectorTenureSheet() }
         .sheet(isPresented: $showEditor) { SalaryEditorView() }
@@ -156,7 +155,6 @@ struct GrowView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 8)
-            ProfileButton { showProfile = true }
         }
         .padding(.horizontal, 20)
         .padding(.top, 8)

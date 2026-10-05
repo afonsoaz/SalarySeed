@@ -3,7 +3,7 @@ import Foundation
 /// v0.3: in-app localization, English + European Portuguese (informal "tu").
 ///
 /// The app follows the device language by default and lets the user override it
-/// in the profile tab. A tiny custom layer (instead of system localization)
+/// in Profile. A tiny custom layer (instead of system localization)
 /// because the app must switch language at runtime, without a restart.
 /// All user-facing copy lives here, in plain, direct language.
 
@@ -40,19 +40,48 @@ struct Strings {
 
     private func t(_ en: String, _ ptText: String) -> String { pt ? ptText : en }
 
-    // MARK: Tabs
-
-    var tabHome: String { t("Home", "Início") }
-    var tabGrow: String { t("Grow", "Crescer") }
-    var tabCompare: String { t("Compare", "Comparar") }
-    var tabMap: String { t("Map", "Mapa") }
-    var tabPayslip: String { t("Payslip", "Recibo") }
-    /// v1.2: no longer a tab. Reached from the sprout in Home's top bar, and
-    /// kept as a string because that button still has to say what it is to
-    /// VoiceOver.
-    var tabProfile: String { t("Profile", "Perfil") }
-
     // MARK: The hub
+
+    // Home's rows: a title and one line each, and NO FIGURES. A row that names
+    // no number can never disagree with the screen it opens, which is the rule
+    // the offer card and the retired intro already kept. Where a screen's own
+    // title already says it, the row reuses it (`payslipTitle`, `growTitle`,
+    // `euroTitle`, `toolsTitle`) rather than saying the same thing twice in
+    // two wordings.
+    var hubTaxTitle: String { t("Tax", "Impostos") }
+    var hubTaxSub: String {
+        t("Where your money goes, and your IRS for the year",
+          "Para onde vai o teu dinheiro, e o teu IRS do ano")
+    }
+    var hubPayslipSub: String {
+        t("Whether it adds up, checked on your phone",
+          "Se as contas batem certo, conferido no teu telemóvel")
+    }
+    var hubPortugalTitle: String { t("Compare in Portugal", "Comparar em Portugal") }
+    var hubPortugalSub: String {
+        t("Where you stand, and what your sector pays by district",
+          "Como te comparas, e quanto paga o teu setor por distrito")
+    }
+    var hubEuropeTitle: String { t("Compare in Europe", "Comparar na Europa") }
+    var hubGrowSub: String { t("Where your pay could go", "Até onde pode ir o teu salário") }
+    var hubOfferTitle: String { t("Job offer", "Proposta de emprego") }
+    var hubOfferSub: String {
+        t("Put it next to the job you have", "Põe-na ao lado do emprego que tens")
+    }
+    var hubToolsSub: String {
+        t("Try another salary, and the hidden cost of ajudas",
+          "Experimenta outro salário, e o custo escondido das ajudas")
+    }
+    /// Read by VoiceOver on a row whose screen sits behind the support payment.
+    /// DORMANT: in the free build no row is ever locked, so this is never heard.
+    /// It names no price, because nothing on Home may lead to one.
+    var hubLockedVoice: String {
+        t("Included when you support the app", "Incluído quando apoias a app")
+    }
+    /// The person icon at the top of Home. It was the Profile tab's label until
+    /// v1.2 took Profile out of the tab bar, and it is still what the button says
+    /// to VoiceOver.
+    var profileButtonVoice: String { t("Profile", "Perfil") }
 
     /// The Tax screen's title. Not "where the money goes": that is the label on
     /// the bar directly under it, and a title saying the same would be an echo.
@@ -165,24 +194,12 @@ struct Strings {
         }
     }
 
-    /// v1.4: the invitation at the bottom of Home's first screen.
+    /// The hint on Home's "Update my salary" bubble. VoiceOver reads the
+    /// bubble's label, then "button", then this.
     ///
-    /// v1.4a shortened it from "See what comes off it" / "Vê o que te
-    /// descontam". That named the destination, which was the right instinct
-    /// while the fold held only the figures; now that "where the money goes" is
-    /// in the fold, the reader has already been shown what comes off it and the
-    /// line was describing the screen they were looking at. What is below is
-    /// the detail, and two words is the honest size of that promise.
-    var homeSeeMore: String {
-        t("See more", "Vê mais")
-    }
-    var homeSeeMoreHint: String {
-        t("Scrolls down to the deductions and the yearly IRS.",
-          "Desce até aos descontos e ao IRS do ano.")
-    }
-
-    /// v1.4: the net figure is the way into the salary editor now that the row
-    /// under it is gone. VoiceOver reads `heroVoice`, then "button", then this.
+    /// v1.4 wrote it for the net figure, which was itself the button then; the
+    /// hub moved that job to a bubble on the figure that says what it does, and
+    /// the figure is just the figure again.
     var heroEditHint: String {
         t("Update the salary these figures come from.",
           "Atualiza o salário de onde vêm estes valores.")
@@ -303,10 +320,12 @@ struct Strings {
     }
 
 
-    var whatIf: String { t("What if…", "E se…") }
     // v0.10.1: the Home percentile card and the Grow nudge card are gone, and
-    // their copy went with them rather than sitting here unreferenced. The
-    // percentile has a whole tab; Grow has a tinted tab item.
+    // their copy went with them rather than sitting here unreferenced. Compare
+    // and Grow have rows on Home now.
+    //
+    // The hub retired "What if…" and its heading. These two were its third
+    // card, and they are the second row of Other tools now.
     var ajudasNudgeTitle: String { t("Paid partly in ajudas de custo?", "Recebes parte em ajudas de custo?") }
     var ajudasNudgeSub: String { t("See what it's costing your pension.", "Vê quanto isso custa à tua reforma.") }
     /// v1.0.2 made this name the region it actually used. It said "Continente"
@@ -1080,8 +1099,6 @@ struct Strings {
     }
     // MARK: v0.11 mapSeed, the European half
 
-    var mapScopePortugal: String { t("Portugal", "Portugal") }
-    var mapScopeEurope: String { t("Europe", "Europa") }
     var euroTitle: String { t("Your sector across the EU", "O teu setor pela UE") }
     var euroDash: String { "–" }
 
@@ -1338,10 +1355,10 @@ struct Strings {
 
     // MARK: v1.1 Payslip checker
 
-    // The tab, and the step it opens on.
+    // The checker, and the step it opens on.
 
-    /// v1.2: what the checker does, said before it asks for a file. The tab's
-    /// landing screen used to be a paragraph and two buttons, which is thin for
+    /// v1.2: what the checker does, said before it asks for a file. Its landing
+    /// screen used to be a paragraph and two buttons, which is thin for
     /// something somebody arrived at on purpose.
     var payslipWhatTitle: String { t("What we check", "O que verificamos") }
     /// One `t()` per item rather than one ternary over two arrays, so each line
@@ -1360,16 +1377,17 @@ struct Strings {
         t("Anything we cannot check, we say so, and why.",
           "O que não conseguirmos verificar, dizemos, e porquê.")
     }
-    /// v1.2: replaces the Close button when the checker is a tab, where there is
-    /// nothing to close.
+    /// v1.2: replaces the Close button when the checker is opened from Home,
+    /// where there is nothing to close.
     var payslipCheckAnother: String {
         t("Check another payslip", "Conferir outro recibo")
     }
 
     // The source step.
     var payslipTitle: String { t("Check your payslip", "Confere o teu recibo") }
-    /// v1.2 REWORDED THIS, because the checker is a tab now and "close this
-    /// screen and it is gone" named a thing that no longer happens. What is
+    /// v1.2 REWORDED THIS, because the checker became a tab then, and "close
+    /// this screen and it is gone" named a thing that no longer happens. It is
+    /// opened from Home now, and the reading still outlives the screen. What is
     /// still exactly true is the part that matters: it never leaves the phone,
     /// it is never written to the phone either, and there is no history.
     var payslipSourceIntro: String {
@@ -1515,9 +1533,11 @@ struct Strings {
     var payslipUseKeepMine: String { t("Ok, keep mine", "Ok, fico com o meu") }
     var payslipUseThis: String { t("Ok, use this", "Ok, usar este") }
     /// v1.2: shown in place of the ask once it has been answered that way. Only
-    /// reachable from the tab, where the verdict stays on screen afterwards and
-    /// the figure it changed is on another tab, so the confirmation has to be
-    /// here rather than implied by a screen closing.
+    /// reachable from "Check your payslip", where the verdict stays on screen
+    /// afterwards and the figure it changed is on Home, a screen away, so the
+    /// confirmation has to be here rather than implied by a screen closing.
+    /// Under "Update my salary" the answer returns to Home instead, where the
+    /// figure itself changing is the confirmation.
     var payslipUseDone: String {
         t("Saved. That is your salary now.", "Guardado. É esse o teu salário agora.")
     }
@@ -1768,13 +1788,9 @@ struct Strings {
     // model. Numbers that come from the data (the year of the tables, the last
     // tenure band, the horizons) are passed in, never written into a sentence.
 
-    // The way in, on Home under "What if…". No figures, so it cannot disagree
-    // with the screen it opens.
-    var offerNudgeTitle: String { t("Got a job offer?", "Tens uma proposta de emprego?") }
-    var offerNudgeSub: String {
-        t("Put it next to the job you have: what reaches you, the tax, other people, and staying instead.",
-          "Põe-na ao lado do emprego que tens: o que te chega, os impostos, as outras pessoas e ficar onde estás.")
-    }
+    // Home's offer row once an offer is kept; before that it reads
+    // `hubOfferTitle`. No figures, so it cannot disagree with the screen it
+    // opens.
     var offerNudgeKeptTitle: String { t("Your job offer", "A tua proposta de emprego") }
     var offerNudgeKeptSub: String {
         t("Side by side with the job you have.", "Lado a lado com o emprego que tens.")

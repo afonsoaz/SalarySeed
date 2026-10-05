@@ -1,17 +1,5 @@
 import SwiftUI
 
-/// Which half of mapSeed is showing.
-enum MapScope: String, CaseIterable, Identifiable {
-    case portugal, europe
-    var id: String { rawValue }
-    func label(_ s: Strings) -> String {
-        switch self {
-        case .portugal: return s.mapScopePortugal
-        case .europe: return s.mapScopeEurope
-        }
-    }
-}
-
 /// v0.11: the European half of mapSeed.
 ///
 /// Everything here is a RATIO, never a level. Eurostat's euro figures are used

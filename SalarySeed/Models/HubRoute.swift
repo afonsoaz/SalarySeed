@@ -22,6 +22,7 @@ enum HubRoute: Hashable {
     case payslipUpdate
     case comparePortugal
     case compareEurope
+    case grow
     case offer
     case tools
     case profile

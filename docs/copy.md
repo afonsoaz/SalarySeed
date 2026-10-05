@@ -7,7 +7,7 @@ grouped by the screen it belongs to.
 Editing this file changes nothing on its own; it is here to be read and marked up,
 and the edits get applied back to the Swift source afterwards.
 
-- **715** string pairs.
+- **714** string pairs.
 - `\(name)` is a value dropped in at runtime. It has to survive a rewrite,
   and it can move within the sentence.
 - `\n` is a deliberate line break.
@@ -17,41 +17,67 @@ and the edits get applied back to the Swift source afterwards.
 
 ---
 
-## Tabs
+## The hub
 
-### `tabHome`
+### `hubTaxTitle`
 
-- **EN** `Home`
-- **PT** `Início`
+- **EN** `Tax`
+- **PT** `Impostos`
 
-### `tabGrow`
+### `hubTaxSub`
 
-- **EN** `Grow`
-- **PT** `Crescer`
+- **EN** `Where your money goes, and your IRS for the year`
+- **PT** `Para onde vai o teu dinheiro, e o teu IRS do ano`
 
-### `tabCompare`
+### `hubPayslipSub`
 
-- **EN** `Compare`
-- **PT** `Comparar`
+- **EN** `Whether it adds up, checked on your phone`
+- **PT** `Se as contas batem certo, conferido no teu telemóvel`
 
-### `tabMap`
+### `hubPortugalTitle`
 
-- **EN** `Map`
-- **PT** `Mapa`
+- **EN** `Compare in Portugal`
+- **PT** `Comparar em Portugal`
 
-### `tabPayslip`
+### `hubPortugalSub`
 
-- **EN** `Payslip`
-- **PT** `Recibo`
+- **EN** `Where you stand, and what your sector pays by district`
+- **PT** `Como te comparas, e quanto paga o teu setor por distrito`
 
-### `tabProfile`
+### `hubEuropeTitle`
+
+- **EN** `Compare in Europe`
+- **PT** `Comparar na Europa`
+
+### `hubGrowSub`
+
+- **EN** `Where your pay could go`
+- **PT** `Até onde pode ir o teu salário`
+
+### `hubOfferTitle`
+
+- **EN** `Job offer`
+- **PT** `Proposta de emprego`
+
+### `hubOfferSub`
+
+- **EN** `Put it next to the job you have`
+- **PT** `Põe-na ao lado do emprego que tens`
+
+### `hubToolsSub`
+
+- **EN** `Try another salary, and the hidden cost of ajudas`
+- **PT** `Experimenta outro salário, e o custo escondido das ajudas`
+
+### `hubLockedVoice`
+
+- **EN** `Included when you support the app`
+- **PT** `Incluído quando apoias a app`
+
+### `profileButtonVoice`
 
 - **EN** `Profile`
 - **PT** `Perfil`
-
----
-
-## The hub
 
 ### `taxTitle`
 
@@ -296,16 +322,6 @@ and the edits get applied back to the Swift source afterwards.
 - **EN** `What lands in each of your 14 payments.`
 - **PT** `O que entra em cada um dos teus 14 pagamentos.`
 
-### `homeSeeMore`
-
-- **EN** `See more`
-- **PT** `Vê mais`
-
-### `homeSeeMoreHint`
-
-- **EN** `Scrolls down to the deductions and the yearly IRS.`
-- **PT** `Desce até aos descontos e ao IRS do ano.`
-
 ### `heroEditHint`
 
 - **EN** `Update the salary these figures come from.`
@@ -348,7 +364,7 @@ and the edits get applied back to the Swift source afterwards.
 
 ### `legendIRS` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:223`.
+Assembled in Swift rather than written as a pair. `Localization.swift:240`.
 
 ### `legendYourSS`
 
@@ -510,11 +526,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:223`.
 - **EN** `Ajudas de custo not included: comparisons use the gross salary only.`
 - **PT** `Ajudas de custo não incluídas: as comparações usam só o salário bruto.`
 
-### `whatIf`
-
-- **EN** `What if…`
-- **PT** `E se…`
-
 ### `ajudasNudgeTitle`
 
 - **EN** `Paid partly in ajudas de custo?`
@@ -596,7 +607,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:223`.
 
 ### `ordinalPercentile` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:346`.
+Assembled in Swift rather than written as a pair. `Localization.swift:365`.
 
 ### `youMarker`
 
@@ -843,7 +854,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:346`.
 
 ### `sectorCohort` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:458`.
+Assembled in Swift rather than written as a pair. `Localization.swift:477`.
 
 ---
 
@@ -925,7 +936,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:458`.
 
 ### `appSection` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:494`.
+Assembled in Swift rather than written as a pair. `Localization.swift:513`.
 
 ### `languageLabel`
 
@@ -954,7 +965,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:494`.
 
 ### `sourcesValue` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:502`.
+Assembled in Swift rather than written as a pair. `Localization.swift:521`.
 
 ### `profileFooter`
 
@@ -1980,7 +1991,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:502`.
 
 ### `growStepArrow` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:967`.
+Assembled in Swift rather than written as a pair. `Localization.swift:986`.
 
 ### `growMoreTitle`
 
@@ -2201,16 +2212,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:967`.
 
 ## v0.11 mapSeed, the European half
 
-### `mapScopePortugal`
-
-- **EN** `Portugal`
-- **PT** `Portugal`
-
-### `mapScopeEurope`
-
-- **EN** `Europe`
-- **PT** `Europa`
-
 ### `euroTitle`
 
 - **EN** `Your sector across the EU`
@@ -2218,7 +2219,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:967`.
 
 ### `euroDash` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1086`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1103`.
 
 ### `euroUnitEuros`
 
@@ -2297,7 +2298,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1086`.
 
 ### `ordinal` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1142`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1159`.
 
 ### `euroRank[0]`
 
@@ -3209,16 +3210,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1142`.
 ---
 
 ## v1.5 offerSeed
-
-### `offerNudgeTitle`
-
-- **EN** `Got a job offer?`
-- **PT** `Tens uma proposta de emprego?`
-
-### `offerNudgeSub`
-
-- **EN** `Put it next to the job you have: what reaches you, the tax, other people, and staying instead.`
-- **PT** `Põe-na ao lado do emprego que tens: o que te chega, os impostos, as outras pessoas e ficar onde estás.`
 
 ### `offerNudgeKeptTitle`
 

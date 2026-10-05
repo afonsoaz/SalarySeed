@@ -33,19 +33,25 @@ If you only have a minute, the three parts worth reading about are:
 
 ## What it does
 
-| Tab | What it answers |
+Home is the whole app. It shows what you earn now, one net figure read as a month over
+twelve, a month over fourteen or a year, with an **Update my salary** bubble on it that
+reads the figure off a payslip or lets you type it. Below it, one row per thing the app
+does, each opening its own screen. There is no tab bar.
+
+| Row | What it answers |
 |---|---|
-| **Home** | What you earn now. One net figure, read as a month over twelve, a month over fourteen or a year, and the share of what your employer spends that reaches you. A scroll below that: the full breakdown, the total cost to your employer, and the annual IRS settlement with every assumption written out. |
-| **Payslip** | Whether your last payslip adds up. Give it a PDF, photograph it with the camera, or pick a photo, and it checks ten things, on the device, and says which ones it could not check and why. The most interesting part of the app. |
-| **Compare** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region. |
-| **Map** | Where it would sit differently. A Portuguese district choropleth, and a 27-tile grid of the European Union. |
+| **Tax** | Where the money goes: the share of what your employer spends that reaches you, the full breakdown, the total cost to your employer, and the annual IRS settlement with every assumption written out. |
+| **Check your payslip** | Whether your last payslip adds up. Give it a PDF, photograph it with the camera, or pick a photo, and it checks ten things, on the device, and says which ones it could not check and why. The most interesting part of the app. |
+| **Compare in Portugal** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region, and a district map of what your sector pays. |
+| **Compare in Europe** | Where it would sit in the rest of the EU, on a 27-tile grid. |
 | **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. |
+| **Job offer** | An offer next to the job you have. See below. |
+| **Other tools** | Trying another salary without changing yours, and what being paid in ajudas de custo costs later. |
 
-The sixth thing is not a tab. **Profile** holds the inputs behind all of it, each with what
-it unlocks. It is reached from the top of Home, because a native iPhone tab bar shows five
-items and the checker earned one of them.
+**Profile** holds the inputs behind all of it, each with what it unlocks, and is reached
+from the person at the top of Home.
 
-Nor is the seventh. **A job offer** goes in from Home, under "What if…", and is put next to
+**A job offer** goes in from its row on Home, and is put next to
 the job you have in the order the questions arrive: what reaches you each month, where the
 difference goes in tax, where each sits against other people, and what staying where you are
 would pay at 5, 10 and 20 years. It is a different job and the same person, so the household,
@@ -149,11 +155,10 @@ Three rules keep the feature honest, and they are why it is allowed to exist:
   reading rather than let the app accuse somebody's employer of underpaying them.
 
 Nothing about the payslip is ever written to disk. The file is read into memory, checked,
-and dropped when you check another one or quit the app, and leaving mid-read cancels the
-recognition rather than letting it finish over a screen that has gone. There is no history.
-The promise is "never written to disk" rather than "gone when you close the screen", which
-is the narrower thing a tab can actually keep: since v1.2 the checker is a tab, so a verdict
-survives a trip to Compare and back.
+and dropped when you read another one or quit the app. There is no history. The promise
+is "never written to disk" rather than "gone when you close the screen", and that is
+deliberate: the home screen keeps the one reading for as long as the app runs, so a verdict
+survives going back to Home and returning, from either way in.
 
 One figure can outlive the reading, and only one: the screen ends by asking whether the
 monthly gross it read should become your salary, and a yes keeps that number, which is the
@@ -284,9 +289,12 @@ SalarySeed/
     PayslipFinding       the findings model and the one function that tiers them
     PayslipSalary        the one value the checker may hand back, and nothing else
   Features/    one folder per screen
+    Home/                  the hub: the figure, the rows, and every screen it pushes
     Onboarding/            the nine questions, led by the payslip
     Payslip/               the checker: PDF, camera and Vision extraction, then the flow
-    Shared/SupportLock     the real screen, blurred, where Grow and the Europe map live
+    Tax/                   what comes off the salary, in detail
+    Tools/                 the things to try that are not a screen of their own
+    Shared/SupportLock     the real screen, blurred, where Grow and Compare in Europe live
   Models/      SalaryStore (the single source of truth), Localization, catalogues
   Theme.swift  design tokens, the OKLCH diverging ramp, and .appFont, which is
                how every point size in the app becomes the reader's point size

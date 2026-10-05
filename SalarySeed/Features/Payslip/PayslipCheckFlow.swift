@@ -91,12 +91,6 @@ struct PayslipCheckFlow: View {
     /// inside this screen.
     var onChooseAgain: (() -> Void)?
 
-    /// Drives the push into Profile, while the checker is still a tab. Only the
-    /// tab passes one: onboarding's cover has no business offering a way into a
-    /// screen the reader has not finished filling in yet, and Home's screens
-    /// leave Profile to Home.
-    var showProfile: Binding<Bool>?
-
     private var isUpdate: Bool { chrome == .check(.update) }
 
     var body: some View {
@@ -142,14 +136,10 @@ struct PayslipCheckFlow: View {
         case .cover:
             circleButton(icon: "xmark", label: s.closeButton) { onClose?() }
         case .check(.check):
-            HStack(spacing: 4) {
-                if !isAtStart {
-                    circleButton(icon: "arrow.counterclockwise",
-                                 label: s.payslipCheckAnother) { model.restart() }
-                }
-                if let showProfile {
-                    ProfileButton { showProfile.wrappedValue = true }
-                }
+            // No way into Profile here: the hub leaves Profile to Home.
+            if !isAtStart {
+                circleButton(icon: "arrow.counterclockwise",
+                             label: s.payslipCheckAnother) { model.restart() }
             }
         case .check(.update):
             EmptyView()
@@ -175,7 +165,7 @@ struct PayslipCheckFlow: View {
     private var hasTrailingButton: Bool {
         switch chrome {
         case .cover: return true
-        case .check(.check): return !isAtStart || showProfile != nil
+        case .check(.check): return !isAtStart
         case .check(.update): return false
         }
     }
@@ -238,35 +228,6 @@ struct PayslipCheckFlow: View {
                 },
                 onGiveUp: chrome == .cover && context == nil ? onClose
                     : (isUpdate ? onTypeInstead : nil))
-        }
-    }
-}
-
-/// The checker as a tab. Owns the model, so a verdict survives a trip to
-/// another tab and back.
-///
-/// `context` and `onAccept` are handed in by `RootTabView` rather than built
-/// here, for the same reason `HomeView` used to build them: `Features/Payslip/`
-/// reads the store and never writes to it, and `SalaryStore.adopt` is a write.
-struct PayslipTabView: View {
-    @StateObject private var model = PayslipCheckModel()
-    @State private var showProfile = false
-
-    let context: PayslipContext
-    var onAccept: (PayslipSalary.GrossProposal) -> Void
-
-    /// The `NavigationStack` exists only so the profile button has somewhere to
-    /// push to. This is the one tab that never had one, because the flow is a
-    /// state machine rather than a stack and nothing in it navigates.
-    var body: some View {
-        NavigationStack {
-            PayslipCheckFlow(model: model, chrome: .check(.check),
-                             context: context, onAccept: onAccept,
-                             showProfile: $showProfile)
-                // Nothing here wants a navigation bar: the screen draws its
-                // own header, and the stack exists only to push Profile.
-                .toolbar(.hidden, for: .navigationBar)
-                .profileDestination(isPresented: $showProfile)
         }
     }
 }

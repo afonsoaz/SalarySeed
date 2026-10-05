@@ -51,12 +51,14 @@ never written to disk by the app. There is no payslip history: nothing about a
 payslip is ever saved to your phone, so there is nothing to go back and look at,
 and nothing that survives closing the app.
 
-From v1.2 the checker is a tab rather than a screen you close, so the wording
-here is narrower than it used to be and it is exact. While the app is running,
-the payslip you checked and the verdict stay in memory, so that leaving the tab
-and coming back does not throw away what you were reading. They are replaced the
-moment you check another payslip, and they are gone when the app quits. At no
-point are they written down.
+Since v1.2 the checker has not been a screen that throws its reading away when
+you close it, so the wording here is narrower than it used to be and it is
+exact. It was a tab until the app gained a home screen that opens everything;
+now you reach it from there, by checking a payslip or by updating your salary
+from one. While the app is running, the payslip you read and the verdict stay in
+memory, so that leaving the checker and coming back does not throw away what you
+were reading. They are replaced the moment you read another payslip, and they are
+gone when the app quits. At no point are they written down.
 
 The text is recognised on the device by Apple's own Vision framework, which is
 part of iOS and does not go online either.

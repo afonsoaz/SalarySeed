@@ -41,6 +41,7 @@ private struct HubDestination: View {
         case .payslipUpdate: SalaryUpdateScreen(payslip: payslip)
         case .comparePortugal: ComparePortugalView()
         case .compareEurope: EuropeView()
+        case .grow: GrowView()
         case .offer: OfferView()
         case .tools: ToolsView()
         case .profile: ProfileView()

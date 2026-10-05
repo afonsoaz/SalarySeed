@@ -118,7 +118,7 @@ struct ProfileView: View {
 
     // MARK: Support (v0.16)
 
-    /// The first thing on the tab, above even the sprout, in a paid build.
+    /// The first thing on the screen, above even the sprout, in a paid build.
     ///
     /// v1.3: THERE IS NO CARD AT ALL IN A FREE BUILD, and drawing the thank-you
     /// state instead would have been the easy mistake. `isSupporter` is forced

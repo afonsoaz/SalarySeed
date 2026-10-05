@@ -73,10 +73,12 @@
 
 	     v1.2 made the checker a tab, and this array did not change either. What
 	     changed is only how long the reading lives in MEMORY: it used to die
-	     with the cover, and it now survives a trip to another tab, until the
-	     reader checks another payslip or quits the app. Nothing about that
-	     reaches storage, which is the only thing this file is about. The
-	     sentence that has to stay true is "never written to disk", and it is.
+	     with the cover, and it now survives leaving the checker and coming
+	     back, until the reader reads another payslip or quits the app. The
+	     tab bar has since gone and the checker opens from the home screen; the
+	     lifetime did not change with it. Nothing about that reaches storage,
+	     which is the only thing this file is about. The sentence that has to
+	     stay true is "never written to disk", and it is.
 
 	     A contribution pool was built and tested and is NOT in this build. It
 	     lives on the pool-backend branch. If it ever ships, this array stops

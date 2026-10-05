@@ -35,7 +35,7 @@ struct SupportLock<Content: View>: View {
     /// One or two lines. Anything longer turns the overlay back into a page.
     let blurb: String
     /// Bounds the blurred content, and MUST be set when the lock sits inside a
-    /// scroll view rather than filling a tab.
+    /// scroll view rather than filling the screen.
     ///
     /// Found by rendering it. `MapView` wraps its whole screen in a `ScrollView`,
     /// so an unbounded lock became as tall as the European grid, and the card,
@@ -97,8 +97,8 @@ struct SupportLock<Content: View>: View {
             .frame(height: contentHeight, alignment: .top)
             .blur(radius: 6)
             .allowsHitTesting(false)
-            // Clipped after the blur, or the halo bleeds past the edges and the
-            // tab bar picks up a grey fringe.
+            // Clipped after the blur, or the halo bleeds past the edges and
+            // whatever sits beside the lock picks up a grey fringe.
             .clipped()
         } else {
             content()

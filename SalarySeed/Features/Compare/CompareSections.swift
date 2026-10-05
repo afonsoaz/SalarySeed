@@ -1,52 +1,12 @@
 import SwiftUI
 
-/// compareSeed's tab, for as long as there is a tab bar: a stack, a header with
-/// the way into Profile, and the sections below.
-struct CompareView: View {
-    @EnvironmentObject private var store: SalaryStore
-    @State private var showProfile = false
-
-    private var s: Strings { store.s }
-
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    header
-                    CompareSections()
-                }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 24)
-            }
-            .background(Theme.background)
-            .profileDestination(isPresented: $showProfile)
-        }
-    }
-
-    private var header: some View {
-        HStack(alignment: .bottom) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("compareSeed")
-                    .appFont(12)
-                    .foregroundStyle(Theme.accent)
-                Text(s.compareTitle)
-                    .appFont(22, weight: .medium)
-                    .foregroundStyle(Theme.textPrimary)
-            }
-            Spacer()
-            ProfileButton { showProfile = true }
-        }
-        .padding(.top, 8)
-    }
-}
-
 /// compareSeed: national percentile + layered "people like you" comparisons.
 /// Each filled profile signal adds a layer on top of the national number, never
 /// replacing it. Layers are honest: thin cohorts and edge results are flagged,
 /// and every number carries its source and reference year.
 ///
-/// The sections without the screen around them, so the tab and Compare in
-/// Portugal draw exactly the same thing.
+/// The sections without the screen around them. Compare in Portugal draws them
+/// under its People chip; they were the Compare tab until the hub.
 struct CompareSections: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var activeDimension: CompareDimension?

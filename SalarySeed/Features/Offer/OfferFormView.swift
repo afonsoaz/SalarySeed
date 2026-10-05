@@ -80,8 +80,10 @@ struct OfferFormView: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        // Rule 24: a pinned button in a tab has to be an inset, or the floating
-        // tab bar sits over it and wins its taps.
+        // Rule 24: a pinned button is an inset, not a sibling under the scroll
+        // view. v1.2 found the sibling under iOS 26's floating tab bar, winning
+        // none of its taps; there is no tab bar now, and the inset is still the
+        // shape the system understands for anything over the bottom edge.
         .safeAreaInset(edge: .bottom) {
             PrimaryButton(title: s.offerCompareButton) { compare() }
                 .opacity(amountValue == nil ? 0.4 : 1)

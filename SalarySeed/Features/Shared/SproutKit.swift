@@ -241,8 +241,18 @@ struct RollingEuro: View {
             .contentTransition(.numericText(value: shown))
             .minimumScaleFactor(0.6)
             .lineLimit(1)
+            // Counts up from zero ONCE, the first time the figure appears, and
+            // after that rolls only from the old value to a new one.
+            //
+            // It used to count up from zero on every appearance. While Home was
+            // a tab that meant every switch back to it; with Home as the hub it
+            // would mean every return from every screen, and a figure that
+            // re-performs itself each time the reader comes back stops reading
+            // as a number. A return shows the figure as it is, and if it changed
+            // while Home was covered, the roll goes from what it was to what it
+            // is now, which is the confirmation an update should get.
             .onAppear {
-                shown = 0
+                guard shown != value else { return }
                 withAnimation(.easeOut(duration: 0.8)) { shown = value }
             }
             .onChange(of: value) { _, newValue in

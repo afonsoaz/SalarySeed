@@ -69,8 +69,9 @@ final class SalaryStore: ObservableObject {
     @Published var hasOnboarded: Bool { didSet { save() } }
     /// v1.2: the one place a figure read off a payslip becomes the salary.
     ///
-    /// Called from `HomeView`, never from inside `Features/Payslip/`, which goes
-    /// on reading the store and never writing to it. The proposal has already
+    /// Called from Home's payslip screens (`PayslipCheckScreen`, in
+    /// Features/Home), never from inside `Features/Payslip/`, which goes on
+    /// reading the store and never writing to it. The proposal has already
     /// been through `PayslipSalary`, which refuses rather than guesses, and the
     /// reader has already seen the number and tapped to keep it.
     ///
@@ -147,7 +148,7 @@ final class SalaryStore: ObservableObject {
     /// screen but the offer's, so it cannot leak into the reader's own figures.
     @Published var offer: OfferTerms? { didSet { save() } }
 
-    // v0.3: language. Follows the device by default, can be changed in the profile tab.
+    // v0.3: language. Follows the device by default, can be changed in Profile.
     @Published var language: AppLanguage { didSet { save() } }
 
     // MARK: v0.16 accent
@@ -172,21 +173,18 @@ final class SalaryStore: ObservableObject {
     /// The Grow scenario. It has NO `didSet { save() }` and is absent from
     /// `save()` on purpose. Grow explores rather than records, in the v0.9.4
     /// sense, and a hypothetical that survived a relaunch would start behaving
-    /// like a stored fact about the user. It does survive swiping between tabs,
-    /// which is the whole reason it lives here instead of inside the view.
+    /// like a stored fact about the user. It does survive leaving Grow and
+    /// coming back, which is the whole reason it lives here instead of inside
+    /// a view that is rebuilt on every visit.
     @Published var growScenario = GrowthEngine.Scenario()
-
-    /// Which tab is showing. The paged TabView and the custom bar both bind to
-    /// this, so the selection has one source of truth rather than a private copy
-    /// in the view that the bar can disagree with. It also leaves the door open
-    /// for one screen to send the user to another; nothing does that today,
-    /// since v0.10.1 took away the Home card that used to jump to Grow.
-    @Published var selectedTab: Int = 0
 
     /// Where the reader is, below Home. See `HubRoute`.
     ///
-    /// Session state like the two above: it is the reader's place in the app
-    /// right now, so it is never saved, and a relaunch opens on Home.
+    /// It replaced the selected tab when the hub replaced the tab bar, and it
+    /// lives here for the reason that did: one source of truth for where the
+    /// reader is, so any screen can send them somewhere. Session state like the
+    /// scenario above: it is the reader's place in the app right now, so it is
+    /// never saved, and a relaunch opens on Home.
     @Published var path: [HubRoute] = []
 
     /// The profile questions Compare was told "not now" about this session.
