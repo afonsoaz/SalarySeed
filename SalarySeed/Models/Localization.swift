@@ -1741,4 +1741,299 @@ struct Strings {
     /// name that says where it belongs.
     var closeButton: String { t("Close", "Fechar") }
 
+    // MARK: v1.5 offerSeed
+    //
+    // A job offer put next to the job the reader has. Everything about the
+    // person stays as the profile has it and only the job changes. Pay is
+    // compared on a year, the tax is the settled tax, and staying is Grow's own
+    // model. Numbers that come from the data (the year of the tables, the last
+    // tenure band, the horizons) are passed in, never written into a sentence.
+
+    // The way in, on Home under "What if…". No figures, so it cannot disagree
+    // with the screen it opens.
+    var offerNudgeTitle: String { t("Got a job offer?", "Tens uma proposta de emprego?") }
+    var offerNudgeSub: String {
+        t("Put it next to the job you have: what reaches you, the tax, other people, and staying instead.",
+          "Põe-na ao lado do emprego que tens: o que te chega, os impostos, as outras pessoas e ficar onde estás.")
+    }
+    var offerNudgeKeptTitle: String { t("Your job offer", "A tua proposta de emprego") }
+    var offerNudgeKeptSub: String {
+        t("Side by side with the job you have.", "Lado a lado com o emprego que tens.")
+    }
+
+    // The form.
+    var offerFormTitle: String { t("The offer", "A proposta") }
+    var offerFormSub: String {
+        t("Type what the offer says. Everything about you stays as in your profile: household, IRS Jovem, age and education.",
+          "Escreve o que diz a proposta. Tudo o que é sobre ti fica como no teu perfil: agregado, IRS Jovem, idade e escolaridade.")
+    }
+    var offerAmountNeeded: String {
+        t("Type the offer's pay to carry on.", "Escreve o salário da proposta para continuar.")
+    }
+    func offerYearlyNote(_ months: Int) -> String {
+        t("Total for the year, split across \(months) payments.",
+          "Total do ano, dividido por \(months) pagamentos.")
+    }
+    var offerPlaceLabel: String { t("Where the job is", "Onde é o emprego") }
+    var offerPlaceTitle: String { t("Where is the job?", "Onde é o emprego?") }
+    var offerPlaceNone: String {
+        t("Not set, so taxed as the mainland", "Por definir, por isso com os impostos do Continente")
+    }
+    var offerSectorLabel: String { t("Sector", "Setor") }
+    var offerSectorNone: String { t("Not set", "Por definir") }
+    var offerAllowanceNote: String {
+        t("On top of the salary, straight to net. Leave it empty if the offer does not mention one.",
+          "À parte do salário, direto no líquido. Deixa em branco se a proposta não fala nisso.")
+    }
+    var offerBonusLabel: String { t("Yearly bonus (optional)", "Prémio anual (opcional)") }
+    var offerBonusNote: String {
+        t("Shown, never counted: a bonus is not promised pay.",
+          "Fica à vista, mas não entra nas contas: um prémio não é salário garantido.")
+    }
+    var offerCompareButton: String { t("Compare", "Comparar") }
+
+    // The result.
+    var offerResultTitle: String { t("The offer, side by side", "A proposta, lado a lado") }
+    func offerSummary(_ amount: String, payments: Int, gross: Bool, yearly: Bool) -> String {
+        switch (gross, yearly) {
+        case (true, false):
+            return t("\(amount) gross a month, \(payments) payments",
+                     "\(amount) brutos por mês, \(payments) pagamentos")
+        case (false, false):
+            return t("\(amount) net a month, \(payments) payments",
+                     "\(amount) líquidos por mês, \(payments) pagamentos")
+        case (true, true):
+            return t("\(amount) gross a year, in \(payments) payments",
+                     "\(amount) brutos por ano, em \(payments) pagamentos")
+        case (false, true):
+            return t("\(amount) net a year, in \(payments) payments",
+                     "\(amount) líquidos por ano, em \(payments) pagamentos")
+        }
+    }
+    var offerEdit: String { t("Change the offer", "Alterar a proposta") }
+    var offerRemove: String { t("Remove this offer", "Apagar esta proposta") }
+    var offerRemoveConfirm: String {
+        t("Remove this offer from your phone?", "Apagar esta proposta do telemóvel?")
+    }
+    var offerRemoveYes: String { t("Remove it", "Apagar") }
+    var offerKeptNote: String {
+        t("This offer is kept on your phone until you remove it or enter another. It never leaves it.",
+          "Esta proposta fica guardada no teu telemóvel até a apagares ou escreveres outra. Nunca sai de lá.")
+    }
+
+    // a. What reaches you.
+    var offerReachesTitle: String { t("What reaches you", "O que te chega") }
+    var offerNowLabel: String { t("Now", "Agora") }
+    var offerOfferLabel: String { t("Offer", "Proposta") }
+    func offerHeroCaption(_ per: String, more: Bool) -> String {
+        if more { return t("more per \(per) with the offer", "a mais por \(per) com a proposta") }
+        return t("less per \(per) with the offer", "a menos por \(per) com a proposta")
+    }
+    func offerHeroSame(_ per: String) -> String {
+        t("about the same per \(per)", "praticamente o mesmo por \(per)")
+    }
+    func offerHeroVoice(_ amount: String, per: String, more: Bool) -> String {
+        if more { return t("\(amount) more per \(per) with the offer.", "\(amount) a mais por \(per) com a proposta.") }
+        return t("\(amount) less per \(per) with the offer.", "\(amount) a menos por \(per) com a proposta.")
+    }
+    var offerColumnNet: String { t("net", "líquido") }
+    func offerColumnWithAllowance(_ amount: String) -> String {
+        t("including \(amount) of allowance", "incluindo \(amount) de subsídio")
+    }
+    func offerGrossLine(_ difference: String, per: String) -> String {
+        t("Gross: \(difference) per \(per).", "Bruto: \(difference) por \(per).")
+    }
+    func offerPeriodCaption(_ mode: Int) -> String? {
+        switch mode {
+        case 0: return t("Each job's yearly pay spread over 12 months, so the two compare like for like.",
+                         "O ano de cada emprego repartido por 12 meses, para os dois se compararem de igual para igual.")
+        case 1: return t("Each job's yearly pay spread over 14 payments, so the two compare like for like.",
+                         "O ano de cada emprego repartido por 14 pagamentos, para os dois se compararem de igual para igual.")
+        default: return nil
+        }
+    }
+
+    // b. Where the difference goes.
+    var offerTaxTitle: String { t("Where the difference goes", "Para onde vai a diferença") }
+    var offerTaxHint: String { t("a year", "por ano") }
+    var offerSSLabel: String { t("Social Security", "Segurança Social") }
+    var offerIRSLabel: String { t("IRS, once settled", "IRS, depois do acerto") }
+    var offerAfterTaxLabel: String { t("Left after tax", "Fica depois dos impostos") }
+    var offerEmployerLabel: String { t("What it costs the employer", "Quanto custa à empresa") }
+    func offerPairVoice(_ label: String, now: String, offer: String) -> String {
+        t("\(label): now \(now), with the offer \(offer).", "\(label): agora \(now), com a proposta \(offer).")
+    }
+    func offerKeep(_ extra: String, kept: String, cents: Int) -> String {
+        t("Of the extra \(extra) gross a year, you keep \(kept): \(cents) cents of every extra euro.",
+          "Dos \(extra) brutos a mais por ano, ficas com \(kept): \(cents) cêntimos de cada euro a mais.")
+    }
+    func offerKeepLess(_ less: String, felt: String, cents: Int) -> String {
+        t("Of the \(less) less gross a year, you would feel \(felt): \(cents) cents of every euro less.",
+          "Dos \(less) brutos a menos por ano, sentias \(felt): \(cents) cêntimos de cada euro a menos.")
+    }
+    var offerTaxNote: String {
+        t("Monthly figures are what lands in your account. The yearly IRS is what you owe once it is settled, so it is the real tax and not the monthly advance on it.",
+          "Os valores mensais são o que entra na tua conta. O IRS do ano é o que deves depois do acerto, por isso é o imposto real e não o adiantamento mensal.")
+    }
+    func offerTablesDiffer(now: String, offer: String) -> String {
+        t("The two jobs are taxed on different tables, \(now) now and \(offer) with the offer, so part of the difference is the place and not the pay.",
+          "Os dois empregos são tributados por tabelas diferentes, \(now) agora e \(offer) com a proposta, por isso parte da diferença é o local e não o salário.")
+    }
+    var offerPlaceAssumed: String {
+        t("The offer has no place set, so it is taxed on the mainland table, the highest of the three.",
+          "A proposta não tem local, por isso é tributada pela tabela do Continente, a mais alta das três.")
+    }
+    func offerAllowanceOffer(_ monthly: String, contributions: String) -> String {
+        t("\(monthly) a month of this offer is allowance: no IRS, but no Social Security either. Paid as salary, it would add \(contributions) a year to the record your pension, sick pay and unemployment come from.",
+          "\(monthly) por mês desta proposta são subsídio: sem IRS, mas também sem Segurança Social. Pago como salário, juntaria \(contributions) por ano ao registo de onde vêm a tua reforma, a baixa e o subsídio de desemprego.")
+    }
+    func offerAllowanceNow(_ monthly: String, contributions: String) -> String {
+        t("\(monthly) a month of what you have now is allowance: no IRS, but no Social Security either. Paid as salary, it would add \(contributions) a year to the record your pension, sick pay and unemployment come from.",
+          "\(monthly) por mês do que tens agora são subsídio: sem IRS, mas também sem Segurança Social. Pago como salário, juntaria \(contributions) por ano ao registo de onde vêm a tua reforma, a baixa e o subsídio de desemprego.")
+    }
+    var offerNoAllowanceCounted: String {
+        t("No meal allowance or ajudas de custo counted for the offer.",
+          "Não foi contado subsídio de alimentação nem ajudas de custo na proposta.")
+    }
+
+    // c. Against other people.
+    var offerPeersTitle: String { t("Against other people", "Comparado com outras pessoas") }
+    var offerPeersHint: String { t("out of 100, how many earn less", "em cada 100, quantos ganham menos") }
+    var offerRowNationalSub: String {
+        t("Everyone in work, gross against gross.", "Todos os trabalhadores, bruto contra bruto.")
+    }
+    var offerRowSectorTitle: String { t("Everyone in the sector", "Todos no setor") }
+    func offerRowSectorSub(_ sector: String) -> String {
+        t("\(sector), whatever their time at the company.", "\(sector), seja qual for o tempo na empresa.")
+    }
+    func offerRowSectorSubTwo(now: String, offer: String) -> String {
+        t("\(now) now, \(offer) with the offer, whatever their time at the company.",
+          "\(now) agora, \(offer) com a proposta, seja qual for o tempo na empresa.")
+    }
+    var offerRowRegionTitle: String { t("Everyone in the region", "Todos na região") }
+    /// Where one side has no cohort: an island, or a sector never given. A lone
+    /// number would leave the reader to guess which side it belongs to.
+    var offerNoFigure: String { t("no figure", "sem valor") }
+    func offerRowRegionSubTwo(now: String, offer: String) -> String {
+        t("\(now) now, \(offer) with the offer.", "\(now) agora, \(offer) com a proposta.")
+    }
+    var offerRowAgeTitle: String { t("People your age", "Pessoas da tua idade") }
+    var offerRowEducationTitle: String { t("People with your education", "Pessoas com a tua escolaridade") }
+    func offerRowSameGroupSub(_ group: String) -> String {
+        t("\(group), the same group for both.", "\(group), o mesmo grupo para os dois.")
+    }
+    func offerRowVoice(_ title: String, now: String, offer: String) -> String {
+        t("\(title). Now \(now) out of 100, with the offer \(offer).",
+          "\(title). Agora \(now) em 100, com a proposta \(offer).")
+    }
+    /// One side only: an island has no regional figure, and a reader who gave
+    /// no sector has none to be placed in.
+    func offerRowVoiceOne(_ title: String, value: String, isOffer: Bool) -> String {
+        if isOffer {
+            return t("\(title). With the offer \(value) out of 100.", "\(title). Com a proposta \(value) em 100.")
+        }
+        return t("\(title). Now \(value) out of 100.", "\(title). Agora \(value) em 100.")
+    }
+    var offerSectorWhy: String {
+        t("At a new job your time there starts at zero, and the people under a year in are mostly in their first job. Comparing against them would flatter any offer, so each salary is put against everyone in its sector.",
+          "Num emprego novo o teu tempo lá começa do zero, e quem está há menos de um ano é quase sempre gente no primeiro emprego. Comparar com eles favorecia qualquer proposta, por isso cada salário é posto contra todos no seu setor.")
+    }
+    var offerSchedulesDiffer: String {
+        t("Percentiles compare one month's gross, as the published tables do, so the same year's pay ranks higher paid in 12 than in 14.",
+          "Os percentis comparam o bruto de um mês, como as tabelas publicadas, por isso o mesmo salário anual fica mais acima pago em 12 do que em 14.")
+    }
+    var offerIslandNote: String {
+        t("The Quadros de Pessoal cover the mainland only, so an island has no regional figure, and every comparison here is a mainland one.",
+          "Os Quadros de Pessoal só cobrem o continente, por isso uma ilha não tem valor regional, e todas as comparações aqui são do continente.")
+    }
+
+    // d. If you stay instead.
+    var offerStayTitle: String { t("If you stay instead", "Se ficares onde estás") }
+    func offerStayHint(_ per: String) -> String { t("gross, per \(per)", "bruto, por \(per)") }
+    var offerStayIntro: String {
+        t("Staying, from what your sector pays at each length of time at one employer. The offer, from its first month.",
+          "Ficar, a partir do que o teu setor paga consoante o tempo na mesma empresa. A proposta, desde o primeiro mês.")
+    }
+    var offerStayToday: String { t("Today", "Hoje") }
+    func offerStayIn(_ years: Int) -> String { t("In \(years) years", "Daqui a \(years) anos") }
+    var offerStayingLabel: String { t("Staying", "Se ficares") }
+    func offerStayTotal(_ amount: String, years: Int, offerAhead: Bool) -> String {
+        if offerAhead {
+            return t("Over those \(years) years the offer pays \(amount) more in all.",
+                     "Nesses \(years) anos a proposta paga \(amount) a mais no total.")
+        }
+        return t("Over those \(years) years staying pays \(amount) more in all.",
+                 "Nesses \(years) anos ficar paga \(amount) a mais no total.")
+    }
+    func offerStayRowVoice(_ when: String, staying: String, offer: String) -> String {
+        t("\(when): staying \(staying), the offer \(offer).", "\(when): se ficares, \(staying); a proposta, \(offer).")
+    }
+    func offerCatchUp(_ years: Int) -> String {
+        if years == 1 {
+            return t("Staying would reach this offer's pay after a year.",
+                     "Se ficares, chegas ao salário desta proposta ao fim de um ano.")
+        }
+        return t("Staying would reach this offer's pay after \(years) years.",
+                 "Se ficares, chegas ao salário desta proposta ao fim de \(years) anos.")
+    }
+    func offerNoCatchUp(_ years: Int) -> String {
+        t("Staying would not reach this offer's pay within \(years) years.",
+          "Se ficares, não chegas ao salário desta proposta em \(years) anos.")
+    }
+    var offerPaysLess: String {
+        t("This offer pays less over a year than you earn now.",
+          "Esta proposta paga menos por ano do que ganhas agora.")
+    }
+    var offerPaysSame: String {
+        t("This offer pays about what you earn now over a year.",
+          "Esta proposta paga, por ano, praticamente o mesmo que ganhas agora.")
+    }
+    func offerFlatFrom(_ years: Int, top: Int) -> String {
+        if years == 1 {
+            return t("Your sector's figures stop rising at \(top) years at one company, which you reach next year. From then on, staying stays put.",
+                     "Os valores do teu setor deixam de subir aos \(top) anos na mesma empresa, a que chegas para o ano. A partir daí, ficar não sobe mais.")
+        }
+        return t("Your sector's figures stop rising at \(top) years at one company, which you reach in \(years) years. From then on, staying stays put.",
+                 "Os valores do teu setor deixam de subir aos \(top) anos na mesma empresa, a que chegas daqui a \(years) anos. A partir daí, ficar não sobe mais.")
+    }
+    func offerFlatNow(_ top: Int) -> String {
+        t("Your sector's figures stop rising at \(top) years at one company, and you are past that, so staying keeps your pay where it is.",
+          "Os valores do teu setor deixam de subir aos \(top) anos na mesma empresa, e já passaste isso, por isso ficar mantém o teu salário onde está.")
+    }
+    var offerStayFalls: String {
+        t("In this sector pay does not rise across every band of time at one company, so staying can mean a lower figure later. That is what the survey found, not a guess.",
+          "Neste setor o salário não sobe em todos os escalões de antiguidade, por isso ficar pode dar um valor mais baixo mais tarde. Foi o que o inquérito encontrou, não é um palpite.")
+    }
+    var offerStayAssumptions: String {
+        t("In today's money, with no pay rises across the economy on either side. The offer stays at its starting pay, because nothing published says what happens to pay after a move. Grow uses the same rule.",
+          "Em dinheiro de hoje, sem aumentos gerais de nenhum dos lados. A proposta fica no salário de entrada, porque nada do que se publica diz o que acontece ao salário depois de uma mudança. O Crescer usa a mesma regra.")
+    }
+    var offerStayEmptySub: String {
+        t("Your sector and how long you have been at your employer. Staying is worked out from the table those two answers point to, so without them there is nothing honest to show.",
+          "O teu setor e há quanto tempo estás na empresa. Ficar calcula-se a partir da tabela para onde essas duas respostas apontam, por isso sem elas não há nada de honesto para mostrar.")
+    }
+
+    // e. What this leaves out.
+    var offerLeavesOutTitle: String { t("What this leaves out", "O que isto deixa de fora") }
+    func offerLeavesOutItems(year: Int) -> [String] {
+        [
+            t("Benefits in kind, like health insurance, a car or a phone. They are worth something, and nothing here can say how much.",
+              "Benefícios em espécie, como seguro de saúde, carro ou telemóvel. Valem alguma coisa, e nada aqui consegue dizer quanto."),
+            t("The tax-free limit on meal allowance. All of it is treated as tax-free.",
+              "O limite de isenção do subsídio de alimentação. É tratado todo como isento."),
+            t("Any year but \(year). These are the \(year) tables.",
+              "Outros anos além de \(year). Estas são as tabelas de \(year)."),
+            t("A different household. Yours is the same on both sides.",
+              "Um agregado diferente. O teu é o mesmo dos dois lados."),
+        ]
+    }
+    func offerBonusShown(_ amount: String) -> String {
+        t("The offer's bonus, \(amount) a year, is not counted anywhere above: it is not promised pay.",
+          "O prémio da proposta, \(amount) por ano, não entra em nenhuma das contas acima: não é salário garantido.")
+    }
+    func offerDisclaimer(_ year: Int) -> String {
+        t("Estimates on the \(year) tax tables. Not official tax advice.",
+          "Estimativas com as tabelas fiscais de \(year). Não é aconselhamento fiscal oficial.")
+    }
+
 }

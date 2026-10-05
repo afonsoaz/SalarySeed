@@ -144,6 +144,15 @@ final class SalaryStore: ObservableObject {
     /// follows different rules and the engine's 2026 tables are verified for
     /// regular salary. Shown as a separate line, never folded into the estimate.
     @Published var variableAnnual: Double? { didSet { save() } }
+
+    // MARK: v1.5 the job offer
+
+    /// The last job offer the reader entered, or nil. Kept until it is removed
+    /// or replaced; see `OfferTerms` for why an offer may be kept when Grow's
+    /// scenario may not. Under its own `offer.*` keys and never read by any
+    /// screen but the offer's, so it cannot leak into the reader's own figures.
+    @Published var offer: OfferTerms? { didSet { save() } }
+
     // v0.3: language. Follows the device by default, can be changed in the profile tab.
     @Published var language: AppLanguage { didSet { save() } }
 
@@ -223,6 +232,18 @@ final class SalaryStore: ObservableObject {
         weeklyHours = defaults.object(forKey: "profile.weeklyHours") as? Int
         gender = Gender(rawValue: defaults.string(forKey: "profile.gender") ?? "")
         variableAnnual = defaults.object(forKey: "profile.variableAnnual") as? Double
+        let offerAmount = defaults.double(forKey: "offer.amount")
+        offer = offerAmount > 0
+            ? OfferTerms(
+                amount: offerAmount,
+                kind: AmountKind(rawValue: defaults.string(forKey: "offer.kind") ?? "") ?? .gross,
+                schedule: PaySchedule(rawValue: defaults.string(forKey: "offer.schedule") ?? "") ?? .fourteen,
+                inputYearly: defaults.bool(forKey: "offer.inputYearly"),
+                ajudasMonthly: defaults.double(forKey: "offer.ajudasMonthly"),
+                sector: Sector(rawValue: defaults.string(forKey: "offer.sector") ?? ""),
+                concelhoID: defaults.string(forKey: "offer.concelho"),
+                bonusAnnual: defaults.object(forKey: "offer.bonusAnnual") as? Double)
+            : nil
         language = AppLanguage(rawValue: defaults.string(forKey: "language") ?? "") ?? .auto
         accent = AccentTheme(rawValue: defaults.string(forKey: "accent") ?? "") ?? .default
         // The static mirror has to be right before the first view is built, so it
@@ -271,7 +292,27 @@ final class SalaryStore: ObservableObject {
         setInt(weeklyHours, forKey: "profile.weeklyHours")
         if let variableAnnual { defaults.set(variableAnnual, forKey: "profile.variableAnnual") }
         else { defaults.removeObject(forKey: "profile.variableAnnual") }
+        if let offer {
+            defaults.set(offer.amount, forKey: "offer.amount")
+            defaults.set(offer.kind.rawValue, forKey: "offer.kind")
+            defaults.set(offer.schedule.rawValue, forKey: "offer.schedule")
+            defaults.set(offer.inputYearly, forKey: "offer.inputYearly")
+            defaults.set(offer.ajudasMonthly, forKey: "offer.ajudasMonthly")
+            setOptional(offer.sector?.rawValue, forKey: "offer.sector")
+            setOptional(offer.concelhoID, forKey: "offer.concelho")
+            if let bonus = offer.bonusAnnual { defaults.set(bonus, forKey: "offer.bonusAnnual") }
+            else { defaults.removeObject(forKey: "offer.bonusAnnual") }
+        } else {
+            // Removing the offer removes every trace of it, not just the amount
+            // that `init` happens to test for.
+            for key in Self.offerKeys { defaults.removeObject(forKey: key) }
+        }
     }
+
+    private static let offerKeys = [
+        "offer.amount", "offer.kind", "offer.schedule", "offer.inputYearly",
+        "offer.ajudasMonthly", "offer.sector", "offer.concelho", "offer.bonusAnnual",
+    ]
 
     private func setOptional(_ value: String?, forKey key: String) {
         if let value { defaults.set(value, forKey: key) } else { defaults.removeObject(forKey: key) }

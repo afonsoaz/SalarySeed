@@ -55,6 +55,9 @@ struct HomeView: View {
     @State private var showFutureSeed = false
     // v0.9.4
     @State private var showExplorer = false
+    /// v1.5: the offer screen, pushed like Profile so its own picker can be a
+    /// sheet without stacking one sheet on another.
+    @State private var showOffer = false
     /// v1.2: Profile is no longer a tab, and this is how it is reached. A push
     /// rather than a sheet, because it is a destination with ten sheets of its
     /// own hanging off it and a sheet on a sheet is a stack of cards.
@@ -136,6 +139,7 @@ struct HomeView: View {
             .sheet(isPresented: $showFutureSeed) { FutureSeedView() }
             .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
             .profileDestination(isPresented: $showProfile)
+            .navigationDestination(isPresented: $showOffer) { OfferView() }
             .salaryChangeConfirmation(
                 isPresented: $askingSalaryChange,
                 s: s,
@@ -699,6 +703,16 @@ struct HomeView: View {
             // v0.9.4: trying a number is the most common "what if" of all, so it
             // leads the section and is the only card that carries the accent.
             explorerButton
+            // v1.5: a job offer is the most consequential "what if" of all, so it
+            // sits right under trying a number. Not accented, for the reason the
+            // explorer is the only card that is. NO FIGURES ON IT, even once an
+            // offer is kept: a card that names a number can disagree with the
+            // screen it opens, and one that only names the offer cannot.
+            NudgeCard(
+                icon: "briefcase.circle.fill",
+                title: store.offer == nil ? s.offerNudgeTitle : s.offerNudgeKeptTitle,
+                subtitle: store.offer == nil ? s.offerNudgeSub : s.offerNudgeKeptSub
+            ) { showOffer = true }
             // v0.10.1: no card pointing at Grow. The tab bar already points at
             // Grow, and it is tinted to say so, so a card doing the same job here
             // was a third thing on one screen asking to be tapped.
@@ -839,6 +853,9 @@ struct NudgeCard: View {
                 Image(systemName: icon)
                     .appFont(26)
                     .foregroundStyle(Theme.accent)
+                // Rule 27, on the whole column: the title wraps too at an
+                // accessibility size, and was centred under a left-aligned
+                // subtitle until v1.5 put a second card on this component.
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
                         .appFont(14, weight: .medium)
@@ -846,8 +863,8 @@ struct NudgeCard: View {
                     Text(subtitle)
                         .appFont(12)
                         .foregroundStyle(Theme.textSecondary)
-                        .multilineTextAlignment(.leading)
                 }
+                .multilineTextAlignment(.leading)
                 Spacer()
                 Image(systemName: "chevron.right")
                     .appFont(12)

@@ -1,6 +1,6 @@
 # SalarySeed privacy policy
 
-*Last updated: 30 August 2026. Applies to SalarySeed v1.1 for iOS.*
+*Last updated: 4 October 2026. Applies to SalarySeed v1.5 for iOS.*
 
 ## The whole of it
 
@@ -19,6 +19,12 @@ and how you are paid, your allowances, your município, your sector, job, time a
 your employer, age band, education and gender if you chose to give them, your
 household situation for the tax calculation, your name if you entered one, and
 your language and colour preferences.
+
+If you compare a job offer, the last one you entered is kept there too: its pay,
+how it is paid, its allowance, and its sector and município. It stays until you
+remove it or enter another, and like everything else here it never leaves your
+phone. Nothing else about the offer is kept, and the comparison itself is worked
+out again each time rather than saved.
 
 All of it is deleted when you delete the app.
 

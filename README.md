@@ -17,7 +17,7 @@ the phone, because the app has no networking code at all.
   <img src="docs/img/map.png" width="24%" alt="A district choropleth of what your sector pays">
 </p>
 
-SwiftUI, iOS 17, no dependencies and no backend. 76 Swift files, and the tax and payslip
+SwiftUI, iOS 17, no dependencies and no backend. 82 Swift files, and the tax and payslip
 engines are a quarter of them. Built for the App Store, not yet submitted.
 
 If you only have a minute, the three parts worth reading about are:
@@ -42,6 +42,18 @@ If you only have a minute, the three parts worth reading about are:
 The sixth thing is not a tab. **Profile** holds the inputs behind all of it, each with what
 it unlocks. It is reached from the top of Home, because a native iPhone tab bar shows five
 items and the checker earned one of them.
+
+Nor is the seventh. **A job offer** goes in from Home, under "What if…", and is put next to
+the job you have in the order the questions arrive: what reaches you each month, where the
+difference goes in tax, where each sits against other people, and what staying where you are
+would pay at 5, 10 and 20 years. It is a different job and the same person, so the household,
+IRS Jovem, age and education are yours on both sides. Pay is compared on a year, because 12
+and 14 payments make two monthly figures incomparable, and the tax is the IRS you owe once
+it is settled rather than the monthly advance on it. Each salary is placed against everyone
+in its own sector, never against the under-a-year tenure band, which is mostly first jobs
+and would flatter any offer. Staying is Grow's own model, and the offer stays at its
+starting pay, because nothing published says what happens to pay after a move. The last
+offer is kept on the phone until you remove it, and it never reaches any other screen.
 
 Before any of that there are nine questions, and the first one offers to read a payslip
 rather than asking you to type a number, because the number is on a document most people
@@ -186,8 +198,17 @@ python3 tools/verify_tax_engine.py        # must pass before any release
 python3 tools/verify_payslip_reader.py    # must pass before any release
 python3 tools/dump_copy.py --verify       # must pass before any release
 python3 tools/audit_layout.py             # should print "0 places to look at"
+tools/offer_probe/build.sh && .build/offer_probe   # must pass before any release
 tools/payslip_probe/build.sh              # then: .build/payslip_probe <file.pdf|.png>
 ```
+
+The offer comparison computes nothing of its own, so what can break is the plumbing
+between four engines, and [`tools/offer_probe`](tools/offer_probe) compiles them unmodified
+and sweeps 142,272 offers for the invariants that must hold whatever the input: an offer
+identical to your salary differs in nothing, a higher offer never reads worse, staying
+matches what Grow draws to the cent, and five years always crosses a tenure band for
+anybody under twenty. It was checked the other way round too, against three deliberately
+broken copies of the engine, and caught all three.
 
 Two of those are about the words and the layout rather than the arithmetic.
 `dump_copy.py` regenerates every copy pair in both languages straight out of

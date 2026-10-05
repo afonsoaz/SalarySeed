@@ -7,7 +7,7 @@ grouped by the screen it belongs to.
 Editing this file changes nothing on its own; it is here to be read and marked up,
 and the edits get applied back to the Swift source afterwards.
 
-- **610** string pairs.
+- **710** string pairs.
 - `\(name)` is a value dropped in at runtime. It has to survive a rewrite,
   and it can move within the sentence.
 - `\n` is a deliberate line break.
@@ -3180,5 +3180,509 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 
 - **EN** `Close`
 - **PT** `Fechar`
+
+---
+
+## v1.5 offerSeed
+
+### `offerNudgeTitle`
+
+- **EN** `Got a job offer?`
+- **PT** `Tens uma proposta de emprego?`
+
+### `offerNudgeSub`
+
+- **EN** `Put it next to the job you have: what reaches you, the tax, other people, and staying instead.`
+- **PT** `Põe-na ao lado do emprego que tens: o que te chega, os impostos, as outras pessoas e ficar onde estás.`
+
+### `offerNudgeKeptTitle`
+
+- **EN** `Your job offer`
+- **PT** `A tua proposta de emprego`
+
+### `offerNudgeKeptSub`
+
+- **EN** `Side by side with the job you have.`
+- **PT** `Lado a lado com o emprego que tens.`
+
+### `offerFormTitle`
+
+- **EN** `The offer`
+- **PT** `A proposta`
+
+### `offerFormSub`
+
+- **EN** `Type what the offer says. Everything about you stays as in your profile: household, IRS Jovem, age and education.`
+- **PT** `Escreve o que diz a proposta. Tudo o que é sobre ti fica como no teu perfil: agregado, IRS Jovem, idade e escolaridade.`
+
+### `offerAmountNeeded`
+
+- **EN** `Type the offer's pay to carry on.`
+- **PT** `Escreve o salário da proposta para continuar.`
+
+### `offerYearlyNote`
+
+- **EN** `Total for the year, split across \(months) payments.`
+- **PT** `Total do ano, dividido por \(months) pagamentos.`
+
+### `offerPlaceLabel`
+
+- **EN** `Where the job is`
+- **PT** `Onde é o emprego`
+
+### `offerPlaceTitle`
+
+- **EN** `Where is the job?`
+- **PT** `Onde é o emprego?`
+
+### `offerPlaceNone`
+
+- **EN** `Not set, so taxed as the mainland`
+- **PT** `Por definir, por isso com os impostos do Continente`
+
+### `offerSectorLabel`
+
+- **EN** `Sector`
+- **PT** `Setor`
+
+### `offerSectorNone`
+
+- **EN** `Not set`
+- **PT** `Por definir`
+
+### `offerAllowanceNote`
+
+- **EN** `On top of the salary, straight to net. Leave it empty if the offer does not mention one.`
+- **PT** `À parte do salário, direto no líquido. Deixa em branco se a proposta não fala nisso.`
+
+### `offerBonusLabel`
+
+- **EN** `Yearly bonus (optional)`
+- **PT** `Prémio anual (opcional)`
+
+### `offerBonusNote`
+
+- **EN** `Shown, never counted: a bonus is not promised pay.`
+- **PT** `Fica à vista, mas não entra nas contas: um prémio não é salário garantido.`
+
+### `offerCompareButton`
+
+- **EN** `Compare`
+- **PT** `Comparar`
+
+### `offerResultTitle`
+
+- **EN** `The offer, side by side`
+- **PT** `A proposta, lado a lado`
+
+### `offerSummary[0]`
+
+- **EN** `\(amount) gross a month, \(payments) payments`
+- **PT** `\(amount) brutos por mês, \(payments) pagamentos`
+
+### `offerSummary[1]`
+
+- **EN** `\(amount) net a month, \(payments) payments`
+- **PT** `\(amount) líquidos por mês, \(payments) pagamentos`
+
+### `offerSummary[2]`
+
+- **EN** `\(amount) gross a year, in \(payments) payments`
+- **PT** `\(amount) brutos por ano, em \(payments) pagamentos`
+
+### `offerSummary[3]`
+
+- **EN** `\(amount) net a year, in \(payments) payments`
+- **PT** `\(amount) líquidos por ano, em \(payments) pagamentos`
+
+### `offerEdit`
+
+- **EN** `Change the offer`
+- **PT** `Alterar a proposta`
+
+### `offerRemove`
+
+- **EN** `Remove this offer`
+- **PT** `Apagar esta proposta`
+
+### `offerRemoveConfirm`
+
+- **EN** `Remove this offer from your phone?`
+- **PT** `Apagar esta proposta do telemóvel?`
+
+### `offerRemoveYes`
+
+- **EN** `Remove it`
+- **PT** `Apagar`
+
+### `offerKeptNote`
+
+- **EN** `This offer is kept on your phone until you remove it or enter another. It never leaves it.`
+- **PT** `Esta proposta fica guardada no teu telemóvel até a apagares ou escreveres outra. Nunca sai de lá.`
+
+### `offerReachesTitle`
+
+- **EN** `What reaches you`
+- **PT** `O que te chega`
+
+### `offerNowLabel`
+
+- **EN** `Now`
+- **PT** `Agora`
+
+### `offerOfferLabel`
+
+- **EN** `Offer`
+- **PT** `Proposta`
+
+### `offerHeroCaption[0]`
+
+- **EN** `more per \(per) with the offer`
+- **PT** `a mais por \(per) com a proposta`
+
+### `offerHeroCaption[1]`
+
+- **EN** `less per \(per) with the offer`
+- **PT** `a menos por \(per) com a proposta`
+
+### `offerHeroSame`
+
+- **EN** `about the same per \(per)`
+- **PT** `praticamente o mesmo por \(per)`
+
+### `offerHeroVoice[0]`
+
+- **EN** `\(amount) more per \(per) with the offer.`
+- **PT** `\(amount) a mais por \(per) com a proposta.`
+
+### `offerHeroVoice[1]`
+
+- **EN** `\(amount) less per \(per) with the offer.`
+- **PT** `\(amount) a menos por \(per) com a proposta.`
+
+### `offerColumnNet`
+
+- **EN** `net`
+- **PT** `líquido`
+
+### `offerColumnWithAllowance`
+
+- **EN** `including \(amount) of allowance`
+- **PT** `incluindo \(amount) de subsídio`
+
+### `offerGrossLine`
+
+- **EN** `Gross: \(difference) per \(per).`
+- **PT** `Bruto: \(difference) por \(per).`
+
+### `offerPeriodCaption[0]`
+
+- **EN** `Each job's yearly pay spread over 12 months, so the two compare like for like.`
+- **PT** `O ano de cada emprego repartido por 12 meses, para os dois se compararem de igual para igual.`
+
+### `offerPeriodCaption[1]`
+
+- **EN** `Each job's yearly pay spread over 14 payments, so the two compare like for like.`
+- **PT** `O ano de cada emprego repartido por 14 pagamentos, para os dois se compararem de igual para igual.`
+
+### `offerTaxTitle`
+
+- **EN** `Where the difference goes`
+- **PT** `Para onde vai a diferença`
+
+### `offerTaxHint`
+
+- **EN** `a year`
+- **PT** `por ano`
+
+### `offerSSLabel`
+
+- **EN** `Social Security`
+- **PT** `Segurança Social`
+
+### `offerIRSLabel`
+
+- **EN** `IRS, once settled`
+- **PT** `IRS, depois do acerto`
+
+### `offerAfterTaxLabel`
+
+- **EN** `Left after tax`
+- **PT** `Fica depois dos impostos`
+
+### `offerEmployerLabel`
+
+- **EN** `What it costs the employer`
+- **PT** `Quanto custa à empresa`
+
+### `offerPairVoice`
+
+- **EN** `\(label): now \(now), with the offer \(offer).`
+- **PT** `\(label): agora \(now), com a proposta \(offer).`
+
+### `offerKeep`
+
+- **EN** `Of the extra \(extra) gross a year, you keep \(kept): \(cents) cents of every extra euro.`
+- **PT** `Dos \(extra) brutos a mais por ano, ficas com \(kept): \(cents) cêntimos de cada euro a mais.`
+
+### `offerKeepLess`
+
+- **EN** `Of the \(less) less gross a year, you would feel \(felt): \(cents) cents of every euro less.`
+- **PT** `Dos \(less) brutos a menos por ano, sentias \(felt): \(cents) cêntimos de cada euro a menos.`
+
+### `offerTaxNote`
+
+- **EN** `Monthly figures are what lands in your account. The yearly IRS is what you owe once it is settled, so it is the real tax and not the monthly advance on it.`
+- **PT** `Os valores mensais são o que entra na tua conta. O IRS do ano é o que deves depois do acerto, por isso é o imposto real e não o adiantamento mensal.`
+
+### `offerTablesDiffer`
+
+- **EN** `The two jobs are taxed on different tables, \(now) now and \(offer) with the offer, so part of the difference is the place and not the pay.`
+- **PT** `Os dois empregos são tributados por tabelas diferentes, \(now) agora e \(offer) com a proposta, por isso parte da diferença é o local e não o salário.`
+
+### `offerPlaceAssumed`
+
+- **EN** `The offer has no place set, so it is taxed on the mainland table, the highest of the three.`
+- **PT** `A proposta não tem local, por isso é tributada pela tabela do Continente, a mais alta das três.`
+
+### `offerAllowanceOffer`
+
+- **EN** `\(monthly) a month of this offer is allowance: no IRS, but no Social Security either. Paid as salary, it would add \(contributions) a year to the record your pension, sick pay and unemployment come from.`
+- **PT** `\(monthly) por mês desta proposta são subsídio: sem IRS, mas também sem Segurança Social. Pago como salário, juntaria \(contributions) por ano ao registo de onde vêm a tua reforma, a baixa e o subsídio de desemprego.`
+
+### `offerAllowanceNow`
+
+- **EN** `\(monthly) a month of what you have now is allowance: no IRS, but no Social Security either. Paid as salary, it would add \(contributions) a year to the record your pension, sick pay and unemployment come from.`
+- **PT** `\(monthly) por mês do que tens agora são subsídio: sem IRS, mas também sem Segurança Social. Pago como salário, juntaria \(contributions) por ano ao registo de onde vêm a tua reforma, a baixa e o subsídio de desemprego.`
+
+### `offerNoAllowanceCounted`
+
+- **EN** `No meal allowance or ajudas de custo counted for the offer.`
+- **PT** `Não foi contado subsídio de alimentação nem ajudas de custo na proposta.`
+
+### `offerPeersTitle`
+
+- **EN** `Against other people`
+- **PT** `Comparado com outras pessoas`
+
+### `offerPeersHint`
+
+- **EN** `out of 100, how many earn less`
+- **PT** `em cada 100, quantos ganham menos`
+
+### `offerRowNationalSub`
+
+- **EN** `Everyone in work, gross against gross.`
+- **PT** `Todos os trabalhadores, bruto contra bruto.`
+
+### `offerRowSectorTitle`
+
+- **EN** `Everyone in the sector`
+- **PT** `Todos no setor`
+
+### `offerRowSectorSub`
+
+- **EN** `\(sector), whatever their time at the company.`
+- **PT** `\(sector), seja qual for o tempo na empresa.`
+
+### `offerRowSectorSubTwo`
+
+- **EN** `\(now) now, \(offer) with the offer, whatever their time at the company.`
+- **PT** `\(now) agora, \(offer) com a proposta, seja qual for o tempo na empresa.`
+
+### `offerRowRegionTitle`
+
+- **EN** `Everyone in the region`
+- **PT** `Todos na região`
+
+### `offerNoFigure`
+
+- **EN** `no figure`
+- **PT** `sem valor`
+
+### `offerRowRegionSubTwo`
+
+- **EN** `\(now) now, \(offer) with the offer.`
+- **PT** `\(now) agora, \(offer) com a proposta.`
+
+### `offerRowAgeTitle`
+
+- **EN** `People your age`
+- **PT** `Pessoas da tua idade`
+
+### `offerRowEducationTitle`
+
+- **EN** `People with your education`
+- **PT** `Pessoas com a tua escolaridade`
+
+### `offerRowSameGroupSub`
+
+- **EN** `\(group), the same group for both.`
+- **PT** `\(group), o mesmo grupo para os dois.`
+
+### `offerRowVoice`
+
+- **EN** `\(title). Now \(now) out of 100, with the offer \(offer).`
+- **PT** `\(title). Agora \(now) em 100, com a proposta \(offer).`
+
+### `offerRowVoiceOne[0]`
+
+- **EN** `\(title). With the offer \(value) out of 100.`
+- **PT** `\(title). Com a proposta \(value) em 100.`
+
+### `offerRowVoiceOne[1]`
+
+- **EN** `\(title). Now \(value) out of 100.`
+- **PT** `\(title). Agora \(value) em 100.`
+
+### `offerSectorWhy`
+
+- **EN** `At a new job your time there starts at zero, and the people under a year in are mostly in their first job. Comparing against them would flatter any offer, so each salary is put against everyone in its sector.`
+- **PT** `Num emprego novo o teu tempo lá começa do zero, e quem está há menos de um ano é quase sempre gente no primeiro emprego. Comparar com eles favorecia qualquer proposta, por isso cada salário é posto contra todos no seu setor.`
+
+### `offerSchedulesDiffer`
+
+- **EN** `Percentiles compare one month's gross, as the published tables do, so the same year's pay ranks higher paid in 12 than in 14.`
+- **PT** `Os percentis comparam o bruto de um mês, como as tabelas publicadas, por isso o mesmo salário anual fica mais acima pago em 12 do que em 14.`
+
+### `offerIslandNote`
+
+- **EN** `The Quadros de Pessoal cover the mainland only, so an island has no regional figure, and every comparison here is a mainland one.`
+- **PT** `Os Quadros de Pessoal só cobrem o continente, por isso uma ilha não tem valor regional, e todas as comparações aqui são do continente.`
+
+### `offerStayTitle`
+
+- **EN** `If you stay instead`
+- **PT** `Se ficares onde estás`
+
+### `offerStayHint`
+
+- **EN** `gross, per \(per)`
+- **PT** `bruto, por \(per)`
+
+### `offerStayIntro`
+
+- **EN** `Staying, from what your sector pays at each length of time at one employer. The offer, from its first month.`
+- **PT** `Ficar, a partir do que o teu setor paga consoante o tempo na mesma empresa. A proposta, desde o primeiro mês.`
+
+### `offerStayToday`
+
+- **EN** `Today`
+- **PT** `Hoje`
+
+### `offerStayIn`
+
+- **EN** `In \(years) years`
+- **PT** `Daqui a \(years) anos`
+
+### `offerStayingLabel`
+
+- **EN** `Staying`
+- **PT** `Se ficares`
+
+### `offerStayTotal[0]`
+
+- **EN** `Over those \(years) years the offer pays \(amount) more in all.`
+- **PT** `Nesses \(years) anos a proposta paga \(amount) a mais no total.`
+
+### `offerStayTotal[1]`
+
+- **EN** `Over those \(years) years staying pays \(amount) more in all.`
+- **PT** `Nesses \(years) anos ficar paga \(amount) a mais no total.`
+
+### `offerStayRowVoice`
+
+- **EN** `\(when): staying \(staying), the offer \(offer).`
+- **PT** `\(when): se ficares, \(staying); a proposta, \(offer).`
+
+### `offerCatchUp[0]`
+
+- **EN** `Staying would reach this offer's pay after a year.`
+- **PT** `Se ficares, chegas ao salário desta proposta ao fim de um ano.`
+
+### `offerCatchUp[1]`
+
+- **EN** `Staying would reach this offer's pay after \(years) years.`
+- **PT** `Se ficares, chegas ao salário desta proposta ao fim de \(years) anos.`
+
+### `offerNoCatchUp`
+
+- **EN** `Staying would not reach this offer's pay within \(years) years.`
+- **PT** `Se ficares, não chegas ao salário desta proposta em \(years) anos.`
+
+### `offerPaysLess`
+
+- **EN** `This offer pays less over a year than you earn now.`
+- **PT** `Esta proposta paga menos por ano do que ganhas agora.`
+
+### `offerPaysSame`
+
+- **EN** `This offer pays about what you earn now over a year.`
+- **PT** `Esta proposta paga, por ano, praticamente o mesmo que ganhas agora.`
+
+### `offerFlatFrom[0]`
+
+- **EN** `Your sector's figures stop rising at \(top) years at one company, which you reach next year. From then on, staying stays put.`
+- **PT** `Os valores do teu setor deixam de subir aos \(top) anos na mesma empresa, a que chegas para o ano. A partir daí, ficar não sobe mais.`
+
+### `offerFlatFrom[1]`
+
+- **EN** `Your sector's figures stop rising at \(top) years at one company, which you reach in \(years) years. From then on, staying stays put.`
+- **PT** `Os valores do teu setor deixam de subir aos \(top) anos na mesma empresa, a que chegas daqui a \(years) anos. A partir daí, ficar não sobe mais.`
+
+### `offerFlatNow`
+
+- **EN** `Your sector's figures stop rising at \(top) years at one company, and you are past that, so staying keeps your pay where it is.`
+- **PT** `Os valores do teu setor deixam de subir aos \(top) anos na mesma empresa, e já passaste isso, por isso ficar mantém o teu salário onde está.`
+
+### `offerStayFalls`
+
+- **EN** `In this sector pay does not rise across every band of time at one company, so staying can mean a lower figure later. That is what the survey found, not a guess.`
+- **PT** `Neste setor o salário não sobe em todos os escalões de antiguidade, por isso ficar pode dar um valor mais baixo mais tarde. Foi o que o inquérito encontrou, não é um palpite.`
+
+### `offerStayAssumptions`
+
+- **EN** `In today's money, with no pay rises across the economy on either side. The offer stays at its starting pay, because nothing published says what happens to pay after a move. Grow uses the same rule.`
+- **PT** `Em dinheiro de hoje, sem aumentos gerais de nenhum dos lados. A proposta fica no salário de entrada, porque nada do que se publica diz o que acontece ao salário depois de uma mudança. O Crescer usa a mesma regra.`
+
+### `offerStayEmptySub`
+
+- **EN** `Your sector and how long you have been at your employer. Staying is worked out from the table those two answers point to, so without them there is nothing honest to show.`
+- **PT** `O teu setor e há quanto tempo estás na empresa. Ficar calcula-se a partir da tabela para onde essas duas respostas apontam, por isso sem elas não há nada de honesto para mostrar.`
+
+### `offerLeavesOutTitle`
+
+- **EN** `What this leaves out`
+- **PT** `O que isto deixa de fora`
+
+### `offerLeavesOutItems[0]`
+
+- **EN** `Benefits in kind, like health insurance, a car or a phone. They are worth something, and nothing here can say how much.`
+- **PT** `Benefícios em espécie, como seguro de saúde, carro ou telemóvel. Valem alguma coisa, e nada aqui consegue dizer quanto.`
+
+### `offerLeavesOutItems[1]`
+
+- **EN** `The tax-free limit on meal allowance. All of it is treated as tax-free.`
+- **PT** `O limite de isenção do subsídio de alimentação. É tratado todo como isento.`
+
+### `offerLeavesOutItems[2]`
+
+- **EN** `Any year but \(year). These are the \(year) tables.`
+- **PT** `Outros anos além de \(year). Estas são as tabelas de \(year).`
+
+### `offerLeavesOutItems[3]`
+
+- **EN** `A different household. Yours is the same on both sides.`
+- **PT** `Um agregado diferente. O teu é o mesmo dos dois lados.`
+
+### `offerBonusShown`
+
+- **EN** `The offer's bonus, \(amount) a year, is not counted anywhere above: it is not promised pay.`
+- **PT** `O prémio da proposta, \(amount) por ano, não entra em nenhuma das contas acima: não é salário garantido.`
+
+### `offerDisclaimer`
+
+- **EN** `Estimates on the \(year) tax tables. Not official tax advice.`
+- **PT** `Estimativas com as tabelas fiscais de \(year). Não é aconselhamento fiscal oficial.`
 
 ---

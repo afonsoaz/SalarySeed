@@ -1,11 +1,12 @@
 # How this app gets checked
 
-There is no test target. Two scripts and one probe stand in for it, and the list below is
+There is no test target. Two scripts and two probes stand in for it, and the list below is
 what they cannot cover.
 
 ```bash
 python3 tools/verify_tax_engine.py        # must pass before any release
 python3 tools/verify_payslip_reader.py    # must pass before any release
+tools/offer_probe/build.sh && .build/offer_probe   # must pass before any release
 tools/payslip_probe/build.sh              # then: .build/payslip_probe <file.pdf|.png>
 
 tools/payslip_corpus/build.sh                                 # generated payslips
@@ -35,6 +36,21 @@ The probe is not a pass or a fail and does not gate anything. It prints what the
 `Engine/` sources decide about a real file: every line with its concept, provenance and
 confidence, then the facts, then the verdict. Its value is the diff across a change,
 because there is no answer key for a payslip.
+
+`tools/offer_probe` is the other probe, and it is a pass or a fail. The offer comparison
+computes nothing of its own: tax is `TaxEngine`, the percentiles are `PercentileEngine` and
+`CohortEngine`, and staying is `GrowthEngine`'s baseline. What can break is the plumbing
+between them, so it sweeps 142,272 offers (24 sectors, tenure 0 to 25, offers from -30% to
++60%, both schedules, all three tax tables) and exits non-zero if any of about 4.2 million
+invariants fails. An identical offer differs in nothing; a higher offer never reads worse;
+staying equals Grow's path to the cent; the catch-up year and every total agree with that
+path; the same year's pay settles identically in 12 and in 14; each region's minimum wage
+withholds nothing; and five years crosses a tenure band for every tenure under twenty,
+checked against `GrowthEngine.bandStarts` itself, so a future table with wider bands fails
+here instead of quietly bringing back a staying card that says nothing changes. It was run
+against three deliberately broken copies of the engine before it was trusted, and failed
+all three. It is Swift and not Python for `payslip_corpus`'s reason, and the one file in it
+that is not shipping code, a stand-in for `SalaryStore`, says why it has to exist.
 
 ## The checks a compiler cannot do
 
@@ -155,6 +171,11 @@ do not:
   true**: `simctl spawn` and the app sandbox are not the same preference context. Passing a
   file PATH instead of the bundle id is worse again, because it silently addresses an empty
   domain and reports nothing at all.
+- Worse, the two are merged rather than separate. For a key the app's own container has
+  never held, the app DOES read the value `simctl spawn` wrote. v1.5 found this by accident:
+  a test wrote a whole job offer that way, and the app ignored the seven offer keys it
+  already had and showed the one it had never written, a yearly bonus nobody typed. So a
+  value written this way is not inert, and has to be deleted rather than left behind.
 
 What actually works, and it is the only thing that does:
 

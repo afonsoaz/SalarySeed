@@ -4,6 +4,90 @@ What changed in each version and why, including the bugs that shipped and what t
 Versions before 1.0 were never released; they are here because the mistakes in them are
 the reason later versions are shaped the way they are.
 
+**v1.5**: A job offer goes next to the job you have.
+
+People in Portugal meet their pay as a number twice, on the payslip and in the offer, and the
+app only read the first. An offer now goes in from Home, under "What if…", typed the way the
+offer states it: gross or net, monthly or yearly, and 12 or 14 payments, which is always
+asked and never guessed, because it moves the monthly figure by a sixth. It comes back side
+by side with the job the reader has, in the order the questions arrive: what reaches you each
+month, where the difference goes in tax, where each sits against other people, and what
+staying where you are would pay instead. `app-concept.md` has called this offerSeed since
+before there was any code.
+
+**A different job, the same person.** The principle `SalaryExplorerSheet` set for a typed
+number, carried over. An offer changes the pay, the payments, the place, the sector and the
+allowance, and never the household, IRS Jovem, age band or education, which are the reader's
+own on both sides and reach the engine once rather than once per job.
+
+**Pay is compared on a year.** Twelve and fourteen payments make two monthly figures
+incomparable, so every difference is a yearly one, read through Home's own ×12 / ×14 / Ano
+picker with Home's own arithmetic, now shared, so the "now" column is Home's figure by
+construction rather than by coincidence. The tax is the IRS owed once it is settled, not the
+withholding: for the same yearly gross, 12 and 14 payments withhold differently and settle
+identically, and a table read off the withholding would show a schedule difference posing as
+a tax one. The headline is a rate rather than a bare percentage, "you keep 55 cents of every
+extra euro", and it is left out when the two jobs are on different tax tables, where it would
+mix a raise with a move and could even come out above one.
+
+**The app's own question, asked of an offer.** When either job pays meal allowance or ajudas
+de custo, the screen says how much of it is allowance and what it would put into the Social
+Security record each year if it were paid as salary, which is the record a pension, sick pay
+and unemployment are worked out from. The contribution figure is exact. There is no pension
+figure, because the only pension model in the app calls itself a placeholder.
+
+**Against other people: each salary in its own sector, never in the tenure band.** At a new
+job your time there is zero, and the under-a-year band is mostly people in their first job, so
+placing an offer there would flatter every offer. Each salary goes against everyone in its
+sector, under a different name from Compare's sector-and-tenure card so the two screens cannot
+appear to disagree. Where one side has no cohort, an island or a sector never given, it says
+"no figure" rather than leaving a lone number to be guessed at. And because GEP publishes one
+month's gross, the same year's pay ranks higher paid in twelve than in fourteen, which is true
+to the source and surprising enough that the screen says it.
+
+**Staying is read at 5, 10 and 20 years, and the first design said 3.** Quadro 104's bands are
+under 1, 1 to 4, 5 to 9, 10 to 14, 15 to 19 and 20+, so three years leaves anyone at 1, 5, 6,
+10, 11, 15, 16 or 20+ years inside one band, and the card would have told a large share of its
+readers that staying changes nothing. No band below twenty is wider than five years, so five
+always crosses one, and the three horizons are Grow's own, read from `Scenario.horizons` rather
+than restated. Staying is `GrowthEngine.baselineTrack`. The offer is a flat line at its gross,
+which is not a simplification made here but v0.11.1's rule that a mover's pay changes when they
+negotiate and at no other time, so this card cannot contradict Grow about the same move. Each
+row carries the total each side has paid by then, because that is where the answer lives: in
+the worked example staying overtakes the offer after seven years and is €38,510 ahead by
+twenty. Past twenty years at one company the data has no higher band, and the card says so
+rather than repeating a figure with no reason.
+
+**Kept on the phone, which Grow's scenario may not be.** "Recording is not exploring" keeps
+Grow's what-ifs in memory. An offer is a different kind of thing, a fact the reader holds and
+may take days to weigh, so the last one is kept under its own `offer.*` keys until it is
+removed or replaced, and `PRIVACY.md` gained the sentence that says so. What stays true from
+the old rule is the part that mattered: nothing about the offer reaches Home, Compare, Map or
+Grow, and `OfferView` is the only thing that writes it.
+
+**Five private copies became one first, in a commit of their own, before a third screen
+needed them**: the município to tax region switch, Grow's context builder, the period picker,
+Home's what-reaches-you arithmetic and `signedEur`. The tax region mapping went into
+`ProfileSignals.swift` rather than `TaxEngine.swift`, because both payslip probes compile the
+engine file alone and would have stopped building.
+
+**Checked by sweeping, not by example.** `tools/offer_probe` compiles the four engines
+unmodified and checks 4,173,261 invariants over 142,272 offers. Before it was trusted it was
+run against three deliberately broken copies of the engine, and failed every one. On the
+simulator the "now" figures match Home and Compare to the euro, and staying ten more years
+reads €2,667 on both this screen and Grow.
+
+Two things found by looking. `NudgeCard` centred a title that wrapped under a left-aligned
+subtitle, which the ajudas card was doing at accessibility text sizes; that is rule 27, and it
+is fixed on the component. And iOS 26 draws a confirmation dialog as a popover, so the remove
+confirmation is attached to the link it confirms rather than to the screen, which had it
+pointing at the middle of nothing.
+
+Not done, and said here so nobody assumes otherwise: reading an offer from a PDF, a photo or
+pasted text, which is designed and comes next; an "I took it" that makes an offer the
+salary; and VoiceOver by ear. Every result row has a spoken label, and nobody has listened to
+them yet.
+
 **v1.4**: Home holds one number, and the rest is a scroll away.
 
 Home had eleven blocks in one scroll, and the first screenful carried the pay figures, a
