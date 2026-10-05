@@ -55,13 +55,6 @@ struct HomeView: View {
     @State private var showFutureSeed = false
     // v0.9.4
     @State private var showExplorer = false
-    /// v1.5: the offer screen, pushed like Profile so its own picker can be a
-    /// sheet without stacking one sheet on another.
-    @State private var showOffer = false
-    /// v1.2: Profile is no longer a tab, and this is how it is reached. A push
-    /// rather than a sheet, because it is a destination with ten sheets of its
-    /// own hanging off it and a sheet on a sheet is a stack of cards.
-    @State private var showProfile = false
     @State private var askingSalaryChange = false
     /// v1.4: true once the reader has scrolled past the fold, which retires the
     /// see-more prompt. A Bool and not the offset: `body` holds `RollingEuro`'s
@@ -100,7 +93,9 @@ struct HomeView: View {
     /// 44pt net figure over a 20pt gross annotation. That is a design decision,
     /// not a Dynamic Type one, and the locked Type rules say to name it as such.
     var body: some View {
-        NavigationStack {
+        // The one stack Home's pushes go onto, with its path on the store so any
+        // screen can return here. See `HubRoute`.
+        NavigationStack(path: $store.path) {
             ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
@@ -138,8 +133,7 @@ struct HomeView: View {
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showFutureSeed) { FutureSeedView() }
             .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
-            .profileDestination(isPresented: $showProfile)
-            .navigationDestination(isPresented: $showOffer) { OfferView() }
+            .hubDestinations()
             .salaryChangeConfirmation(
                 isPresented: $askingSalaryChange,
                 s: s,
@@ -263,7 +257,7 @@ struct HomeView: View {
         HStack {
             brandMark
             Spacer()
-            ProfileButton(isPresented: $showProfile)
+            ProfileButton { store.path.append(.profile) }
         }
         .padding(.top, 8)
     }
@@ -485,7 +479,7 @@ struct HomeView: View {
     @ViewBuilder
     private var profileNudge: some View {
         if store.profileFilledCount < store.signalTotal {
-            ProfileNudgeCard { showProfile = true }
+            ProfileNudgeCard { store.path.append(.profile) }
         }
     }
 
@@ -712,7 +706,7 @@ struct HomeView: View {
                 icon: "briefcase.circle.fill",
                 title: store.offer == nil ? s.offerNudgeTitle : s.offerNudgeKeptTitle,
                 subtitle: store.offer == nil ? s.offerNudgeSub : s.offerNudgeKeptSub
-            ) { showOffer = true }
+            ) { store.path.append(.offer) }
             // v0.10.1: no card pointing at Grow. The tab bar already points at
             // Grow, and it is tinted to say so, so a card doing the same job here
             // was a third thing on one screen asking to be tapped.

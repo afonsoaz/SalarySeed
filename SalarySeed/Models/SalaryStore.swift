@@ -189,6 +189,12 @@ final class SalaryStore: ObservableObject {
     /// since v0.10.1 took away the Home card that used to jump to Grow.
     @Published var selectedTab: Int = 0
 
+    /// Where the reader is, below Home. See `HubRoute`.
+    ///
+    /// Session state like the two above: it is the reader's place in the app
+    /// right now, so it is never saved, and a relaunch opens on Home.
+    @Published var path: [HubRoute] = []
+
     /// Whether the intro screen is on screen right now.
     ///
     /// No `didSet { save() }` and absent from `save()`, for the same reason

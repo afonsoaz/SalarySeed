@@ -24,10 +24,13 @@ struct ProfileButton: View {
     @EnvironmentObject private var store: SalaryStore
     @Environment(\.dynamicTypeSize) private var typeSize
 
-    @Binding var isPresented: Bool
+    /// What tapping it does. An action rather than a binding since the hub
+    /// work began: on Home it appends `.profile` to the one navigation path,
+    /// and the tabs that still have stacks of their own set their own flag.
+    let action: () -> Void
 
     var body: some View {
-        Button { isPresented = true } label: {
+        Button(action: action) {
             Image(systemName: "person.crop.circle")
                 .appFont(24)
                 .foregroundStyle(Theme.accent)

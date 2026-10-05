@@ -84,7 +84,7 @@ struct MapView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 8)
-            ProfileButton(isPresented: $showProfile)
+            ProfileButton { showProfile = true }
         }
         .padding(.top, 8)
     }

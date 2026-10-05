@@ -164,7 +164,7 @@ struct PayslipCheckFlow: View {
                                  label: s.payslipCheckAnother) { model.restart() }
                 }
                 if let showProfile {
-                    ProfileButton(isPresented: showProfile)
+                    ProfileButton { showProfile.wrappedValue = true }
                 }
             }
         }

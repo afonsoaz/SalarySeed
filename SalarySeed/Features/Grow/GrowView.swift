@@ -156,7 +156,7 @@ struct GrowView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 8)
-            ProfileButton(isPresented: $showProfile)
+            ProfileButton { showProfile = true }
         }
         .padding(.horizontal, 20)
         .padding(.top, 8)

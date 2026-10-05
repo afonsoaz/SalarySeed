@@ -129,7 +129,7 @@ struct CompareView: View {
             // true and led nowhere, next to a second sprout in the same corner
             // of Home. The count moved to `ProfileNudgeCard`, where there is
             // room to say what it means, and the slot now holds the way in.
-            ProfileButton(isPresented: $showProfile)
+            ProfileButton { showProfile = true }
         }
         .padding(.top, 8)
     }
