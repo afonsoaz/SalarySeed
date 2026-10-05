@@ -11,6 +11,15 @@ struct SalaryEditorView: View {
     @State private var kind: AmountKind = .gross
     @State private var schedule: PaySchedule = .fourteen
     @State private var inputPeriod: SalaryInputPeriod = .monthly
+    /// Told when the reader saves, as opposed to swiping the sheet away.
+    ///
+    /// "Update my salary" returns to Home after a save, so the reader sees the
+    /// number change, and stays where it was after a cancel. A sheet's
+    /// `onDismiss` cannot tell the two apart on its own, and popping the screen
+    /// underneath while the sheet is still going down is the wrong moment, so
+    /// the presenter records this and acts in `onDismiss`. See
+    /// `salaryEditor(isPresented:onSaved:)`.
+    var onSaved: (() -> Void)? = nil
 
     private var s: Strings { store.s }
 
@@ -107,6 +116,7 @@ struct SalaryEditorView: View {
                         store.kind = kind
                         store.schedule = schedule
                         store.inputYearly = inputPeriod == .yearly
+                        onSaved?()
                         dismiss()
                     }
                     .padding(.top, 8)

@@ -55,6 +55,13 @@ struct HomeView: View {
     @State private var showFutureSeed = false
     // v0.9.4
     @State private var showExplorer = false
+    /// The one payslip reading the app holds, for as long as the app runs.
+    ///
+    /// Home owns it because Home is the root and lives exactly that long, which
+    /// is the lifetime the checker promised as a tab: leave it and come back and
+    /// the verdict is still there; read another payslip, from either way in,
+    /// and it is replaced; quit and it is gone. It is never written anywhere.
+    @StateObject private var payslip = PayslipCheckModel()
     @State private var askingSalaryChange = false
     /// v1.4: true once the reader has scrolled past the fold, which retires the
     /// see-more prompt. A Bool and not the offset: `body` holds `RollingEuro`'s
@@ -132,7 +139,7 @@ struct HomeView: View {
             .sheet(isPresented: $showEditor) { SalaryEditorView() }
             .sheet(isPresented: $showFutureSeed) { FutureSeedView() }
             .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
-            .hubDestinations(period: $period)
+            .hubDestinations(period: $period, payslip: payslip)
             .salaryChangeConfirmation(
                 isPresented: $askingSalaryChange,
                 s: s,

@@ -64,6 +64,35 @@ struct Strings {
     var compareScopePeople: String { t("People", "Pessoas") }
     var compareScopeDistricts: String { t("Districts", "Distritos") }
 
+    /// The bubble on Home's figure, and the title of the screen it opens, which
+    /// is also the checker's title when that screen hands a payslip over.
+    var updateSalaryTitle: String { t("Update my salary", "Atualizar o meu salário") }
+    var updateSalaryLead: String {
+        t("Take it from your payslip, and we check the payslip as we read it. Or type it in.",
+          "Tira-o do teu recibo, e conferimos o recibo enquanto o lemos. Ou escreve-o tu.")
+    }
+    var updateSalaryBack: String { t("Back to my salary", "Voltar ao meu salário") }
+    /// Why a payslip read to update the salary gave no figure. One sentence per
+    /// reason, because "we never found it" and "the figures disagree" are
+    /// different things to be told (rule 21). Shown only under "Update my
+    /// salary"; the checker says nothing, since the verdict is its job.
+    func payslipCannot(_ reason: PayslipSalary.Refusal) -> String {
+        switch reason {
+        case .noGrossFigure:
+            return t("We could not find a gross on this payslip that its own sums confirm, so we will not take a figure from it.",
+                     "Não encontrámos neste recibo um bruto confirmado pelas próprias contas, por isso não tiramos daqui nenhum valor.")
+        case .grossOnlyGuessed:
+            return t("We had to guess at part of the gross on this payslip, and a guess cannot become your salary.",
+                     "Tivemos de adivinhar parte do bruto deste recibo, e um palpite não pode passar a ser o teu salário.")
+        case .subsidiesOnTheirOwnLine:
+            return t("This payslip pays a holiday or Christmas subsidy on a line of its own, so its gross is not an ordinary month's.",
+                     "Este recibo paga o subsídio de férias ou de Natal numa linha à parte, por isso o bruto não é o de um mês normal.")
+        case .earningsDisagree:
+            return t("The earnings on this payslip include something we cannot place, so we cannot tell what your gross is.",
+                     "Os abonos deste recibo incluem algo que não conseguimos situar, por isso não sabemos qual é o teu bruto.")
+        }
+    }
+
     // MARK: Onboarding
 
     var welcomeTitle: String { t("Let's work out\nwhat you earn.", "Vamos perceber\nquanto ganhas.") }

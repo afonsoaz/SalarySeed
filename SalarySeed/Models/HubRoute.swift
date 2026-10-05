@@ -15,6 +15,11 @@ import Foundation
 /// depend on a screen.
 enum HubRoute: Hashable {
     case tax
+    /// The checker, and why it was opened. See `PayslipIntent`: the reason is a
+    /// route parameter and is never stored anywhere.
+    case payslipCheck(PayslipIntent)
+    /// "Update my salary", the chooser the bubble on Home's figure opens.
+    case payslipUpdate
     case comparePortugal
     case compareEurope
     case offer

@@ -27,13 +27,22 @@ struct PayslipSourceStep: View {
     // Held because this view draws with Theme.accent, which is a computed
     // static SwiftUI cannot observe. See SalarySeedApp.
     @EnvironmentObject private var store: SalaryStore
-    /// v1.2: the tab's landing screen explains the checks before asking for a
-    /// file; the onboarding cover does not. Onboarding is already nine steps
-    /// long, and on that route the reader has no profile yet, so half the
-    /// checks listed would not run on what they are about to hand over.
+    /// v1.2: the checker's landing screen explains the checks before asking
+    /// for a file; the onboarding cover does not, and neither does "Update my
+    /// salary". Onboarding is already nine steps long, and on that route the
+    /// reader has no profile yet, so half the checks listed would not run on
+    /// what they are about to hand over; and somebody updating their salary
+    /// came for the number, which the verdict will still be put in front of.
     var showsWhatWeCheck: Bool = false
+    /// A line above the privacy note, saying what this screen is for when the
+    /// title alone does not. "Update my salary" uses it; the checker does not.
+    var lead: String? = nil
     let onFile: (URL) -> Void
     let onImage: (Data) -> Void
+    /// A fourth row, "Type it myself", for a screen whose job is a number
+    /// rather than a check. Onboarding draws the same row in its own fork;
+    /// here only "Update my salary" passes one.
+    var onTypeInstead: (() -> Void)? = nil
 
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var importing = false
@@ -53,6 +62,13 @@ struct PayslipSourceStep: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
                 if showsWhatWeCheck { hero }
+
+                if let lead {
+                    Text(lead)
+                        .appFont(15)
+                        .foregroundStyle(Theme.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 Text(s.payslipSourceIntro)
                     .appFont(14)
@@ -76,6 +92,12 @@ struct PayslipSourceStep: View {
                 PhotosPicker(selection: $photo, matching: .images, photoLibrary: .shared()) {
                     PayslipSourceRow(icon: "photo.fill", title: s.payslipPickPhoto,
                                      subtitle: nil)
+                }
+                if let onTypeInstead {
+                    Button(action: onTypeInstead) {
+                        PayslipSourceRow(icon: "keyboard", title: s.onbTypeItMyself,
+                                         subtitle: s.onbSourceTypeSub)
+                    }
                 }
 
                 // Inline, never an alert. `PayslipUnreadableView` makes the same
@@ -148,6 +170,13 @@ struct PayslipSourceStep: View {
         }
         .onChange(of: photo) { _, item in
             guard let item else { return }
+            // Cleared at once, because this view is not always replaced by
+            // what it hands over. In the checker the reading takes its place,
+            // but under "Update my salary" it stays alive beneath the pushed
+            // checker, and a selection left set would make picking the same
+            // photo a second time change nothing and fire no `onChange`
+            // (rule 11).
+            photo = nil
             Task {
                 if let data = try? await item.loadTransferable(type: Data.self) {
                     onImage(data)
@@ -181,8 +210,8 @@ struct PayslipSourceStep: View {
     }
 
     /// The same sprout the rest of the app uses to mean "this is SalarySeed
-    /// doing something". A tab that opens on two buttons and a paragraph reads
-    /// as a dialog somebody left open; this is what makes it a place.
+    /// doing something". A screen that opens on two buttons and a paragraph
+    /// reads as a dialog somebody left open; this is what makes it a place.
     private var hero: some View {
         HStack {
             Spacer()
