@@ -59,14 +59,10 @@ offer is kept on the phone until you remove it, and it never reaches any other s
 
 Before any of that there are nine questions, and the first one offers to read a payslip
 rather than asking you to type a number, because the number is on a document most people
-already have. Answer them and the app introduces itself once, on a single screen of four
-cards: Compare, Map, Grow, and one for everything else. The checker is deliberately not the
-fourth, because naming the app's best screen here would be introducing something the reader
-has already used. The cards carry no figures at all, which is what makes the screen safe: a
-card that cannot contradict the tab it names is worth more than one that could. Nothing on
-it leads to a price, it is armed only for an install that has neither onboarded nor seen it,
-and Profile has a row that replays it, because a screen you can reach exactly once is a
-screen nobody can check.
+already have. Answer them and the app opens on Home. Version 1.4 put a one-time screen of
+four cards between the two, naming what each tab was for; it is gone, because a Home that
+lists every feature with a line saying what it does is that screen, every time rather than
+once.
 
 Everything above is free. There is no in-app purchase, no subscription, no advertising and
 no analytics.
@@ -289,7 +285,6 @@ SalarySeed/
     PayslipSalary        the one value the checker may hand back, and nothing else
   Features/    one folder per screen
     Onboarding/            the nine questions, led by the payslip
-    Intro/                 the one-screen tour, shown once to a new install
     Payslip/               the checker: PDF, camera and Vision extraction, then the flow
     Shared/SupportLock     the real screen, blurred, where Grow and the Europe map live
   Models/      SalaryStore (the single source of truth), Localization, catalogues
