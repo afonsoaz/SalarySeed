@@ -7,7 +7,7 @@ grouped by the screen it belongs to.
 Editing this file changes nothing on its own; it is here to be read and marked up,
 and the edits get applied back to the Swift source afterwards.
 
-- **718** string pairs.
+- **715** string pairs.
 - `\(name)` is a value dropped in at runtime. It has to survive a rewrite,
   and it can move within the sentence.
 - `\n` is a deliberate line break.
@@ -685,11 +685,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:409`.
 - **EN** `Few data points at this level`
 - **PT** `Poucos dados neste nível`
 
-### `addPill`
-
-- **EN** `+ Add`
-- **PT** `+ Adicionar`
-
 ### `districtSourceLine`
 
 - **EN** `GEP-MTSSS, Quadros de Pessoal, Oct 2024 · Quadros 110 and 61`
@@ -830,8 +825,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:409`.
 
 ### `sectorRowTitle`
 
-- **EN** `Your sector`
-- **PT** `O teu setor`
+- **EN** `Sector`
+- **PT** `Setor`
 
 ### `sectorAdd`
 
@@ -890,7 +885,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:409`.
 
 ### `sectorCohort` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:535`.
+Assembled in Swift rather than written as a pair. `Localization.swift:534`.
 
 ---
 
@@ -910,21 +905,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:535`.
 
 ## Profile
 
-### `profileTitle[0]`
-
-- **EN** `\(name)'s profile`
-- **PT** `Perfil de \(name)`
-
-### `profileTitle[1]`
-
-- **EN** `Your profile`
-- **PT** `O teu perfil`
-
-### `profileProgressTitle`
-
-- **EN** `Your details`
-- **PT** `Os teus dados`
-
 ### `profileProgressSub`
 
 - **EN** `Each one you add sharpens your comparison.`
@@ -934,11 +914,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:535`.
 
 - **EN** `Finish your profile`
 - **PT** `Completa o teu perfil`
-
-### `profileDoneTitle`
-
-- **EN** `All done`
-- **PT** `Está tudo`
 
 ### `profileDoneSub`
 
@@ -950,15 +925,15 @@ Assembled in Swift rather than written as a pair. `Localization.swift:535`.
 - **EN** `\(filled) of \(total)`
 - **PT** `\(filled) de \(total)`
 
+### `profileDetailsCount`
+
+- **EN** `\(filled) of \(total) details`
+- **PT** `\(filled) de \(total) dados preenchidos`
+
 ### `demographicsTitle`
 
 - **EN** `About you`
 - **PT** `Sobre ti`
-
-### `yourSalary`
-
-- **EN** `Your salary`
-- **PT** `O teu salário`
 
 ### `nameLabel`
 
@@ -968,11 +943,26 @@ Assembled in Swift rather than written as a pair. `Localization.swift:535`.
 ### `namePlaceholder`
 
 - **EN** `Add your name`
+- **PT** `Adiciona o teu nome`
+
+### `nameAlertTitle`
+
+- **EN** `Your name`
 - **PT** `O teu nome`
+
+### `nameAlertMessage`
+
+- **EN** `Only used to greet you. It stays on this phone.`
+- **PT** `Só serve para te cumprimentar. Fica neste telemóvel.`
+
+### `nameEditHint`
+
+- **EN** `Changes your name`
+- **PT** `Muda o teu nome`
 
 ### `appSection` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:571`.
+Assembled in Swift rather than written as a pair. `Localization.swift:576`.
 
 ### `languageLabel`
 
@@ -989,11 +979,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:571`.
 - **EN** `All data stays on this phone`
 - **PT** `Tudo fica neste telemóvel`
 
-### `versionLabel`
-
-- **EN** `Version`
-- **PT** `Versão`
-
 ### `sourcesLabel`
 
 - **EN** `Data sources`
@@ -1001,12 +986,12 @@ Assembled in Swift rather than written as a pair. `Localization.swift:571`.
 
 ### `sourcesValue` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:579`.
+Assembled in Swift rather than written as a pair. `Localization.swift:583`.
 
 ### `profileFooter`
 
-- **EN** `SalarySeed v\(AppConfig.version). Estimates only, not official tax or financial advice.`
-- **PT** `SalarySeed v\(AppConfig.version). Só estimativas, não aconselhamento fiscal ou financeiro oficial.`
+- **EN** `Estimates only, not official tax or financial advice.`
+- **PT** `Só estimativas, não aconselhamento fiscal ou financeiro oficial.`
 
 ### `maritalLabel`
 
@@ -1412,8 +1397,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:579`.
 
 ### `jobRowTitle`
 
-- **EN** `Your job`
-- **PT** `A tua profissão`
+- **EN** `Job`
+- **PT** `Profissão`
 
 ### `jobAddHint`
 
@@ -1516,8 +1501,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:579`.
 
 ### `concelhoRowTitle`
 
-- **EN** `Your município`
-- **PT** `O teu concelho`
+- **EN** `Município`
+- **PT** `Concelho`
 
 ### `concelhoAddHint`
 
@@ -2012,7 +1997,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:579`.
 
 ### `growStepArrow` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1042`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1045`.
 
 ### `growMoreTitle`
 
@@ -2240,7 +2225,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1042`.
 
 ### `euroDash` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1159`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1162`.
 
 ### `euroUnitEuros`
 
@@ -2319,7 +2304,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1159`.
 
 ### `ordinal` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1215`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1218`.
 
 ### `euroRank[0]`
 

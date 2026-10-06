@@ -66,14 +66,14 @@ struct ProfileNudgeCard: View {
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
     }
 
-    /// The same mark Profile puts at the top of its own progress card, at the
-    /// stage the answers have actually reached. Here it is decoration with a
+    /// The same mark Profile wears as its picture, at the stage the answers
+    /// have actually reached. Here it is decoration with a
     /// meaning rather than a control, so VoiceOver skips it and reads the row.
     /// Size 44 and not 30. At three of ten, which is where a reader who has
     /// just finished onboarding actually is and therefore the state this card
     /// spends most of its life in, the drawing is a thin seedling: at 30 points
     /// it read as a smudge in an empty column rather than as the mark the whole
-    /// card is about. Profile's own progress card draws it at 64 for the same
+    /// card is about. Profile's header draws it at 76, on a disc, for the same
     /// reason.
     private var sprout: some View {
         SproutView(stage: store.sproutStage, size: 44)

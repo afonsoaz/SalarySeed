@@ -42,14 +42,13 @@ struct PeopleLikeYou: View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(s.peopleLikeYou)
             scopeCaveat
-            VStack(spacing: 0) {
+            LineCard {
                 sectorLine
                 ForEach(CompareDimension.all) { dim in
-                    LineSeparator()
+                    GlyphLineDivider()
                     dimensionLine(dim)
                 }
             }
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: 18))
             partTimeCaveat
             islandCaveat
             quickQuestion
@@ -435,18 +434,6 @@ private struct NoFigureLine: View {
         .accessibilityLabel("\(kind): \(name)")
         .accessibilityValue(store.s.mapIslandNoData)
         .accessibilityHint(hint)
-    }
-}
-
-/// The hairline between lines, inset past the glyph the way a list's is.
-private struct LineSeparator: View {
-    @Environment(\.dynamicTypeSize) private var typeSize
-
-    var body: some View {
-        Rectangle()
-            .fill(Color.white.opacity(0.06))
-            .frame(height: 1)
-            .padding(.leading, 16 + Theme.scaled(32, typeSize) + 14)
     }
 }
 

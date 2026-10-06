@@ -6,7 +6,8 @@ import Foundation
 /// disagrees with itself. The profile footer said "SalarySeed v0.9.4" through six
 /// releases, including the one that added a Version row four lines above it
 /// saying something else, and nothing could have caught that except somebody
-/// reading the screen. Both now read this.
+/// reading the screen. Since phase two the version is said once, at the foot of
+/// Profile, and it is read from here.
 enum AppConfig {
 
     /// `1.0.0`.

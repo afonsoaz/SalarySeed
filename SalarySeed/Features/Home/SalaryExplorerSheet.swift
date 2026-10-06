@@ -302,7 +302,9 @@ struct SalaryExplorerSheet: View {
 }
 
 /// v0.9.4: the fork between the two intentions, asked once, in one place, so
-/// Home and profileSeed cannot word it differently.
+/// no two screens can word it differently. Since phase two only Grow asks it:
+/// Home's figure became the "Update my salary" bubble, and Profile no longer
+/// carries the salary.
 extension View {
     func salaryChangeConfirmation(
         isPresented: Binding<Bool>,

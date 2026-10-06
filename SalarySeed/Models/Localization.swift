@@ -445,7 +445,6 @@ struct Strings {
     }
     var thinChip: String { t("Rough estimate, small sample", "Estimativa aproximada, amostra pequena") }
     var edgeChip: String { t("Few data points at this level", "Poucos dados neste nível") }
-    var addPill: String { t("+ Add", "+ Adicionar") }
     /// v1.1a: this was a hardcoded Portuguese constant on `CohortEngine`, so it
     /// printed "Fontes:" under three charts in the English build. Engines hold no
     /// user-facing words; the dataset names stay as published, only the label and
@@ -518,7 +517,7 @@ struct Strings {
 
     // MARK: v0.8.3 sector + tenure
 
-    var sectorRowTitle: String { t("Your sector", "O teu setor") }
+    var sectorRowTitle: String { t("Sector", "Setor") }
     var sectorAdd: String { t("Add your sector", "Adiciona o teu setor") }
     var sectorSheetTitle: String { t("Which sector do you work in?", "Em que setor trabalhas?") }
     var sectorQuestion: String { t("Which sector do\nyou work in?", "Em que setor\ntrabalhas?") }
@@ -544,19 +543,13 @@ struct Strings {
 
     // MARK: Profile
 
-    func profileTitle(_ name: String?) -> String {
-        if let name { return t("\(name)'s profile", "Perfil de \(name)") }
-        return t("Your profile", "O teu perfil")
-    }
     // v0.9.3: the sprout drawing stays, the seed vocabulary does not.
-    var profileProgressTitle: String { t("Your details", "Os teus dados") }
     var profileProgressSub: String { t("Each one you add sharpens your comparison.", "Cada um que adicionas afina a tua comparação.") }
     /// v1.2b: the one new pair the Home card needed. Everything else on it
     /// (`profileProgressCount`, `profileProgressSub`) was already written for
     /// the status card in Profile; this is the only line that had to be an
     /// instruction rather than a description, because the card is a button.
     var profileNudgeTitle: String { t("Finish your profile", "Completa o teu perfil") }
-    var profileDoneTitle: String { t("All done", "Está tudo") }
     var profileDoneSub: String {
         t("Nothing left to ask. Your comparison is as precise as this app can make it.",
           "Não falta nada. A tua comparação está tão precisa quanto a app consegue.")
@@ -564,27 +557,35 @@ struct Strings {
     func profileProgressCount(_ filled: Int, _ total: Int) -> String {
         t("\(filled) of \(total)", "\(filled) de \(total)")
     }
+    /// Under the name at the top of Profile.
+    func profileDetailsCount(_ filled: Int, _ total: Int) -> String {
+        t("\(filled) of \(total) details", "\(filled) de \(total) dados preenchidos")
+    }
     var demographicsTitle: String { t("About you", "Sobre ti") }
-    var yourSalary: String { t("Your salary", "O teu salário") }
     var nameLabel: String { t("Name", "Nome") }
-    var namePlaceholder: String { t("Add your name", "O teu nome") }
+    /// Where the name goes at the top of Profile while there is none, and
+    /// tapping it is how you give one, so it is an instruction.
+    var namePlaceholder: String { t("Add your name", "Adiciona o teu nome") }
+    /// Renaming, in the system's own small box.
+    var nameAlertTitle: String { t("Your name", "O teu nome") }
+    var nameAlertMessage: String {
+        t("Only used to greet you. It stays on this phone.",
+          "Só serve para te cumprimentar. Fica neste telemóvel.")
+    }
+    var nameEditHint: String { t("Changes your name", "Muda o teu nome") }
     var appSection: String { "App" }
     var languageLabel: String { t("Language", "Idioma") }
     var privacyLabel: String { t("Privacy", "Privacidade") }
     /// v1.0: unconditional again, and now simply true. There is no code path in
     /// this app that sends anything anywhere.
     var privacyValue: String { t("All data stays on this phone", "Tudo fica neste telemóvel") }
-    var versionLabel: String { t("Version", "Versão") }
     var sourcesLabel: String { t("Data sources", "Fontes de dados") }
     var sourcesValue: String { "INE / GEP-MTSSS · CC BY 4.0" }
-    /// v1.0: the version is READ, not typed. This line said "v0.9.4" through six
-    /// releases, including the one that added a Version row four lines above it
-    /// saying something else. A number in prose is a number nobody updates, and
-    /// the disclaimer it sits in is the one line on the screen that most needs to
-    /// look maintained.
+    /// Under the version at the foot of Profile. The version itself is READ
+    /// from the bundle (v1.0): this line said "v0.9.4" through six releases.
     var profileFooter: String {
-        t("SalarySeed v\(AppConfig.version). Estimates only, not official tax or financial advice.",
-          "SalarySeed v\(AppConfig.version). Só estimativas, não aconselhamento fiscal ou financeiro oficial.")
+        t("Estimates only, not official tax or financial advice.",
+          "Só estimativas, não aconselhamento fiscal ou financeiro oficial.")
     }
 
     // v0.6 tax details, which were Profile's section until phase two moved them
@@ -752,7 +753,7 @@ struct Strings {
     }
 
     // Job title
-    var jobRowTitle: String { t("Your job", "A tua profissão") }
+    var jobRowTitle: String { t("Job", "Profissão") }
     var jobAddHint: String { t("The thing you'd say at a dinner table", "Aquilo que dirias num jantar") }
     var jobSheetTitle: String { t("What do you do?", "O que fazes?") }
     var jobSearchPlaceholder: String { t("Search your job", "Procura a tua profissão") }
@@ -790,7 +791,9 @@ struct Strings {
 
     // MARK: v0.9.1 município
 
-    var concelhoRowTitle: String { t("Your município", "O teu concelho") }
+    /// Profile's line titles name the thing, without "your": the section above
+    /// them already says whose.
+    var concelhoRowTitle: String { t("Município", "Concelho") }
     var concelhoAddHint: String { t("Sets your region for the comparison", "Define a tua região para a comparação") }
     var concelhoSheetTitle: String { t("Which município do you work in?", "Em que concelho trabalhas?") }
     var concelhoQuestion: String { t("Which município\ndo you work in?", "Em que concelho\ntrabalhas?") }

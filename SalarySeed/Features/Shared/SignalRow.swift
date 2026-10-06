@@ -1,9 +1,8 @@
 import SwiftUI
 
-/// The row Profile (and Other tools, and the offer) use to say "here is one of
-/// your answers, or here is one you have not given yet". Compare in Portugal
-/// used it too until phase two turned its groups into one list of
-/// `GlyphLine`s.
+/// The row Other tools and the job offer use: a glyph, a title, a line under
+/// it, and something trailing. Profile and Compare in Portugal used it too,
+/// until phase two made each of them cards of `GlyphLine`s.
 ///
 /// v1.2a: EIGHT COPIES OF THIS EXISTED, and all eight had the same three bugs,
 /// which is the argument for the file rather than the tidiness.
@@ -31,9 +30,6 @@ struct SignalRow<Trailing: View>: View {
     var iconTint: Color = Theme.textSecondary
     let title: String
     let subtitle: String
-    var subtitleTint: Color = Theme.textSecondary
-    /// Dimmed the way the old rows dimmed an unanswered question.
-    var dimmed: Bool = false
     @ViewBuilder var trailing: () -> Trailing
 
     var body: some View {
@@ -67,7 +63,6 @@ struct SignalRow<Trailing: View>: View {
         .multilineTextAlignment(.leading)
         .padding(14)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-        .opacity(dimmed ? 0.9 : 1)
     }
 
     private var iconView: some View {
@@ -88,28 +83,8 @@ struct SignalRow<Trailing: View>: View {
     private var subtitleView: some View {
         Text(subtitle)
             .appFont(11)
-            .foregroundStyle(subtitleTint)
+            .foregroundStyle(Theme.textSecondary)
             .fixedSize(horizontal: false, vertical: true)
-    }
-}
-
-/// The "+ Add" chip on the trailing edge of a row with no answer in it yet.
-///
-/// `lineLimit(1)` and `fixedSize` are the whole point: it is a chip, and a chip
-/// that wraps is a chip that has stopped being one. The row reflows around it
-/// instead.
-struct AddPill: View {
-    @EnvironmentObject private var store: SalaryStore
-
-    var body: some View {
-        Text(store.s.addPill)
-            .appFont(11, weight: .medium)
-            .foregroundStyle(Theme.ink)
-            .lineLimit(1)
-            .fixedSize(horizontal: true, vertical: false)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 4)
-            .background(Theme.accent, in: RoundedRectangle(cornerRadius: 9))
     }
 }
 

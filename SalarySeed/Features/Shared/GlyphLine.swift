@@ -65,3 +65,28 @@ extension GlyphLine where Trailing == EmptyView {
                   dimmedTile: dimmedTile, words: words, trailing: { EmptyView() })
     }
 }
+
+/// A card of `GlyphLine`s: the Settings shape, one rounded card per section
+/// with the lines inside it. Compare in Portugal's groups and every section of
+/// Profile are one of these.
+struct LineCard<Content: View>: View {
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(spacing: 0) { content() }
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: 18))
+    }
+}
+
+/// The hairline between two lines of a card, inset past the glyph the way a
+/// list's is.
+struct GlyphLineDivider: View {
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    var body: some View {
+        Rectangle()
+            .fill(Color.white.opacity(0.06))
+            .frame(height: 1)
+            .padding(.leading, 16 + Theme.scaled(32, typeSize) + 14)
+    }
+}

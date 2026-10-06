@@ -48,9 +48,10 @@ does, each opening its own screen. There is no tab bar.
 | **Check job offer** | An offer next to the job you have. See below. |
 | **Other tools** | Trying another salary without changing yours, and what being paid in ajudas de custo costs later. |
 
-**Profile** holds the answers the comparisons run on, each with what it unlocks, and is
-reached from the person at the top of Home. The tax answers are on Tax, beside the figures
-they change.
+**Profile** holds the answers the comparisons run on, each with what it unlocks, plus your
+name, the language and the colour, and is reached from the person at the top of Home. The
+sprout that grows as you answer is its picture. The tax answers are on Tax, beside the
+figures they change, and the salary is changed from Home, not from here.
 
 **A job offer** goes in from its row on Home, and is put next to
 the job you have in the order the questions arrive: what reaches you each month, where the
