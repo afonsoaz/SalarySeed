@@ -1,99 +1,177 @@
 import SwiftUI
 
-/// Everything that comes off the salary, in detail: the two trees and the
-/// withheld-against-real settlement, with every assumption spelled out.
+/// From what your company pays down to what reaches you, in the order the money
+/// moves.
 ///
-/// It was the half of Home below the fold. It is a view of its own so that one
-/// drawing serves both Home, for as long as Home still shows it, and the Tax
-/// screen, which is where it lives once Home becomes a list of ways in. Nothing
-/// in it changed on the way out of HomeView: same breakdown, same period lens,
-/// same rates.
-struct TaxSections: View {
+/// PHASE TWO FOLDED THE TWO DETAIL TREES INTO THIS. The trees and the bar above
+/// them showed the same four amounts twice, once as shares of a bar and once as
+/// two separate totals, and neither said the employer's rate: the company tree
+/// gave its Social Security as "19,2% of cost", which is a share of something
+/// rather than the 23,75% the law charges. Here every deduction is quoted as the
+/// rate on gross it actually is, and each row carries the colour of its segment
+/// in the bar, so the rows are the bar's legend and the legend is gone.
+///
+/// The Social Security rates are the statutory ones from `TaxEngine`, which is
+/// what the engine multiplies gross by, so the rate beside each amount and the
+/// amount itself can never disagree (verification rule 4). IRS has no single
+/// rate; it is the effective withholding on gross, worked out from the same
+/// two numbers it sits between.
+struct MoneyWaterfall: View {
     @EnvironmentObject private var store: SalaryStore
-    /// Read for the scaled glyph boxes in the assumption lines.
     @Environment(\.dynamicTypeSize) private var typeSize
 
-    /// The lens the figures are read through, which is the same one the net
-    /// figure above them uses, so a period picked there carries over.
+    /// The lens the figures are read through, Home's own, bound through Tax.
     let period: ResultPeriod
 
     private var s: Strings { store.s }
     private var b: SalaryBreakdown { store.breakdown }
-    private var isAnnual: Bool { period.isAnnual }
     private var factor: Double { period.factor(months: b.months) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            detailsSection
-            annualSettlementCard
-        }
-    }
-
-    /// v0.5 "in detail": two branching trees plus the red ajudas de custo highlight.
-    /// Company side: total cost splits into gross salary and employer SS.
-    /// Your side: total discounts split into IRS and employee SS, with effective rates.
-    private var detailsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            SectionHeader(s.theDetails) {
-                SectionHint(s.perPeriod(yearly: isAnnual))
+            SectionHeader(s.waterfallTitle) {
+                SectionHint(s.perPeriod(yearly: period.isAnnual))
             }
 
-            DetailTreeCard(
-                title: s.treeCompanyTitle,
-                total: eur(b.employerCostMonthly * factor),
-                children: [
-                    TreeChild(
-                        id: "gross",
-                        label: s.treeGross,
-                        value: eur(b.grossMonthly * factor),
-                        caption: s.ofCost(pct(b.employerCostMonthly > 0 ? b.grossMonthly / b.employerCostMonthly : 0))
-                    ),
-                    TreeChild(
-                        id: "employerSS",
-                        label: s.treeEmployerSS,
-                        value: eur(b.employerSSMonthly * factor),
-                        caption: s.ofCost(pct(b.employerCostMonthly > 0 ? b.employerSSMonthly / b.employerCostMonthly : 0))
-                    ),
-                ]
-            )
+            VStack(alignment: .leading, spacing: 0) {
+                total(s.treeCompanyTitle, b.employerCostMonthly * factor)
+                step(s.treeEmployerSS, Theme.segEmployerSS,
+                     amount: b.employerSSMonthly * factor,
+                     rate: percent(TaxEngine.employerSSRate, decimals: 2))
+                rule
+                total(s.treeGross, b.grossMonthly * factor)
+                step(s.cardYourSS, Theme.segEmployeeSS,
+                     amount: b.employeeSSMonthly * factor,
+                     rate: percent(TaxEngine.employeeSSRate, decimals: 0))
+                step(s.cardIRS, Theme.segIRS,
+                     amount: b.irsMonthly * factor,
+                     rate: percent(b.irsRate))
+                rule
+                total(s.waterfallNet, b.netMonthly * factor, swatch: Theme.segNet)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        }
+    }
 
-            DetailTreeCard(
-                title: s.treeDeductionsTitle,
-                total: eur(b.deductionsMonthly * factor),
-                totalCaption: s.ofGross(pct(b.deductionsRate)),
-                children: [
-                    TreeChild(
-                        id: "irs",
-                        label: s.cardIRS,
-                        value: eur(b.irsMonthly * factor),
-                        caption: s.ofGross(pct(b.irsRate))
-                    ),
-                    TreeChild(
-                        id: "employeeSS",
-                        label: s.cardYourSS,
-                        value: eur(b.employeeSSMonthly * factor),
-                        caption: s.ofGross(pct(b.employeeSSEffRate))
-                    ),
-                ]
-            )
+    /// A running total: what the company pays, the gross, and what is left.
+    ///
+    /// The last one carries the green of the bar's net segment, so the row the
+    /// reader is looking for is the one that matches the 56% above it.
+    private func total(_ label: String, _ amount: Double, swatch: Color? = nil) -> some View {
+        Group {
+            if typeSize.isAccessibilitySize {
+                // Reflow, do not shrink: past the threshold the label and the
+                // figure stop fitting side by side, so the figure goes under.
+                VStack(alignment: .leading, spacing: 2) {
+                    totalLabel(label, swatch: swatch)
+                    totalAmount(amount)
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    totalLabel(label, swatch: swatch)
+                    Spacer(minLength: 8)
+                    totalAmount(amount)
+                }
+            }
+        }
+        .padding(.vertical, 8)
+        .accessibilityElement(children: .combine)
+    }
 
-            if b.ajudasMonthly > 0 {
-                AjudasCard(
-                    value: eur(b.allowance(in: period)),
-                    yearlyLine: isAnnual ? nil : s.ajudasCardYearly(eur(b.ajudasYearly)),
-                    body_: s.ajudasCardBody,
-                    title: s.ajudasCardTitle
-                )
+    private func totalLabel(_ label: String, swatch: Color?) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            if let swatch { square(swatch) }
+            Text(label)
+                .appFont(14, weight: .medium)
+                .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func totalAmount(_ amount: Double) -> some View {
+        Text(eur(amount))
+            .appFont(18, weight: .medium)
+            .foregroundStyle(Theme.textPrimary)
+    }
+
+    /// Something taken off on the way down, with its colour and its rate.
+    private func step(_ label: String, _ color: Color, amount: Double, rate: String) -> some View {
+        Group {
+            if typeSize.isAccessibilitySize {
+                VStack(alignment: .leading, spacing: 2) {
+                    stepLabel(label, color, rate: rate)
+                    stepAmount(amount)
+                }
+            } else {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    stepLabel(label, color, rate: rate)
+                    Spacer(minLength: 8)
+                    stepAmount(amount)
+                }
+            }
+        }
+        .padding(.leading, 14)
+        .padding(.vertical, 6)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func stepLabel(_ label: String, _ color: Color, rate: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            square(color)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(label)
+                    .appFont(12)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(s.ofGross(rate))
+                    .appFont(10)
+                    .foregroundStyle(Theme.textFaint)
             }
         }
     }
 
-    private func pct(_ fraction: Double) -> String { percent(fraction) }
+    /// A true minus sign, not a hyphen: it is the width of a digit, so the
+    /// amounts line up, and VoiceOver reads it as "minus".
+    private func stepAmount(_ amount: Double) -> some View {
+        Text("\u{2212}\u{2009}" + eur(amount))
+            .appFont(14, weight: .medium)
+            .foregroundStyle(Theme.textSecondary)
+    }
 
-    /// v0.6: withholding vs the estimated real annual IRS. Month to month the
-    /// employer withholds from the tables; the real tax settles the next year,
-    /// so there is usually a small refund or amount left to pay. Always yearly.
-    private var annualSettlementCard: some View {
+    /// The colour of this row's segment in the bar above. A shape rather than
+    /// a glyph, so it is sized on the label's curve and cannot outgrow it.
+    private func square(_ color: Color) -> some View {
+        RoundedRectangle(cornerRadius: 2)
+            .fill(color)
+            .frame(width: Theme.scaled(9, typeSize), height: Theme.scaled(9, typeSize))
+            .accessibilityHidden(true)
+    }
+
+    private var rule: some View {
+        Divider().overlay(Theme.cardBorder).padding(.vertical, 2)
+    }
+}
+
+/// v0.6: withholding vs the estimated real annual IRS. Month to month the
+/// employer withholds from the tables; the real tax settles the next year, so
+/// there is usually a small refund or amount left to pay. Always yearly.
+///
+/// Phase two moved the tax-table note out of here and into "What this assumes",
+/// which states the household, IRS Jovem and the tables for the whole screen.
+/// What stays below is what explains THESE two numbers: IRS Jovem being in both,
+/// the €1,000 of deductions and how much of it is used, and what the estimate
+/// rests on (verification rule 7: a note sits inside the branch it explains).
+struct AnnualSettlementCard: View {
+    @EnvironmentObject private var store: SalaryStore
+    /// Read for the scaled glyph boxes in the assumption lines.
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    private var s: Strings { store.s }
+    private var b: SalaryBreakdown { store.breakdown }
+
+    var body: some View {
         // No real IRS due for the year (salary below the taxable threshold).
         let noIRS = b.annualIRSSettled < 1
         let balance = b.annualBalance
@@ -135,12 +213,11 @@ struct TaxSections: View {
                         .appFont(13, weight: .medium)
                         .foregroundStyle(accent)
                 }
-
             }
 
             // v0.9.4: the assumptions are shown in BOTH branches. They used to sit
-            // inside the else, so the moment real IRS came out at zero — which is
-            // exactly when the €1,000 credit cannot be used — the app stopped
+            // inside the else, so the moment real IRS came out at zero, which is
+            // exactly when the €1,000 credit cannot be used, the app stopped
             // mentioning that it had assumed it at all.
             settlementAssumptions
         }
@@ -150,7 +227,6 @@ struct TaxSections: View {
     }
 
     /// What the two numbers above take for granted, always spelled out.
-    @ViewBuilder
     private var settlementAssumptions: some View {
         VStack(alignment: .leading, spacing: 4) {
             Divider().overlay(Theme.cardBorder).padding(.vertical, 2)
@@ -162,20 +238,7 @@ struct TaxSections: View {
                     tint: Theme.accent
                 )
             }
-
             assumptionLine(icon: "receipt", text: creditText, tint: Theme.textFaint)
-            // v0.15: which IRS tables produced these numbers. Stated in BOTH
-            // branches, per the v0.9.4 rule: an islander needs to know their
-            // figures are already regional, and a mainland-assumed user needs to
-            // know the app guessed. Silence would look identical in both cases.
-            if store.taxRegionAssumed {
-                assumptionLine(icon: "mappin.slash", text: s.taxRegionAssumedNote,
-                               tint: Theme.textFaint)
-            } else if store.taxRegion != .continente {
-                assumptionLine(icon: "map",
-                               text: s.taxRegionNote(store.taxRegion.label(pt: s.pt)),
-                               tint: Theme.accent)
-            }
             assumptionLine(icon: "info.circle", text: s.annualNote, tint: Theme.textFaint)
         }
     }

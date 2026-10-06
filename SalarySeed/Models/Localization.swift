@@ -241,12 +241,10 @@ struct Strings {
     }
 
     var whereMoneyGoes: String { t("Where the money goes", "Para onde vai o dinheiro") }
-    var legendNet: String { t("Net", "Líquido") }
-    var legendIRS: String { "IRS" }
-    var legendYourSS: String { t("Your SS", "A tua SS") }
-    var legendEmployerSS: String { t("Employer SS", "SS da empresa") }
+    // The bar's legend (Net, IRS, Your SS, Employer SS) and the "Details" heading
+    // went in phase two: the waterfall under the bar is the legend now, one
+    // coloured row per segment with its amount and its rate.
 
-    var theDetails: String { t("Details", "Detalhe") }
     /// v1.2: two `t()` calls rather than one with a ternary in each argument.
     /// Same output; the difference is that `tools/dump_copy.py` can see a pair
     /// here, and could not see one inside the ternaries.
@@ -256,13 +254,27 @@ struct Strings {
     var cardYourSS: String { t("Social Security (employee)", "Segurança Social (trabalhador)") }
     var cardIRS: String { t("IRS withheld", "IRS retido") }
 
-    // v0.5 detail trees
+    // v0.5 named these for the two detail trees. Phase two folded the trees into
+    // one waterfall, from what the company pays down to what reaches the reader,
+    // and kept the names that still fit.
     var treeCompanyTitle: String { t("Total cost for your company", "Custo total para a empresa") }
     var treeGross: String { t("Gross salary", "Salário bruto") }
     var treeEmployerSS: String { t("Social Security (employer)", "Segurança Social (empresa)") }
-    var treeDeductionsTitle: String { t("Your total discounts", "Os teus descontos totais") }
     func ofGross(_ pct: String) -> String { t("\(pct) of gross", "\(pct) do bruto") }
-    func ofCost(_ pct: String) -> String { t("\(pct) of cost", "\(pct) do custo") }
+    /// The waterfall's heading. Every rate on it is a rate on gross, the base
+    /// the law charges them on, which the trees' "% of cost" never showed.
+    var waterfallTitle: String { t("From your company to you", "Da tua empresa até ti") }
+    var waterfallNet: String { t("Net, what reaches you", "Líquido, o que te chega") }
+
+    // Phase two: what Tax assumes, stated on the screen whose numbers it changes
+    // and editable there. Married or not, dependants and IRS Jovem moved here
+    // from Profile; the tax tables follow the município, which stays in Profile.
+    var taxAssumesTitle: String { t("What this assumes", "O que isto assume") }
+    var taxTablesLabel: String { t("Tax tables", "Tabelas de IRS") }
+    /// Under the region, when no município has been given and the mainland
+    /// tables are a guess. The note below the card says what that costs.
+    var taxTablesAssumed: String { t("No município yet", "Ainda sem concelho") }
+    func irsJovemExemptValue(_ pct: Int) -> String { t("\(pct)% exempt", "\(pct)% isento") }
 
     // v0.6 annual settlement (withholding vs real IRS)
     var annualTitle: String { t("Withheld vs real IRS", "Retido vs IRS real") }
@@ -314,6 +326,10 @@ struct Strings {
           "+ \(amount) de ajudas de custo. Total no teu bolso: \(total).")
     }
     var ajudasCardTitle: String { t("Ajudas de custo", "Ajudas de custo") }
+    /// The ajudas card's way to The hidden cost, on Tax. Its own pair rather
+    /// than Other tools' line, because a link label ending in a full stop and
+    /// then a chevron reads as a sentence that stopped and a button that did not.
+    var ajudasSeeCost: String { t("See what it costs your pension", "Vê quanto custa à tua reforma") }
     func ajudasCardYearly(_ yearly: String) -> String { t("\(yearly) a year, paid over 12 months", "\(yearly) por ano, pago em 12 meses") }
     var ajudasCardBody: String {
         t("This goes straight to your net pay: no IRS, no Social Security. But it does not count as gross salary. Banks ignore it when rating you for loans, and it builds no pension or social protection.",
@@ -534,8 +550,8 @@ struct Strings {
           "SalarySeed v\(AppConfig.version). Só estimativas, não aconselhamento fiscal ou financeiro oficial.")
     }
 
-    // v0.6 tax details section (profileSeed)
-    var taxSection: String { t("Tax details", "Dados fiscais") }
+    // v0.6 tax details, which were Profile's section until phase two moved them
+    // onto Tax, under `taxAssumesTitle`. The labels are the same ones.
     var maritalLabel: String { t("Situation", "Situação") }
     var dependentsLabel: String { t("Dependants", "Dependentes") }
     var irsJovemTitle: String { t("IRS Jovem", "IRS Jovem") }
@@ -1803,9 +1819,12 @@ struct Strings {
 
     // The form.
     var offerFormTitle: String { t("The offer", "A proposta") }
+    /// Phase two moved the household and IRS Jovem from Profile onto Tax, so
+    /// "as in your profile" stopped being where they are. What stays true, and
+    /// is the point, is that they are the reader's own answers on both sides.
     var offerFormSub: String {
-        t("Type what the offer says. Everything about you stays as in your profile: household, IRS Jovem, age and education.",
-          "Escreve o que diz a proposta. Tudo o que é sobre ti fica como no teu perfil: agregado, IRS Jovem, idade e escolaridade.")
+        t("Type what the offer says. Everything about you stays as you have it: household, IRS Jovem, age and education.",
+          "Escreve o que diz a proposta. Tudo o que é sobre ti fica como o tens: agregado, IRS Jovem, idade e escolaridade.")
     }
     var offerAmountNeeded: String {
         t("Type the offer's pay to carry on.", "Escreve o salário da proposta para continuar.")

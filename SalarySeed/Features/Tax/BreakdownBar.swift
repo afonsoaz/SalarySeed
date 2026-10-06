@@ -47,13 +47,12 @@ struct BreakdownBar: View {
                 .clipShape(RoundedRectangle(cornerRadius: 7))
             }
             .frame(height: 14)
-
-            HStack(spacing: 12) {
-                legend(s.legendNet, Theme.segNet)
-                legend(s.legendIRS, Theme.segIRS)
-                legend(s.legendYourSS, Theme.segEmployeeSS)
-                legend(s.legendEmployerSS, Theme.segEmployerSS)
-            }
+            // A picture of the rows below it, which say every amount with its
+            // label and rate, so VoiceOver reads those and skips this.
+            .accessibilityHidden(true)
+            // No legend since phase two. It broke "Employer SS" mid-word at an
+            // accessibility size, and it named the four colours a second time:
+            // the waterfall under this carries each colour on the row it means.
         }
     }
 
@@ -92,12 +91,5 @@ struct BreakdownBar: View {
         Rectangle()
             .fill(color)
             .frame(width: max(0, width * value / total))
-    }
-
-    private func legend(_ label: String, _ color: Color) -> some View {
-        HStack(spacing: 4) {
-            RoundedRectangle(cornerRadius: 2).fill(color).frame(width: 8, height: 8)
-            Text(label).appFont(10).foregroundStyle(Theme.textSecondary)
-        }
     }
 }

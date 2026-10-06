@@ -40,7 +40,7 @@ does, each opening its own screen. There is no tab bar.
 
 | Row | What it answers |
 |---|---|
-| **Tax** | Where the money goes: the share of what your employer spends that reaches you, the full breakdown, the total cost to your employer, and the annual IRS settlement with every assumption written out. |
+| **Tax** | Where the money goes: the share of what your employer spends that reaches you, then one line per step from what your company pays to what reaches you, each with its rate, then the annual IRS settlement. Underneath, what all of it assumes (married or not, dependants, IRS Jovem, the tax tables), editable right there. |
 | **Check your payslip** | Whether your last payslip adds up. Give it a PDF, photograph it with the camera, or pick a photo, and it checks ten things, on the device, and says which ones it could not check and why. The most interesting part of the app. |
 | **Compare in Portugal** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region, and a district map of what your sector pays. |
 | **Compare in Europe** | Where it would sit in the rest of the EU, on a 27-tile grid. |
@@ -48,8 +48,9 @@ does, each opening its own screen. There is no tab bar.
 | **Job offer** | An offer next to the job you have. See below. |
 | **Other tools** | Trying another salary without changing yours, and what being paid in ajudas de custo costs later. |
 
-**Profile** holds the inputs behind all of it, each with what it unlocks, and is reached
-from the person at the top of Home.
+**Profile** holds the answers the comparisons run on, each with what it unlocks, and is
+reached from the person at the top of Home. The tax answers are on Tax, beside the figures
+they change.
 
 **A job offer** goes in from its row on Home, and is put next to
 the job you have in the order the questions arrive: what reaches you each month, where the

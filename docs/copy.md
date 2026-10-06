@@ -362,30 +362,6 @@ and the edits get applied back to the Swift source afterwards.
 - **EN** `Where the money goes`
 - **PT** `Para onde vai o dinheiro`
 
-### `legendNet`
-
-- **EN** `Net`
-- **PT** `Líquido`
-
-### `legendIRS` — built in code
-
-Assembled in Swift rather than written as a pair. `Localization.swift:245`.
-
-### `legendYourSS`
-
-- **EN** `Your SS`
-- **PT** `A tua SS`
-
-### `legendEmployerSS`
-
-- **EN** `Employer SS`
-- **PT** `SS da empresa`
-
-### `theDetails`
-
-- **EN** `Details`
-- **PT** `Detalhe`
-
 ### `perPeriod[0]`
 
 - **EN** `per year`
@@ -421,20 +397,40 @@ Assembled in Swift rather than written as a pair. `Localization.swift:245`.
 - **EN** `Social Security (employer)`
 - **PT** `Segurança Social (empresa)`
 
-### `treeDeductionsTitle`
-
-- **EN** `Your total discounts`
-- **PT** `Os teus descontos totais`
-
 ### `ofGross`
 
 - **EN** `\(pct) of gross`
 - **PT** `\(pct) do bruto`
 
-### `ofCost`
+### `waterfallTitle`
 
-- **EN** `\(pct) of cost`
-- **PT** `\(pct) do custo`
+- **EN** `From your company to you`
+- **PT** `Da tua empresa até ti`
+
+### `waterfallNet`
+
+- **EN** `Net, what reaches you`
+- **PT** `Líquido, o que te chega`
+
+### `taxAssumesTitle`
+
+- **EN** `What this assumes`
+- **PT** `O que isto assume`
+
+### `taxTablesLabel`
+
+- **EN** `Tax tables`
+- **PT** `Tabelas de IRS`
+
+### `taxTablesAssumed`
+
+- **EN** `No município yet`
+- **PT** `Ainda sem concelho`
+
+### `irsJovemExemptValue`
+
+- **EN** `\(pct)% exempt`
+- **PT** `\(pct)% isento`
 
 ### `annualTitle`
 
@@ -515,6 +511,11 @@ Assembled in Swift rather than written as a pair. `Localization.swift:245`.
 
 - **EN** `Ajudas de custo`
 - **PT** `Ajudas de custo`
+
+### `ajudasSeeCost`
+
+- **EN** `See what it costs your pension`
+- **PT** `Vê quanto custa à tua reforma`
 
 ### `ajudasCardYearly`
 
@@ -612,7 +613,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:245`.
 
 ### `ordinalPercentile` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:370`.
+Assembled in Swift rather than written as a pair. `Localization.swift:386`.
 
 ### `youMarker`
 
@@ -859,7 +860,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:370`.
 
 ### `sectorCohort` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:482`.
+Assembled in Swift rather than written as a pair. `Localization.swift:498`.
 
 ---
 
@@ -941,7 +942,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:482`.
 
 ### `appSection` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:518`.
+Assembled in Swift rather than written as a pair. `Localization.swift:534`.
 
 ### `languageLabel`
 
@@ -970,17 +971,12 @@ Assembled in Swift rather than written as a pair. `Localization.swift:518`.
 
 ### `sourcesValue` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:526`.
+Assembled in Swift rather than written as a pair. `Localization.swift:542`.
 
 ### `profileFooter`
 
 - **EN** `SalarySeed v\(AppConfig.version). Estimates only, not official tax or financial advice.`
 - **PT** `SalarySeed v\(AppConfig.version). Só estimativas, não aconselhamento fiscal ou financeiro oficial.`
-
-### `taxSection`
-
-- **EN** `Tax details`
-- **PT** `Dados fiscais`
 
 ### `maritalLabel`
 
@@ -1996,7 +1992,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:526`.
 
 ### `growStepArrow` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:991`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1007`.
 
 ### `growMoreTitle`
 
@@ -2224,7 +2220,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:991`.
 
 ### `euroDash` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1108`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1124`.
 
 ### `euroUnitEuros`
 
@@ -2303,7 +2299,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1108`.
 
 ### `ordinal` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1164`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1180`.
 
 ### `euroRank[0]`
 
@@ -3233,8 +3229,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1164`.
 
 ### `offerFormSub`
 
-- **EN** `Type what the offer says. Everything about you stays as in your profile: household, IRS Jovem, age and education.`
-- **PT** `Escreve o que diz a proposta. Tudo o que é sobre ti fica como no teu perfil: agregado, IRS Jovem, idade e escolaridade.`
+- **EN** `Type what the offer says. Everything about you stays as you have it: household, IRS Jovem, age and education.`
+- **PT** `Escreve o que diz a proposta. Tudo o que é sobre ti fica como o tens: agregado, IRS Jovem, idade e escolaridade.`
 
 ### `offerAmountNeeded`
 

@@ -7,7 +7,6 @@ import UIKit
 struct ProfileView: View {
     @EnvironmentObject private var store: SalaryStore
     @State private var showEditor = false
-    @State private var showJovemAssessor = false
     @State private var showSectorSheet = false
     @State private var activeDimension: CompareDimension?
     // v0.9
@@ -43,7 +42,9 @@ struct ProfileView: View {
 
                 demographicsSection
                 workSection
-                taxSection
+                // Phase two moved the tax answers (married or not, dependants,
+                // IRS Jovem) onto Tax, under "What this assumes", next to the
+                // figures they change. Profile is about you and the app.
                 appSection
 
                 Text(s.profileFooter)
@@ -63,7 +64,6 @@ struct ProfileView: View {
             onChange: { showEditor = true },
             onExplore: { showExplorer = true }
         )
-        .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
         .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
         .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
         .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
@@ -79,7 +79,8 @@ struct ProfileView: View {
     /// footnote says so: an app that asks for something and then pretends it is
     /// being used has spent trust it will need later.
     /// v0.9.3: the profile is grouped by what the question is ABOUT rather than by
-    /// which version added it. Demographics, then the job, then tax.
+    /// which version added it. Demographics, then the job. Tax was third until
+    /// phase two moved it onto the Tax screen.
     private var demographicsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(s.demographicsTitle)
@@ -329,155 +330,11 @@ struct ProfileView: View {
         }
     }
 
-    // MARK: Tax details (v0.6)
+    // MARK: Progress
 
-    /// Marital situation + dependants (also set in onboarding) and the IRS Jovem
-    /// exemption, which lives only here. All three feed the real 2026 IRS estimate.
-    private var taxSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(s.taxSection)
-
-            VStack(spacing: 14) {
-                // v0.9.3: short labels and a fixed row height. "Casado, dois
-                // titulares" wrapped, which made this row taller than the
-                // dependants row underneath and the section look misaligned.
-                HStack {
-                    Text(s.maritalLabel)
-                        .appFont(14)
-                        .foregroundStyle(Theme.textPrimary)
-                    Spacer()
-                    Picker(s.maritalLabel, selection: $store.maritalSituation) {
-                        ForEach(MaritalSituation.allCases) { m in
-                            Text(m.shortLabel(pt: s.pt)).tag(m)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .tint(Theme.accent)
-                    .lineLimit(1)
-                    .fixedSize()
-                }
-                .frame(height: Theme.fiscalRowHeight)
-
-                Divider().overlay(Theme.cardBorder)
-
-                HStack {
-                    Text(s.dependentsLabel)
-                        .appFont(14)
-                        .foregroundStyle(Theme.textPrimary)
-                    Spacer()
-                    HStack(spacing: 16) {
-                        Button {
-                            if store.dependents > 0 { store.dependents -= 1 }
-                        } label: {
-                            Image(systemName: "minus.circle")
-                                .appFont(20)
-                                .foregroundStyle(store.dependents > 0 ? Theme.accent : Theme.textFaint)
-                        }
-                        Text("\(store.dependents)")
-                            .appFont(16, weight: .medium)
-                            .foregroundStyle(Theme.textPrimary)
-                            .frame(minWidth: 18)
-                        Button {
-                            if store.dependents < 12 { store.dependents += 1 }
-                        } label: {
-                            Image(systemName: "plus.circle")
-                                .appFont(20)
-                                .foregroundStyle(Theme.accent)
-                        }
-                    }
-                }
-                .frame(height: Theme.fiscalRowHeight)
-            }
-            .padding(14)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-
-            irsJovemCard
-        }
-    }
-
-    private var irsJovemCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
-                Image(systemName: "leaf.fill")
-                    .appFont(12)
-                    .foregroundStyle(Theme.accent)
-                Text(s.irsJovemTitle)
-                    .appFont(14, weight: .medium)
-                    .foregroundStyle(Theme.textPrimary)
-            }
-            Text(s.irsJovemSub)
-                .appFont(11.5)
-                .foregroundStyle(Theme.textSecondary)
-                .lineSpacing(2)
-
-            // Primary path: the guided eligibility check.
-            Button { showJovemAssessor = true } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "sparkles")
-                        .appFont(13)
-                    Text(s.irsJovemCheck)
-                        .appFont(13, weight: .medium)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .appFont(11)
-                }
-                .foregroundStyle(Theme.accent)
-                .padding(.vertical, 11)
-                .padding(.horizontal, 12)
-                .frame(maxWidth: .infinity)
-                .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 11))
-                .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.accentBorder))
-            }
-            .padding(.top, 2)
-
-            // Manual fallback: set the exemption by hand.
-            Text(s.irsJovemManual)
-                .appFont(11)
-                .foregroundStyle(Theme.textFaint)
-                .padding(.top, 4)
-
-            HStack(spacing: 6) {
-                ForEach(ProfileView.jovemOptions, id: \.value) { option in
-                    jovemChip(option)
-                }
-            }
-
-            Text(s.irsJovemNote)
-                .appFont(10)
-                .foregroundStyle(Theme.textFaint)
-                .lineSpacing(2)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accentBorder))
-    }
-
-    static let jovemOptions: [(label: String, value: Double)] = [
-        ("100%", 1.0), ("75%", 0.75), ("50%", 0.5), ("25%", 0.25), ("Off", 0.0),
-    ]
-
-    private func jovemChip(_ option: (label: String, value: Double)) -> some View {
-        let isSelected = abs(store.irsJovemExemption - option.value) < 0.001
-        let title = option.value == 0 ? s.irsJovemOff : option.label
-        return Button {
-            withAnimation(.easeOut(duration: 0.15)) { store.irsJovemExemption = option.value }
-        } label: {
-            Text(title)
-                .appFont(12, weight: .medium)
-                .foregroundStyle(isSelected ? Theme.ink : Theme.textSecondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 9)
-                .background(
-                    isSelected ? Theme.accent : Color.white.opacity(0.06),
-                    in: RoundedRectangle(cornerRadius: 9)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 9)
-                        .stroke(isSelected ? Theme.accent : Theme.cardBorder, lineWidth: 1)
-                )
-        }
-    }
+    // Tax details (v0.6) lived here: marital situation, dependants and the IRS
+    // Jovem exemption. Phase two moved all three onto Tax, as `TaxAssumptions`,
+    // where the figures they change are.
 
     /// The sprout's home: profile completeness rendered as growth.
     /// v0.9.3: the sprout stays, the seed vocabulary does not. The wording used
