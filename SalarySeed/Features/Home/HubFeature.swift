@@ -65,7 +65,7 @@ enum HubFeature: CaseIterable, Identifiable {
     func title(_ s: Strings, offerKept: Bool) -> String {
         switch self {
         case .tax: return s.hubTaxTitle
-        case .payslip: return s.payslipTitle
+        case .payslip: return s.hubPayslipTitle
         case .comparePortugal: return s.hubPortugalTitle
         case .compareEurope: return s.hubEuropeTitle
         case .grow: return s.growTitle

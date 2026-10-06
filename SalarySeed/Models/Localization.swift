@@ -45,14 +45,19 @@ struct Strings {
     // Home's rows: a title and one line each, and NO FIGURES. A row that names
     // no number can never disagree with the screen it opens, which is the rule
     // the offer card and the retired intro already kept. Where a screen's own
-    // title already says it, the row reuses it (`payslipTitle`, `growTitle`,
-    // `euroTitle`, `toolsTitle`) rather than saying the same thing twice in
-    // two wordings.
+    // words already say it, the row reuses them (`growTitle` and `toolsTitle`
+    // as titles, `euroTitle` as Europe's line) rather than saying the same
+    // thing twice in two wordings.
     var hubTaxTitle: String { t("Tax", "Impostos") }
     var hubTaxSub: String {
         t("Where your money goes, and your IRS for the year",
           "Para onde vai o teu dinheiro, e o teu IRS do ano")
     }
+    /// In the reader's own voice, like the "Update my salary" bubble above the
+    /// rows, which is why it is not the checker's own title: that screen talks
+    /// TO the reader ("Check your payslip"), and onboarding's cover uses the
+    /// same title, so it stays as it is. Afonso's wording.
+    var hubPayslipTitle: String { t("Check my payslip", "Conferir o meu recibo") }
     var hubPayslipSub: String {
         t("Whether it adds up, checked on your phone",
           "Se as contas batem certo, conferido no teu telemóvel")
