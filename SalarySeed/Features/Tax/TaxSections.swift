@@ -295,6 +295,10 @@ struct TaxDisclaimer: View {
         Text(store.s.homeDisclaimer(store.taxRegion))
             .appFont(10)
             .foregroundStyle(Theme.textFaint)
+            // Centred line by line, not just as a block: on two lines a
+            // centred frame with leading text reads as a misaligned paragraph,
+            // and Home is a centred screen now.
+            .multilineTextAlignment(.center)
             .frame(maxWidth: .infinity, alignment: .center)
             .padding(.top, 4)
     }

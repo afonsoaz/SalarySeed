@@ -74,7 +74,9 @@ enum HubFeature: CaseIterable, Identifiable {
         }
     }
 
-    func subtitle(_ s: Strings, offerKept: Bool) -> String {
+    /// What the row opens, in a sentence. Not drawn: Home's rows are a glyph
+    /// and a name, and this is what VoiceOver says after the name.
+    func hint(_ s: Strings, offerKept: Bool) -> String {
         switch self {
         case .tax: return s.hubTaxSub
         case .payslip: return s.hubPayslipSub

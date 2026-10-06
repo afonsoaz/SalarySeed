@@ -48,18 +48,10 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     topBar
-                    greeting
-                        .padding(.top, 14)
-                    heroNet
-                        .padding(.top, 26)
-                    heroFootnotes
-                    updateBubble
-                        .padding(.top, 14)
-                    // The picker changes the number, so it sits under the number.
-                    periodPicker
-                        .padding(.top, 18)
+                    hero
+                        .padding(.top, 30)
+                        .padding(.bottom, 40)
                     hubRows
-                        .padding(.top, 24)
                     profileNudge
                     TaxDisclaimer()
                         .padding(.top, 18)
@@ -119,34 +111,59 @@ struct HomeView: View {
         .foregroundStyle(Theme.accent)
     }
 
-    /// v1.4: one line. 18pt on the `.body` curve, deliberately not 20: 20
-    /// crosses into `.title3` and the greeting would then grow more slowly than
-    /// the figure beneath it. No lineLimit, because "reflow, do not shrink" is
-    /// locked and a long name wrapping to two lines is the correct outcome.
+    // MARK: The figure
+
+    /// The salary, centre stage.
+    ///
+    /// Afonso asked for it centred and given more of the screen, with the
+    /// ×12 / ×14 / Year lens brought down in weight. So it is one centred
+    /// column with room above and below it, and the lens is the last and
+    /// quietest thing in it: the greeting, what the figure is, the figure, the
+    /// gross, what the period means, the way to change it, then the lens.
+    private var hero: some View {
+        VStack(spacing: 0) {
+            greeting
+            heroNet
+                .padding(.top, 22)
+            heroFootnotes
+            updateBubble
+                .padding(.top, 22)
+            // Quiet on purpose. It re-reads the figure; it is not the figure.
+            PeriodSwitch(selection: $period)
+                .padding(.top, 10)
+        }
+        .frame(maxWidth: .infinity)
+        .multilineTextAlignment(.center)
+    }
+
+    /// v1.4: one line, and no lineLimit: "reflow, do not shrink" is locked and
+    /// a long name wrapping to two lines is the correct outcome. 17pt on the
+    /// `.body` curve, so it grows no faster than the figure beneath it.
     private var greeting: some View {
         Text(s.hey(store.displayName))
-            .appFont(18)
+            .appFont(17)
             .foregroundStyle(Theme.textSecondary)
             .fixedSize(horizontal: false, vertical: true)
     }
 
-    // MARK: The figure
-
-    /// v1.4: net leads at 44pt with gross as a 20pt annotation under it.
+    /// The net figure, at 56pt, with the gross under it.
     ///
-    /// 44 is not too big, and it is measured rather than judged. `band(for: 44)`
-    /// is `.largeTitle`, so it resolves to 67pt at accessibility-extra-large,
-    /// where the widest figure anybody will see ("140 000 €", plus the leaf) is
-    /// 334 points of the 335 available. `minimumScaleFactor` never engages.
+    /// THE DEFAULT LOOK MOVED AGAIN, DELIBERATELY. v1.4 measured 44pt so that
+    /// `minimumScaleFactor` would never engage; Afonso asked for the salary to
+    /// take over more of the screen, and 56 is that decision, named as one. At
+    /// the default size the widest figure the screen draws ("140 000 €" plus
+    /// the leaf) is about 305 of the 362 points available. At
+    /// accessibility-extra-large `band(for: 56)` is `.largeTitle` and the
+    /// figure reaches about 86pt, where a yearly figure that wide scales down
+    /// a little rather than wrapping: a number cannot reflow, and one line is
+    /// the only honest shape for it.
     ///
-    /// THE FIGURE IS NOT A BUTTON ANY MORE. v1.4 made the whole block the way
-    /// into the editor, with an 11pt pencil on the label as the only hint that a
-    /// number could be tapped. The hub put a bubble on it that says what it
-    /// does, so the number is just the number again and the pencil is gone.
+    /// THE FIGURE IS NOT A BUTTON. The bubble under it says what it does, so the
+    /// number stays just the number.
     private var heroNet: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: 0) {
             Text("\(s.netWord) / \(s.periodSuffix(period.modeIndex))")
-                .appFont(12)
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
 
             // `.firstTextBaseline` here is DELIBERATE and is not the rule 31
@@ -154,25 +171,32 @@ struct HomeView: View {
             // SwiftUI aligns its bottom edge, which is exactly where the leaf's
             // own `.bottomLeading` unfurl anchor wants to be: it sprouts from the
             // baseline of the number. Changing this to `.bottom` detaches it.
-            HStack(alignment: .firstTextBaseline, spacing: 5) {
-                RollingEuro(value: b.netMonthly * factor, color: Theme.accent, fontSize: 44)
+            //
+            // The clear block on the left weighs exactly what the leaf does on
+            // the right, so the NUMBER is what sits on the centre line, with the
+            // leaf hanging off it, rather than the pair.
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Color.clear
+                    .frame(width: leafSize, height: 1)
+                    .accessibilityHidden(true)
+                RollingEuro(value: b.netMonthly * factor, color: Theme.accent, fontSize: 56)
                 UnfurlingLeaf(trigger: b.netMonthly * factor, size: leafSize)
             }
-            .padding(.top, 2)
+            .padding(.top, 4)
 
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(s.grossWord)
-                    .appFont(13)
+                    .appFont(14)
                     .foregroundStyle(Theme.textFaint)
                 // No period suffix: the label above already named it, and the
                 // gross is the same period by construction.
                 Text(eur(b.grossMonthly * factor))
-                    .appFont(20, weight: .medium)
+                    .appFont(19, weight: .medium)
                     .foregroundStyle(Theme.textSecondary)
             }
-            .padding(.top, 6)
+            .padding(.top, 4)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
         // One element, with an explicit label rather than `.combine`: combined,
         // VoiceOver reads four fragments and speaks "(x14)" as punctuation.
         .accessibilityElement(children: .ignore)
@@ -183,25 +207,21 @@ struct HomeView: View {
         )
     }
 
-    /// 18 points beside a 44 point figure keeps the ratio the 13pt leaf had
-    /// beside the old 30pt one, and it is scaled on the FIGURE's curve rather
-    /// than its own. See the note in `UnfurlingLeaf`.
-    private var leafSize: CGFloat { 18 * Theme.scaled(44, typeSize) / 44 }
+    /// 18 points beside a 44 point figure was the ratio; kept beside 56, and
+    /// scaled on the FIGURE's curve rather than its own. See `UnfurlingLeaf`.
+    private var leafSize: CGFloat { 23 * Theme.scaled(56, typeSize) / 56 }
 
     /// What the figure above takes for granted.
     ///
-    /// The caption is the only thing that says what the 44pt number IS, and the
+    /// The caption is the only thing that says what the 56pt number IS, and the
     /// ajudas line is a pay figure rather than detail: without it the net shown
-    /// here understates what actually reaches the reader. At an accessibility
-    /// size the Portuguese ajudas sentence runs to three or four lines right
-    /// under the figures, and a calm Home that understated somebody's pay would
-    /// be the worse trade.
+    /// here understates what actually reaches the reader.
     @ViewBuilder
     private var heroFootnotes: some View {
         // A short note on what the 12x / 14x monthly view means. Nil for annual.
         if let cap = s.resultCaption(period.modeIndex) {
             Text(cap)
-                .appFont(11)
+                .appFont(12)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 10)
@@ -213,7 +233,7 @@ struct HomeView: View {
             // `pocket(in:)` since v1.5, shared with the offer screen so its
             // "now" cannot drift from this line.
             Text(s.heroAjudas(eur(b.allowance(in: period)), total: eur(b.pocket(in: period))))
-                .appFont(12)
+                .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 6)
@@ -223,12 +243,9 @@ struct HomeView: View {
     /// "Update my salary", on the figure it changes.
     ///
     /// It opens a fresh choice every time: read it off a payslip, which checks
-    /// the payslip on the way, or type it. The figure itself used to be this
-    /// button with a pencil for a hint; a bubble that says what it does is
-    /// findable, and it leaves the number undecorated.
-    ///
-    /// A capsule hugging its text rather than a full-width row, so it reads as
-    /// belonging to the figure above it and not as the first of the rows below.
+    /// the payslip on the way, or type it. A capsule hugging its text, centred
+    /// under the figure, so it reads as belonging to the number and not as the
+    /// first of the rows below.
     private var updateBubble: some View {
         Button { store.path = [.payslipUpdate] } label: {
             HStack(spacing: 6) {
@@ -236,12 +253,12 @@ struct HomeView: View {
                     .appFont(12, weight: .semibold)
                     .accessibilityHidden(true)
                 Text(s.updateSalaryTitle)
-                    .appFont(13, weight: .medium)
-                    .multilineTextAlignment(.leading)
+                    .appFont(14, weight: .medium)
+                    .multilineTextAlignment(.center)
             }
             .foregroundStyle(Theme.accent)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 9)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
             .background(Theme.accentSoft, in: Capsule())
             .overlay(Capsule().stroke(Theme.accentBorder, lineWidth: 1))
             // Apple's 44 point minimum, without drawing a bigger capsule.
@@ -252,34 +269,27 @@ struct HomeView: View {
         .accessibilityHint(s.heroEditHint)
     }
 
-    private var periodPicker: some View {
-        SegmentedPicker(options: ResultPeriod.allCases, selection: $period) {
-            $0.label(s)
-        }
-    }
-
     // MARK: The ways in
 
     /// One row per feature, full width, in the order the questions arrive.
     ///
-    /// `SignalRow`, for the reason rule 29 gives: one row, fixed once, and it
-    /// already reflows past an accessibility text size and scales its glyph box.
-    /// No figures on any row, even ones that could show one: a row that names
-    /// no number can never disagree with the screen it opens.
+    /// A glyph and a name each, and nothing else drawn: what each row opens is
+    /// its VoiceOver hint. See `HubRow` for why the sentences came off. No
+    /// figures on any row, even ones that could show one: a row that names no
+    /// number can never disagree with the screen it opens.
     ///
     /// A tap REPLACES the path rather than appending to it. Home is the root, so
     /// the path is empty whenever a row can be tapped, and replacing means a
     /// double tap cannot push the same screen twice.
     private var hubRows: some View {
-        VStack(spacing: 8) {
+        let kept = store.offer != nil
+        return VStack(spacing: 10) {
             ForEach(HubFeature.allCases) { feature in
-                Button { store.path = [feature.route] } label: {
-                    SignalRow(icon: feature.glyph,
-                              iconTint: Theme.accent,
-                              title: feature.title(s, offerKept: store.offer != nil),
-                              subtitle: feature.subtitle(s, offerKept: store.offer != nil)) {
-                        rowTrailing(locked: isLocked(feature))
-                    }
+                HubRow(glyph: feature.glyph,
+                       title: feature.title(s, offerKept: kept),
+                       hint: feature.hint(s, offerKept: kept),
+                       locked: isLocked(feature)) {
+                    store.path = [feature.route]
                 }
             }
         }
@@ -289,29 +299,6 @@ struct HomeView: View {
     /// true, so no row is locked and Home looks the same for everybody.
     private func isLocked(_ feature: HubFeature) -> Bool {
         feature.tier == .supporter && !supporter.isSupporter
-    }
-
-    /// A chevron, or a lock on a row the support payment covers.
-    ///
-    /// Past an accessibility text size `SignalRow` gives the trailing view a
-    /// line of its own, and a chevron alone on a line is a third line per row
-    /// saying nothing; the row is a button either way. The lock stays, because
-    /// it says something, and it says it to VoiceOver too: the row's button
-    /// reads its title, its line and then this, so a locked row is never
-    /// announced as an ordinary one.
-    @ViewBuilder
-    private func rowTrailing(locked: Bool) -> some View {
-        if locked {
-            Image(systemName: "lock.fill")
-                .appFont(11)
-                .foregroundStyle(Theme.textFaint)
-                .accessibilityLabel(s.hubLockedVoice)
-        } else if !typeSize.isAccessibilitySize {
-            Image(systemName: "chevron.right")
-                .appFont(12)
-                .foregroundStyle(Theme.textFaint)
-                .accessibilityHidden(true)
-        }
     }
 
     /// v1.2b: how complete the profile is, said on the screen people actually

@@ -105,7 +105,9 @@ struct OfferResultView: View {
             - (r.now.grossMonthly * period.factor(months: r.now.months))
         return VStack(alignment: .leading, spacing: 14) {
             SectionLabel(s.offerReachesTitle)
-            SegmentedPicker(options: ResultPeriod.allCases, selection: $period) { $0.label(s) }
+            // The same quiet lens Home and Tax use, because it is the same lens:
+            // ×12, ×14 or a year, read the way Home reads it.
+            PeriodSwitch(selection: $period)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(eur(abs(delta)))

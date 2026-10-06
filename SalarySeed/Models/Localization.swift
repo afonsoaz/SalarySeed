@@ -297,8 +297,12 @@ struct Strings {
     /// year owing money, and the whole refund on this card exists because the app
     /// assumed the deductions for them. "Your real deductions can shift it" was true
     /// and far too mild for a number that goes from plus several hundred to minus.
+    ///
+    /// "1000 €", written the way `eur` writes the line it points at, directly
+    /// above it on Tax. The English said "€1,000" for years, one line under a
+    /// "1000 €", which reads as two different amounts.
     var annualNote: String {
-        t("Estimate on the 2026 brackets. With fewer deductions than the €1,000 above, this drops, and it can turn into an amount to pay.",
+        t("Estimate on the 2026 brackets. With fewer deductions than the 1000 € above, this drops, and it can turn into an amount to pay.",
           "Estimativa nos escalões de 2026. Com menos deduções do que os 1000 € acima, isto baixa e pode passar a valor a pagar.")
     }
 

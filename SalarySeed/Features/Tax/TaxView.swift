@@ -24,9 +24,9 @@ struct TaxView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 header
-                SegmentedPicker(options: ResultPeriod.allCases, selection: $period) {
-                    $0.label(s)
-                }
+                // The same quiet lens Home has, bound to Home's: one lens for one
+                // salary, drawn the same way on both screens.
+                PeriodSwitch(selection: $period)
                 BreakdownBar(breakdown: b)
                 MoneyWaterfall(period: period)
                 ajudas
