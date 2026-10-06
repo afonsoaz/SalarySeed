@@ -52,6 +52,18 @@ enum PercentileEngine {
         }
     }
 
+    /// A national percentile as the whole number a reader is shown: 1 to 99.
+    ///
+    /// `percentile` clamps at 99.9, and rounded that printed "100% of workers
+    /// earn less than you", which nobody can be, being one of the workers. The
+    /// cohort figures have always stopped at 99 (`CohortEngine`). Every screen
+    /// that prints the national figure goes through here (Compare in Portugal,
+    /// the offer, trying another salary), because a fix made on one of three
+    /// copies is how the other two kept saying 100 (rule 33).
+    static func shown(_ p: Double) -> Int {
+        min(99, max(1, Int(p.rounded())))
+    }
+
     /// Inverse of `percentile`: the gross monthly salary at a given percentile
     /// (0-100) of the national distribution. Uses the same two-piece log-normal,
     /// so `percentile(salaryAtPercentile(p)) ≈ p`.

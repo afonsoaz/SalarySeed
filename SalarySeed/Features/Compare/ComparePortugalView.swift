@@ -1,38 +1,37 @@
 import SwiftUI
 
-/// Compare in Portugal: where you stand against other people, and what your
-/// sector pays district by district.
+/// Compare in Portugal: where your pay sits in this country, as one story.
 ///
-/// Two views of one question, how your pay sits in this country, switched by
-/// the chips Map used for Portugal and Europe. They were two tabs, Compare and
-/// the Portuguese half of Map. The European half went to a screen of its own,
-/// because it is a different survey of a different population in a different
-/// year, and the two halves never shared a figure.
+/// Phase two (agreed with Afonso) made it read top to bottom, in the order the
+/// questions come: against everybody (the headline, with the country's pay
+/// drawn under it), against people like you (one line per group), and what
+/// your sector pays across the districts (the map). It was two views behind a
+/// People / Districts switch, which gave the screen two titles, hid half of
+/// it, and was louder than anything it switched between.
 ///
-/// Both views are drawn by exactly the views the tabs drew, so nothing in
-/// either changed on the way here.
+/// The European half of the old map is a screen of its own, because it is a
+/// different survey of a different population in a different year, and the
+/// two never shared a figure.
+///
+/// Every source is named once, at the foot. Each card used to carry its own
+/// source line, the same one four times.
 struct ComparePortugalView: View {
     @EnvironmentObject private var store: SalaryStore
-    @State private var scope: Scope = .people
-
-    enum Scope: String, CaseIterable, Identifiable {
-        case people, districts
-        var id: String { rawValue }
-    }
 
     private var s: Strings { store.s }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 0) {
                 header
-                ScopeChips(options: Scope.allCases, selection: $scope) {
-                    $0 == .people ? s.compareScopePeople : s.compareScopeDistricts
-                }
-                switch scope {
-                case .people: CompareSections()
-                case .districts: DistrictMapView()
-                }
+                NationalStanding()
+                    .padding(.top, 28)
+                PeopleLikeYou()
+                    .padding(.top, 36)
+                DistrictMapView()
+                    .padding(.top, 36)
+                sources
+                    .padding(.top, 14)
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 24)
@@ -45,11 +44,28 @@ struct ComparePortugalView: View {
             Text("compareSeed")
                 .appFont(12)
                 .foregroundStyle(Theme.accent)
-            Text(scope == .people ? s.compareTitle : s.mapTitle)
+            Text(s.compareTitle)
                 .appFont(22, weight: .medium)
                 .foregroundStyle(Theme.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.top, 8)
+    }
+
+    private var sources: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            Text(s.compareSourceNote)
+                .appFont(10)
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(s.districtSourceLine)
+                .appFont(9.5)
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(s.mapGeoCredit)
+                .appFont(9.5)
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }

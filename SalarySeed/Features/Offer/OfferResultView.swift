@@ -278,7 +278,7 @@ struct OfferResultView: View {
             SectionHeader(s.offerPeersTitle) { SectionHint(s.offerPeersHint) }
 
             standingRow(icon: "globe.europe.africa", title: s.allPortugal, subtitle: s.offerRowNationalSub,
-                        now: Int(r.national.now.rounded()), offer: Int(r.national.offer.rounded()))
+                        now: PercentileEngine.shown(r.national.now), offer: PercentileEngine.shown(r.national.offer))
 
             if let st = r.sector {
                 standingRow(icon: "building.2", title: s.offerRowSectorTitle, subtitle: sectorSubtitle(r),

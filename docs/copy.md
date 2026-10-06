@@ -7,7 +7,7 @@ grouped by the screen it belongs to.
 Editing this file changes nothing on its own; it is here to be read and marked up,
 and the edits get applied back to the Swift source afterwards.
 
-- **715** string pairs.
+- **718** string pairs.
 - `\(name)` is a value dropped in at runtime. It has to survive a rewrite,
   and it can move within the sentence.
 - `\n` is a deliberate line break.
@@ -99,15 +99,15 @@ and the edits get applied back to the Swift source afterwards.
 - **EN** `Other tools`
 - **PT** `Outras ferramentas`
 
-### `compareScopePeople`
+### `voiceExpanded`
 
-- **EN** `People`
-- **PT** `Pessoas`
+- **EN** `Expanded`
+- **PT** `Expandido`
 
-### `compareScopeDistricts`
+### `voiceCollapsed`
 
-- **EN** `Districts`
-- **PT** `Distritos`
+- **EN** `Collapsed`
+- **PT** `Recolhido`
 
 ### `updateSalaryTitle`
 
@@ -581,35 +581,40 @@ and the edits get applied back to the Swift source afterwards.
 - **EN** `All of Portugal`
 - **PT** `Portugal inteiro`
 
-### `earnLessThanYou`
+### `compareLessThanYou`
 
-- **EN** `of workers earn less than you`
-- **PT** `dos trabalhadores ganham menos do que tu`
+- **EN** `of workers in Portugal earn less than you`
+- **PT** `dos trabalhadores em Portugal ganham menos do que tu`
+
+### `compareLessThan`
+
+- **EN** `of workers in Portugal earn less than \(amount) gross`
+- **PT** `dos trabalhadores em Portugal ganham menos de \(amount) brutos`
+
+### `compareBasis`
+
+- **EN** `Gross vs gross · 2024 · estimate`
+- **PT** `Bruto vs bruto · 2024 · estimativa`
 
 ### `grossVsGross`
 
 - **EN** `Gross vs gross · GEP-MTSSS e INE · 2024 · estimate`
 - **PT** `Bruto vs bruto · GEP-MTSSS e INE · 2024 · estimativa`
 
-### `natDistribution`
+### `compareExploreVoice`
 
-- **EN** `National distribution`
-- **PT** `Distribuição nacional`
+- **EN** `Explore the country's pay`
+- **PT** `Explorar os salários do país`
 
-### `releaseToReset`
+### `groupExploreVoice`
 
-- **EN** `Release to reset`
-- **PT** `Larga para voltar`
+- **EN** `Explore this group's pay`
+- **PT** `Explorar os salários deste grupo`
 
-### `exploreByPercentile`
+### `compareDistrictsLabel`
 
-- **EN** `Explore by percentile`
-- **PT** `Explora por percentil`
-
-### `exploreHint`
-
-- **EN** `Drag the handle. Let go to return to you.`
-- **PT** `Arrasta o cursor. Larga para voltar a ti.`
+- **EN** `Your sector by district`
+- **PT** `O teu setor por distrito`
 
 ### `percentileEarns`
 
@@ -618,27 +623,42 @@ and the edits get applied back to the Swift source afterwards.
 
 ### `ordinalPercentile` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:399`.
-
-### `youMarker`
-
-- **EN** `You`
-- **PT** `Tu`
-
-### `lowestEarners`
-
-- **EN** `Lowest`
-- **PT** `Mais baixos`
-
-### `highestEarners`
-
-- **EN** `Highest`
-- **PT** `Mais altos`
+Assembled in Swift rather than written as a pair. `Localization.swift:409`.
 
 ### `peopleLikeYou`
 
 - **EN** `People like you`
 - **PT** `Pessoas como tu`
+
+### `groupVoiceValue`
+
+- **EN** `\(shown) of them earn less than you`
+- **PT** `\(shown) deles ganham menos do que tu`
+
+### `groupChange[0]`
+
+- **EN** `Change your sector or years`
+- **PT** `Muda o teu setor ou os anos`
+
+### `groupChange[1]`
+
+- **EN** `Change your age group`
+- **PT** `Muda a tua faixa etária`
+
+### `groupChange[2]`
+
+- **EN** `Change your município`
+- **PT** `Muda o teu concelho`
+
+### `groupChange[3]`
+
+- **EN** `Change your education`
+- **PT** `Muda a tua escolaridade`
+
+### `groupChange[4]`
+
+- **EN** `Change your profession`
+- **PT** `Muda a tua profissão`
 
 ### `medianCaption[0]`
 
@@ -813,6 +833,11 @@ Assembled in Swift rather than written as a pair. `Localization.swift:399`.
 - **EN** `Your sector`
 - **PT** `O teu setor`
 
+### `sectorAdd`
+
+- **EN** `Add your sector`
+- **PT** `Adiciona o teu setor`
+
 ### `sectorSheetTitle`
 
 - **EN** `Which sector do you work in?`
@@ -865,7 +890,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:399`.
 
 ### `sectorCohort` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:511`.
+Assembled in Swift rather than written as a pair. `Localization.swift:535`.
 
 ---
 
@@ -947,7 +972,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:511`.
 
 ### `appSection` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:547`.
+Assembled in Swift rather than written as a pair. `Localization.swift:571`.
 
 ### `languageLabel`
 
@@ -976,7 +1001,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:547`.
 
 ### `sourcesValue` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:555`.
+Assembled in Swift rather than written as a pair. `Localization.swift:579`.
 
 ### `profileFooter`
 
@@ -1528,11 +1553,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:555`.
 
 ## v0.9.2 mapSeed
 
-### `mapTitle`
-
-- **EN** `What your sector pays,\nby district`
-- **PT** `Quanto paga o teu setor,\npor distrito`
-
 ### `mapAllSectors`
 
 - **EN** `All sectors together`
@@ -1557,11 +1577,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:555`.
 
 - **EN** `vs where I am`
 - **PT** `vs onde estou`
-
-### `mapNeedConcelho`
-
-- **EN** `Add your município`
-- **PT** `Adiciona o teu concelho`
 
 ### `mapBaselineNationalName`
 
@@ -1997,7 +2012,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:555`.
 
 ### `growStepArrow` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1020`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1042`.
 
 ### `growMoreTitle`
 
@@ -2225,7 +2240,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1020`.
 
 ### `euroDash` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1137`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1159`.
 
 ### `euroUnitEuros`
 
@@ -2304,7 +2319,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1137`.
 
 ### `ordinal` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1193`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1215`.
 
 ### `euroRank[0]`
 

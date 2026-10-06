@@ -1,7 +1,9 @@
 import SwiftUI
 
-/// The row Profile and Compare both use to say "here is one of your answers, or
-/// here is one you have not given yet".
+/// The row Profile (and Other tools, and the offer) use to say "here is one of
+/// your answers, or here is one you have not given yet". Compare in Portugal
+/// used it too until phase two turned its groups into one list of
+/// `GlyphLine`s.
 ///
 /// v1.2a: EIGHT COPIES OF THIS EXISTED, and all eight had the same three bugs,
 /// which is the argument for the file rather than the tidiness.

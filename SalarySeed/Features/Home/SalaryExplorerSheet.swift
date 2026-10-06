@@ -171,7 +171,7 @@ struct SalaryExplorerSheet: View {
                 // v0.12: the % sign belongs on the number, not lost between it
                 // and the sentence. Without it the card read "62 of people in
                 // Portugal earn less than this".
-                Text("\(Int(pct.rounded()))%")
+                Text("\(PercentileEngine.shown(pct))%")
                     .appFont(40, weight: .semibold)
                     .foregroundStyle(Theme.accent)
                     .contentTransition(.numericText())

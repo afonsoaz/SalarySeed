@@ -293,6 +293,7 @@ SalarySeed/
     Home/                  the hub: the figure, the rows, and every screen it pushes
     Onboarding/            the nine questions, led by the payslip
     Payslip/               the checker: PDF, camera and Vision extraction, then the flow
+    Compare/ Map/          where you stand in Portugal, ending on the district map; Europe
     Tax/                   what comes off the salary, in detail
     Tools/                 the things to try that are not a screen of their own
     Shared/SupportLock     the real screen, blurred, where Grow and Compare in Europe live

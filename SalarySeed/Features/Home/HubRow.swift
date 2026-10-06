@@ -16,8 +16,10 @@ import SwiftUI
 /// No figures, as before: a row that names no number cannot disagree with the
 /// screen it opens.
 struct HubRow: View {
-    // Held so the accent tile and glyph redraw when the colour changes.
+    // Read for the lock's VoiceOver label.
     @EnvironmentObject private var store: SalaryStore
+    /// Read for the chevron, which gives its room to the title past an
+    /// accessibility size.
     @Environment(\.dynamicTypeSize) private var typeSize
 
     let glyph: String
@@ -31,7 +33,7 @@ struct HubRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                tile
+                GlyphTile(glyph: glyph)
                 Text(title)
                     .appFont(17, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
@@ -46,25 +48,8 @@ struct HubRow: View {
             .background(Theme.card, in: RoundedRectangle(cornerRadius: 18))
             .contentShape(RoundedRectangle(cornerRadius: 18))
         }
-        .buttonStyle(HubRowStyle())
+        .buttonStyle(RowPressStyle())
         .accessibilityHint(hint)
-    }
-
-    /// The glyph on a soft square of its own colour, the way Settings and
-    /// Health mark a row: findable by shape before it is read. Scaled on the
-    /// title's curve, so it grows with the reader's text and never outgrows
-    /// its own tile.
-    private var tile: some View {
-        let side = Theme.scaled(38, typeSize)
-        return RoundedRectangle(cornerRadius: side * 0.27)
-            .fill(Theme.accentSoft)
-            .frame(width: side, height: side)
-            .overlay {
-                Image(systemName: glyph)
-                    .appFont(17, weight: .semibold)
-                    .foregroundStyle(Theme.accent)
-            }
-            .accessibilityHidden(true)
     }
 
     /// A lock on a row the support payment covers, which says something and is
@@ -87,8 +72,9 @@ struct HubRow: View {
 }
 
 /// A press that dims the row a little, the way a list row answers a touch,
-/// rather than the default flash across the whole label.
-private struct HubRowStyle: ButtonStyle {
+/// rather than the default flash across the whole label. Home's rows and the
+/// lines of Compare in Portugal answer a touch the same way.
+struct RowPressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .opacity(configuration.isPressed ? 0.6 : 1)

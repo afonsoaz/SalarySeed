@@ -101,11 +101,10 @@ struct Strings {
     /// the bar directly under it, and a title saying the same would be an echo.
     var taxTitle: String { t("What comes off your pay", "O que te descontam") }
     var toolsTitle: String { t("Other tools", "Outras ferramentas") }
-    /// The two views of Compare in Portugal. What you are being compared
-    /// against, in one word each, because the title above already says which
-    /// question each one answers.
-    var compareScopePeople: String { t("People", "Pessoas") }
-    var compareScopeDistricts: String { t("Districts", "Distritos") }
+    /// What VoiceOver says of a line that opens in place, the words the system
+    /// uses for its own.
+    var voiceExpanded: String { t("Expanded", "Expandido") }
+    var voiceCollapsed: String { t("Collapsed", "Recolhido") }
 
     /// The bubble on Home's figure, and the title of the screen it opens, which
     /// is also the checker's title when that screen hands a payslip over.
@@ -387,14 +386,25 @@ struct Strings {
 
     var compareTitle: String { t("Where you stand", "Como te comparas") }
     var allPortugal: String { t("All of Portugal", "Portugal inteiro") }
-    var earnLessThanYou: String { t("of workers earn less than you", "dos trabalhadores ganham menos do que tu") }
+    /// The sentence under Compare in Portugal's headline figure. While the
+    /// handle reads another salary the sentence keeps its shape and only "you"
+    /// changes: "88% … earn less than you", "40% … earn less than 1100 € gross".
+    var compareLessThanYou: String {
+        t("of workers in Portugal earn less than you",
+          "dos trabalhadores em Portugal ganham menos do que tu")
+    }
+    func compareLessThan(_ amount: String) -> String {
+        t("of workers in Portugal earn less than \(amount) gross",
+          "dos trabalhadores em Portugal ganham menos de \(amount) brutos")
+    }
+    /// What the headline compares. Its sources are named at the foot of the
+    /// screen, with every other one.
+    var compareBasis: String { t("Gross vs gross · 2024 · estimate", "Bruto vs bruto · 2024 · estimativa") }
     var grossVsGross: String { t("Gross vs gross · GEP-MTSSS e INE · 2024 · estimate", "Bruto vs bruto · GEP-MTSSS e INE · 2024 · estimativa") }
-    var natDistribution: String { t("National distribution", "Distribuição nacional") }
-    // v0.7 interactive distribution
-    var releaseToReset: String { t("Release to reset", "Larga para voltar") }
-    // v0.8: percentile explorer (drag a percentile, see the salary there)
-    var exploreByPercentile: String { t("Explore by percentile", "Explora por percentil") }
-    var exploreHint: String { t("Drag the handle. Let go to return to you.", "Arrasta o cursor. Larga para voltar a ti.") }
+    var compareExploreVoice: String { t("Explore the country's pay", "Explorar os salários do país") }
+    var groupExploreVoice: String { t("Explore this group's pay", "Explorar os salários deste grupo") }
+    /// The section after "people like you": the map, last.
+    var compareDistrictsLabel: String { t("Your sector by district", "O teu setor por distrito") }
     func percentileEarns(_ p: String) -> String { t("The \(p) percentile earns", "O percentil \(p) ganha") }
     func ordinalPercentile(_ n: Int) -> String {
         if pt { return "\(n)º" }
@@ -411,10 +421,23 @@ struct Strings {
         }
         return "\(n)\(suffix)"
     }
-    var youMarker: String { t("You", "Tu") }
-    var lowestEarners: String { t("Lowest", "Mais baixos") }
-    var highestEarners: String { t("Highest", "Mais altos") }
     var peopleLikeYou: String { t("People like you", "Pessoas como tu") }
+    /// A group's figure, to VoiceOver. On screen the percentage stands alone,
+    /// under a headline that has already said what a percentage here means.
+    func groupVoiceValue(_ shown: String) -> String {
+        t("\(shown) of them earn less than you", "\(shown) deles ganham menos do que tu")
+    }
+    /// The way to change the answer a group rests on, at the foot of the open
+    /// line.
+    func groupChange(_ id: String) -> String {
+        switch id {
+        case "sector": t("Change your sector or years", "Muda o teu setor ou os anos")
+        case "age": t("Change your age group", "Muda a tua faixa etária")
+        case "region": t("Change your município", "Muda o teu concelho")
+        case "education": t("Change your education", "Muda a tua escolaridade")
+        default: t("Change your profession", "Muda a tua profissão")
+        }
+    }
     func medianCaption(median: String, diff: Double, diffText: String) -> String {
         if abs(diff) < 40 { return t("Median: \(median) gross. You're right at the median.", "Mediana: \(median) brutos. Estás mesmo na mediana.") }
         if diff > 0 { return t("Median: \(median) gross. You're \(diffText) above.", "Mediana: \(median) brutos. Estás \(diffText) acima.") }
@@ -496,6 +519,7 @@ struct Strings {
     // MARK: v0.8.3 sector + tenure
 
     var sectorRowTitle: String { t("Your sector", "O teu setor") }
+    var sectorAdd: String { t("Add your sector", "Adiciona o teu setor") }
     var sectorSheetTitle: String { t("Which sector do you work in?", "Em que setor trabalhas?") }
     var sectorQuestion: String { t("Which sector do\nyou work in?", "Em que setor\ntrabalhas?") }
     var sectorNote: String { t("Economic activity (GEP CAE)", "Atividade económica (CAE, GEP)") }
@@ -782,13 +806,11 @@ struct Strings {
 
     // MARK: v0.9.2 mapSeed
 
-    var mapTitle: String { t("What your sector pays,\nby district", "Quanto paga o teu setor,\npor distrito") }
     var mapAllSectors: String { t("All sectors together", "Todos os setores juntos") }
     var mapPickSector: String { t("Pick your sector to see it properly", "Escolhe o teu setor para veres a sério") }
     var mapSectorHint: String { t("Tap to change sector", "Toca para mudar de setor") }
     var mapVsNational: String { t("vs the country", "vs o país") }
     var mapVsHome: String { t("vs where I am", "vs onde estou") }
-    var mapNeedConcelho: String { t("Add your município", "Adiciona o teu concelho") }
     var mapBaselineNationalName: String { t("the mainland average", "a média do continente") }
     var mapYouAreHere: String { t("You're here", "Estás aqui") }
     var mapHomeTag: String { t("You", "Tu") }
