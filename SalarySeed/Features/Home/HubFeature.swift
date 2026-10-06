@@ -92,7 +92,7 @@ enum HubFeature: CaseIterable, Identifiable {
         case .comparePortugal: return s.hubPortugalSub
         case .compareEurope: return s.euroTitle
         case .payslip: return s.hubPayslipSub
-        case .grow: return s.hubGrowSub
+        case .grow: return s.growTitle
         case .offer: return offerKept ? s.offerNudgeKeptSub : s.hubOfferSub
         case .tools: return s.hubToolsSub
         }

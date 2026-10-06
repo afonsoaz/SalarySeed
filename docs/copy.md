@@ -7,7 +7,7 @@ grouped by the screen it belongs to.
 Editing this file changes nothing on its own; it is here to be read and marked up,
 and the edits get applied back to the Swift source afterwards.
 
-- **715** string pairs.
+- **708** string pairs.
 - `\(name)` is a value dropped in at runtime. It has to survive a rewrite,
   and it can move within the sentence.
 - `\n` is a deliberate line break.
@@ -58,11 +58,6 @@ and the edits get applied back to the Swift source afterwards.
 
 - **EN** `Growth simulator`
 - **PT** `Simulador de crescimento`
-
-### `hubGrowSub`
-
-- **EN** `Where your pay could go`
-- **PT** `Até onde pode ir o teu salário`
 
 ### `hubOfferTitle`
 
@@ -623,7 +618,7 @@ and the edits get applied back to the Swift source afterwards.
 
 ### `ordinalPercentile` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:409`.
+Assembled in Swift rather than written as a pair. `Localization.swift:408`.
 
 ### `peopleLikeYou`
 
@@ -885,7 +880,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:409`.
 
 ### `sectorCohort` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:534`.
+Assembled in Swift rather than written as a pair. `Localization.swift:533`.
 
 ---
 
@@ -962,7 +957,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:534`.
 
 ### `appSection` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:576`.
+Assembled in Swift rather than written as a pair. `Localization.swift:575`.
 
 ### `languageLabel`
 
@@ -986,7 +981,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:576`.
 
 ### `sourcesValue` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:583`.
+Assembled in Swift rather than written as a pair. `Localization.swift:582`.
 
 ### `profileFooter`
 
@@ -1676,26 +1671,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:583`.
 
 ## v0.9.4 salary explorer
 
-### `salaryChangeTitle`
-
-- **EN** `Has your salary actually changed?`
-- **PT** `O teu salário mudou mesmo?`
-
-### `salaryChangeMessage`
-
-- **EN** `Changing it here replaces the number the whole app works from.`
-- **PT** `Mudar aqui substitui o número com que a app toda trabalha.`
-
-### `salaryChangeYes`
-
-- **EN** `Yes, update my salary`
-- **PT** `Sim, atualizar o meu salário`
-
-### `salaryChangeNo`
-
-- **EN** `No, I'm just trying a number`
-- **PT** `Não, só estou a experimentar um valor`
-
 ### `cancelButton`
 
 - **EN** `Cancel`
@@ -1767,8 +1742,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:583`.
 
 ### `growTitle`
 
-- **EN** `Grow`
-- **PT** `Crescer`
+- **EN** `Where your pay could go`
+- **PT** `Até onde pode ir o teu salário`
 
 ### `growSub`
 
@@ -1802,8 +1777,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:583`.
 
 ### `growBreakEvenBody`
 
-- **EN** `That is what time at one employer is worth in your sector. Over \(years) years the tenure step adds up to \(total), and you hand all of it back the day you leave, so a new job has to beat that yearly rate just to keep you level.`
-- **PT** `É isso que o tempo na mesma empresa vale no teu setor. Ao fim de \(years) anos o degrau da antiguidade soma \(total), e devolves tudo no dia em que sais, por isso um emprego novo tem de bater essa taxa anual só para ficares na mesma.`
+- **EN** `\(rate) a year is what time at one employer is worth in your sector. Over \(years) years the tenure step adds up to \(total), and you hand all of it back the day you leave, so a new job has to beat that yearly rate just to keep you level.`
+- **PT** `\(rate) por ano é o que o tempo na mesma empresa vale no teu setor. Ao fim de \(years) anos o degrau da antiguidade soma \(total), e devolves tudo no dia em que sais, por isso um emprego novo tem de bater essa taxa anual só para ficares na mesma.`
 
 ### `growBreakEvenFlat`
 
@@ -1815,10 +1790,10 @@ Assembled in Swift rather than written as a pair. `Localization.swift:583`.
 - **EN** `Leaving resets your time at the company to zero, so the whole step goes, not just the last year of it.`
 - **PT** `Sair põe o teu tempo na empresa a zero, por isso vai o degrau todo, não só o último ano dele.`
 
-### `growChartTitle`
+### `growUnitLabel`
 
-- **EN** `Gross per month`
-- **PT** `Bruto por mês`
+- **EN** `Amounts`
+- **PT** `Valores`
 
 ### `growNominal`
 
@@ -1830,35 +1805,45 @@ Assembled in Swift rather than written as a pair. `Localization.swift:583`.
 - **EN** `Today's money`
 - **PT** `Dinheiro de hoje`
 
+### `growChartVoice`
+
+- **EN** `Your pay over the years`
+- **PT** `O teu salário ao longo dos anos`
+
+### `growHorizonVoice`
+
+- **EN** `How far ahead`
+- **PT** `Até quando`
+
 ### `growInYearsStaying`
 
-- **EN** `In \(years) years, staying put`
-- **PT** `Daqui a \(years) anos, se ficares`
+- **EN** `In \(growYears(years)), if you stay`
+- **PT** `Daqui a \(growYears(years)), se ficares`
+
+### `growInYearsChanged`
+
+- **EN** `In \(growYears(years)), with your changes`
+- **PT** `Daqui a \(growYears(years)), com as tuas mudanças`
 
 ### `growVsToday`
 
 - **EN** `\(amount) a month against today (\(pct))`
 - **PT** `\(amount) por mês em relação a hoje (\(pct))`
 
-### `growWithYourChanges`
-
-- **EN** `With your changes`
-- **PT** `Com as tuas mudanças`
-
 ### `growVsStaying`
 
-- **EN** `\(amount) against staying put`
-- **PT** `\(amount) em relação a ficar`
+- **EN** `\(amount) a month against staying`
+- **PT** `\(amount) por mês em relação a ficar`
 
 ### `growProjectionUnit[0]`
 
-- **EN** `Gross per paid month, in today's money.`
-- **PT** `Bruto por mês pago, em dinheiro de hoje.`
+- **EN** `Gross per paid month, in today's money`
+- **PT** `Bruto por mês pago, em dinheiro de hoje`
 
 ### `growProjectionUnit[1]`
 
-- **EN** `Gross per paid month. GEP publishes gross pay, so that is what the whole projection is made of.`
-- **PT** `Bruto por mês pago. O GEP publica o ganho bruto, e é disso que a projeção toda é feita.`
+- **EN** `Gross per paid month`
+- **PT** `Bruto por mês pago`
 
 ### `growLegendStay`
 
@@ -1875,40 +1860,25 @@ Assembled in Swift rather than written as a pair. `Localization.swift:583`.
 - **EN** `Today`
 - **PT** `Hoje`
 
+### `growTodayChanged`
+
+- **EN** `Today, with your changes`
+- **PT** `Hoje, com as tuas mudanças`
+
 ### `growYears`
 
 - **EN** `\(n) \(n == 1 ? "year" : "years")`
 - **PT** `\(n) \(n == 1 ? "ano" : "anos")`
-
-### `growTenureAt`
-
-- **EN** `\(n) \(n == 1 ? "year" : "years") at that employer`
-- **PT** `\(n) \(n == 1 ? "ano" : "anos") nessa empresa`
 
 ### `growScrubNet`
 
 - **EN** `Net / month`
 - **PT** `Líquido / mês`
 
-### `growScrubGross`
-
-- **EN** `Gross / month`
-- **PT** `Bruto / mês`
-
 ### `growScrubEmployer`
 
 - **EN** `Costs the employer`
 - **PT** `Custa à empresa`
-
-### `growScrubVsStay`
-
-- **EN** `\(amount) a month against staying put.`
-- **PT** `\(amount) por mês em relação a ficar.`
-
-### `growEditToday`
-
-- **EN** `Change the starting salary`
-- **PT** `Mudar o salário de partida`
 
 ### `growCumulativeTitle`
 
@@ -1935,20 +1905,15 @@ Assembled in Swift rather than written as a pair. `Localization.swift:583`.
 - **EN** `Changing job never pulls ahead in total inside \(years) years.`
 - **PT** `Mudar de emprego nunca passa à frente no total dentro de \(years) anos.`
 
-### `growLeversButton`
+### `growLeversTitle`
 
-- **EN** `Change parameters`
-- **PT** `Alterar parâmetros`
+- **EN** `Try a change`
+- **PT** `Experimenta uma mudança`
 
 ### `growLeversNone`
 
 - **EN** `Right now this is just you, staying where you are.`
 - **PT** `Neste momento és só tu, a ficar onde estás.`
-
-### `growLeversTitle`
-
-- **EN** `Change parameters`
-- **PT** `Alterar parâmetros`
 
 ### `growLeversSub`
 
@@ -1959,11 +1924,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:583`.
 
 - **EN** `See the path`
 - **PT** `Ver o percurso`
-
-### `growLeverHorizon`
-
-- **EN** `How far ahead`
-- **PT** `Até quando`
 
 ### `growLeverCadence`
 
@@ -2159,6 +2119,11 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1045`.
 - **EN** `The pay-side steps are all multipliers, so the order they are applied in cannot change the total. Tax is not a multiplier and inflation is a change of unit, so those two always come last, in that order.`
 - **PT** `Os passos do lado do salário são todos multiplicadores, por isso a ordem em que se aplicam não muda o total. O imposto não é multiplicador e a inflação é uma mudança de unidade, por isso esses dois vêm sempre no fim, por essa ordem.`
 
+### `growWorkingsTitle`
+
+- **EN** `How this is worked out`
+- **PT** `Como isto é calculado`
+
 ### `growAssumptionsTitle`
 
 - **EN** `What this takes for granted`
@@ -2176,8 +2141,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1045`.
 
 ### `growAssumptionGross`
 
-- **EN** `Everything on the path is gross, because that is what GEP publishes. Net appears only when you hold a single year, where it is worked out with your own tax situation.`
-- **PT** `Tudo no percurso é bruto, porque é isso que o GEP publica. O líquido só aparece quando seguras um ano, e aí é calculado com a tua situação fiscal.`
+- **EN** `Everything on the path is gross, because that is what GEP publishes. Net appears only for one year at a time, under the chart, where it is worked out with your own tax situation.`
+- **PT** `Tudo no percurso é bruto, porque é isso que o GEP publica. O líquido só aparece para um ano de cada vez, por baixo do gráfico, e aí é calculado com a tua situação fiscal.`
 
 ### `growAssumptionEntrant`
 
@@ -2225,7 +2190,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1045`.
 
 ### `euroDash` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1162`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1165`.
 
 ### `euroUnitEuros`
 
@@ -2304,7 +2269,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1162`.
 
 ### `ordinal` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1218`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1221`.
 
 ### `euroRank[0]`
 

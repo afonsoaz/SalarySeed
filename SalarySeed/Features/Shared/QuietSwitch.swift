@@ -11,23 +11,27 @@ import SwiftUI
 ///
 /// It was `PeriodSwitch` alone until Compare in Portugal needed the same thing
 /// for "vs the country / vs where I am", which was a pair of bright green
-/// buttons louder than the map they re-read. One shape for a lens, written
-/// once, so a fix to one cannot miss the other (rule 33).
+/// buttons louder than the map they re-read, and then Grow for its 5, 10 or 20
+/// years. One shape for a lens, written once, so a fix to one cannot miss the
+/// others (rule 33).
 ///
 /// Every option is a 44 point target, Apple's minimum, while the soft capsule
 /// marking the chosen one is drawn smaller inside it.
-struct QuietSwitch<Option: Hashable & Identifiable>: View {
+struct QuietSwitch<Option: Hashable>: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     let options: [Option]
     @Binding var selection: Option
+    /// What the switch chooses, said by VoiceOver on the way into it, for a
+    /// switch whose labels alone do not say it ("5 years", "10 years").
+    var voiceLabel: String? = nil
     let label: (Option) -> String
     @Namespace private var capsule
 
     var body: some View {
         HStack(spacing: 2) {
-            ForEach(options) { option in
+            ForEach(options, id: \.self) { option in
                 segment(option)
             }
         }
@@ -38,6 +42,7 @@ struct QuietSwitch<Option: Hashable & Identifiable>: View {
         // label may take a second line rather than be cut to "Mo ×…". Found by
         // looking at it at accessibility-extra-large. Reflow, do not shrink.
         .frame(maxWidth: typeSize.isAccessibilitySize ? .infinity : nil)
+        .modifier(SwitchVoiceLabel(label: voiceLabel))
     }
 
     private func segment(_ option: Option) -> some View {
@@ -70,6 +75,23 @@ struct QuietSwitch<Option: Hashable & Identifiable>: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(isOn ? .isSelected : [])
+    }
+}
+
+/// Names the switch to VoiceOver, and only when there is a name: an empty
+/// `accessibilityLabel` makes VoiceOver read nothing at all (rule 23), so no
+/// label is applied rather than an empty one.
+private struct SwitchVoiceLabel: ViewModifier {
+    let label: String?
+
+    func body(content: Content) -> some View {
+        if let label {
+            content
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(label)
+        } else {
+            content
+        }
     }
 }
 

@@ -301,23 +301,9 @@ struct SalaryExplorerSheet: View {
     }
 }
 
-/// v0.9.4: the fork between the two intentions, asked once, in one place, so
-/// no two screens can word it differently. Since phase two only Grow asks it:
-/// Home's figure became the "Update my salary" bubble, and Profile no longer
-/// carries the salary.
-extension View {
-    func salaryChangeConfirmation(
-        isPresented: Binding<Bool>,
-        s: Strings,
-        onChange: @escaping () -> Void,
-        onExplore: @escaping () -> Void
-    ) -> some View {
-        confirmationDialog(s.salaryChangeTitle, isPresented: isPresented, titleVisibility: .visible) {
-            Button(s.salaryChangeYes) { onChange() }
-            Button(s.salaryChangeNo) { onExplore() }
-            Button(s.cancelButton, role: .cancel) {}
-        } message: {
-            Text(s.salaryChangeMessage)
-        }
-    }
-}
+// v0.9.4's "Has your salary actually changed?" fork lived here, shared by every
+// screen that let you edit the salary in place: Home's figure, then Profile,
+// then Grow's first year. Phase two took all three away, in favour of Home's
+// "Update my salary" bubble, and the fork went with the last of them. This
+// sheet still changes the salary, deliberately, through its own "Ok, change my
+// salary", which says what it does and needs no fork in front of it.

@@ -116,11 +116,28 @@ struct GrowthChart: View {
 
     /// The area between the two paths. Filled in one colour, decided by where
     /// they end up, because a two-tone fill on a staircase reads as noise.
+    ///
+    /// ONE OUTLINE: along the move path, down to the end of the stay path, and
+    /// back along the stay path's own steps to the start. Found in phase two,
+    /// shipped since v0.10: the fill was the move path plus the stay path
+    /// reversed and appended, and appending a path starts a new piece of
+    /// outline, so each half closed itself with a diagonal back to its own
+    /// start. Walking a staircase backwards with the forward step rule also
+    /// cut its corners. The result was wedges across the chart wherever a move
+    /// was modelled, shaped like neither path.
     private func gapFill(move: [GrowthEngine.YearPoint], w: CGFloat, h: CGFloat,
                          range: (lo: Double, hi: Double)) -> some View {
         var path = stepPath(points: move, w: w, h: h, range: range)
-        let back = stepPath(points: stay.reversed(), w: w, h: h, range: range)
-        path.addPath(back)
+        if let last = stay.last {
+            path.addLine(to: CGPoint(x: x(last.year, w: w), y: y(scaled(last), h: h, range: range)))
+        }
+        // Backwards along the stay staircase: from each year, across at the
+        // height it held, to the year before, then down or up to that year's.
+        for i in stride(from: stay.count - 1, to: 0, by: -1) {
+            let held = y(scaled(stay[i - 1]), h: h, range: range)
+            path.addLine(to: CGPoint(x: x(stay[i].year, w: w), y: held))
+            path.addLine(to: CGPoint(x: x(stay[i - 1].year, w: w), y: held))
+        }
         path.closeSubpath()
         return path.fill(moveColor.opacity(0.13))
     }

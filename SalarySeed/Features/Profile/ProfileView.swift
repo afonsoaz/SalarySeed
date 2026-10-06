@@ -12,8 +12,8 @@ import SwiftUI
 /// reads as a seedling and not as a smudge (rule 25). The name under it is the
 /// one thing the app calls you, and tapping it renames you.
 ///
-/// THE SALARY IS NOT HERE, on purpose. It lives on Home, and Home's "Update my
-/// salary" bubble is where it changes, schedule included. Profile used to carry
+/// THE SALARY IS NOT HERE, on purpose. It lives on Home, where the "Update my
+/// salary" bubble changes it, schedule included. Profile used to carry
 /// it as well, behind "Has your salary actually changed?", which made two doors
 /// to one number on two screens. The tax answers live on Tax, beside the
 /// figures they change. Profile is about you and the app.

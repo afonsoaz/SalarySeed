@@ -74,7 +74,6 @@ struct Strings {
     }
     /// Grow's screen still calls itself Grow; this is what you go there to do.
     var hubGrowTitle: String { t("Growth simulator", "Simulador de crescimento") }
-    var hubGrowSub: String { t("Where your pay could go", "Até onde pode ir o teu salário") }
     /// "Check", like the payslip, in English. Portuguese checks a payslip
     /// ("conferir", against its own sums) but weighs an offer ("avaliar"), so
     /// the two verbs differ there on purpose.
@@ -892,15 +891,6 @@ struct Strings {
 
     // MARK: v0.9.4 salary explorer
 
-    /// The fork: recording a real change, or trying a number on. Same wording
-    /// wherever the user taps to edit their salary.
-    var salaryChangeTitle: String { t("Has your salary actually changed?", "O teu salário mudou mesmo?") }
-    var salaryChangeMessage: String {
-        t("Changing it here replaces the number the whole app works from.",
-          "Mudar aqui substitui o número com que a app toda trabalha.")
-    }
-    var salaryChangeYes: String { t("Yes, update my salary", "Sim, atualizar o meu salário") }
-    var salaryChangeNo: String { t("No, I'm just trying a number", "Não, só estou a experimentar um valor") }
     var cancelButton: String { t("Cancel", "Cancelar") }
 
     var explorerNudgeTitle: String { t("Try another salary", "Experimenta outro salário") }
@@ -931,7 +921,8 @@ struct Strings {
     // MARK: v0.10 Grow
 
 
-    var growTitle: String { t("Grow", "Crescer") }
+    /// Grow's title, and what Home's "Growth simulator" row says it opens.
+    var growTitle: String { t("Where your pay could go", "Até onde pode ir o teu salário") }
     func growSub(_ sector: String, years: Int) -> String {
         t("\(sector), \(years) \(years == 1 ? "year" : "years") at your employer.",
           "\(sector), \(years) \(years == 1 ? "ano" : "anos") na empresa.")
@@ -946,9 +937,12 @@ struct Strings {
 
     var growBreakEvenTitle: String { t("A new job has to beat", "Um emprego novo tem de bater") }
     var growPerYearOfTenure: String { t("a year, if you stay", "por ano, se ficares") }
-    func growBreakEvenBody(_ total: String, years: Int) -> String {
-        t("That is what time at one employer is worth in your sector. Over \(years) years the tenure step adds up to \(total), and you hand all of it back the day you leave, so a new job has to beat that yearly rate just to keep you level.",
-          "É isso que o tempo na mesma empresa vale no teu setor. Ao fim de \(years) anos o degrau da antiguidade soma \(total), e devolves tudo no dia em que sais, por isso um emprego novo tem de bater essa taxa anual só para ficares na mesma.")
+    /// The arithmetic behind the yearly rate, in "How this is worked out". It
+    /// names the rate rather than saying "that", because since phase two it is
+    /// folded away from the card the rate is printed on.
+    func growBreakEvenBody(_ rate: String, total: String, years: Int) -> String {
+        t("\(rate) a year is what time at one employer is worth in your sector. Over \(years) years the tenure step adds up to \(total), and you hand all of it back the day you leave, so a new job has to beat that yearly rate just to keep you level.",
+          "\(rate) por ano é o que o tempo na mesma empresa vale no teu setor. Ao fim de \(years) anos o degrau da antiguidade soma \(total), e devolves tudo no dia em que sais, por isso um emprego novo tem de bater essa taxa anual só para ficares na mesma.")
     }
     func growBreakEvenFlat(_ sector: String) -> String {
         t("In \(sector.lowercased()) pay does not climb with time at one employer, so staying is not buying you anything and leaving costs you nothing.",
@@ -960,46 +954,53 @@ struct Strings {
     }
 
     // v0.10.1: the chart plots one quantity, gross, so the metric picker went.
-    var growChartTitle: String { t("Gross per month", "Bruto por mês") }
+    // The unit is a menu on the legend's line; this is its name to VoiceOver.
+    var growUnitLabel: String { t("Amounts", "Valores") }
     var growNominal: String { t("In euros", "Em euros") }
     var growReal: String { t("Today's money", "Dinheiro de hoje") }
+    /// The chart, to VoiceOver, which moves along it a year at a time.
+    var growChartVoice: String { t("Your pay over the years", "O teu salário ao longo dos anos") }
+    /// The 5, 10 or 20 years switch, named to VoiceOver.
+    var growHorizonVoice: String { t("How far ahead", "Até quando") }
 
+    /// Over Grow's figure, for the year being held. A year can be 1 now that
+    /// the chart can be held at any year, hence `growYears`.
     func growInYearsStaying(_ years: Int) -> String {
-        t("In \(years) years, staying put", "Daqui a \(years) anos, se ficares")
+        t("In \(growYears(years)), if you stay", "Daqui a \(growYears(years)), se ficares")
+    }
+    func growInYearsChanged(_ years: Int) -> String {
+        t("In \(growYears(years)), with your changes", "Daqui a \(growYears(years)), com as tuas mudanças")
     }
     func growVsToday(_ amount: String, _ pct: String) -> String {
         t("\(amount) a month against today (\(pct))", "\(amount) por mês em relação a hoje (\(pct))")
     }
-    var growWithYourChanges: String { t("With your changes", "Com as tuas mudanças") }
+    /// Under Grow's figure when a job change is modelled: against the grey
+    /// "Staying" line on the chart, which is the gap shaded between the two.
     func growVsStaying(_ amount: String) -> String {
-        t("\(amount) against staying put", "\(amount) em relação a ficar")
+        t("\(amount) a month against staying", "\(amount) por mês em relação a ficar")
     }
+    /// Under Grow's figure. Why it is gross (GEP publishes gross pay) is said
+    /// once, in "How this is worked out", by `growAssumptionGross`.
     func growProjectionUnit(_ todaysMoney: Bool) -> String {
         if todaysMoney {
-            return t("Gross per paid month, in today's money.", "Bruto por mês pago, em dinheiro de hoje.")
+            return t("Gross per paid month, in today's money", "Bruto por mês pago, em dinheiro de hoje")
         }
-        return t("Gross per paid month. GEP publishes gross pay, so that is what the whole projection is made of.",
-                 "Bruto por mês pago. O GEP publica o ganho bruto, e é disso que a projeção toda é feita.")
+        return t("Gross per paid month", "Bruto por mês pago")
     }
 
     var growLegendStay: String { t("Staying", "Ficar") }
     var growLegendMove: String { t("Changing job", "Mudar de emprego") }
 
     var growToday: String { t("Today", "Hoje") }
+    /// Over Grow's figure at year 0 when a sector or district lever already
+    /// moves the path, so the first point is not the salary Home shows.
+    var growTodayChanged: String { t("Today, with your changes", "Hoje, com as tuas mudanças") }
     func growYears(_ n: Int) -> String {
         t("\(n) \(n == 1 ? "year" : "years")", "\(n) \(n == 1 ? "ano" : "anos")")
     }
-    func growTenureAt(_ n: Int) -> String {
-        t("\(n) \(n == 1 ? "year" : "years") at that employer", "\(n) \(n == 1 ? "ano" : "anos") nessa empresa")
-    }
 
     var growScrubNet: String { t("Net / month", "Líquido / mês") }
-    var growScrubGross: String { t("Gross / month", "Bruto / mês") }
     var growScrubEmployer: String { t("Costs the employer", "Custa à empresa") }
-    func growScrubVsStay(_ amount: String) -> String {
-        t("\(amount) a month against staying put.", "\(amount) por mês em relação a ficar.")
-    }
-    var growEditToday: String { t("Change the starting salary", "Mudar o salário de partida") }
 
     func growCumulativeTitle(_ years: Int) -> String {
         t("Over \(years) years, in total", "Ao fim de \(years) anos, no total")
@@ -1015,16 +1016,15 @@ struct Strings {
           "Mudar de emprego nunca passa à frente no total dentro de \(years) anos.")
     }
 
-    var growLeversButton: String { t("Change parameters", "Alterar parâmetros") }
+    /// Grow's line into the levers, and the sheet it opens.
+    var growLeversTitle: String { t("Try a change", "Experimenta uma mudança") }
     var growLeversNone: String { t("Right now this is just you, staying where you are.", "Neste momento és só tu, a ficar onde estás.") }
-    var growLeversTitle: String { t("Change parameters", "Alterar parâmetros") }
     var growLeversSub: String {
         t("Nothing you do here is saved. Your real salary and profile stay exactly as they are.",
           "Nada do que fizeres aqui fica guardado. O teu salário e o teu perfil ficam na mesma.")
     }
     var growLeversDone: String { t("See the path", "Ver o percurso") }
 
-    var growLeverHorizon: String { t("How far ahead", "Até quando") }
     var growLeverCadence: String { t("Changing employer", "Mudar de empresa") }
     var growCadenceNever: String { t("Never", "Nunca") }
     func growCadenceEvery(_ years: Int) -> String { t("Every \(years) yrs", "De \(years) em \(years) anos") }
@@ -1115,6 +1115,9 @@ struct Strings {
           "Os passos do lado do salário são todos multiplicadores, por isso a ordem em que se aplicam não muda o total. O imposto não é multiplicador e a inflação é uma mudança de unidade, por isso esses dois vêm sempre no fim, por essa ordem.")
     }
 
+    /// The fold at the foot of Grow: the arithmetic, where the years came
+    /// from, and the assumptions.
+    var growWorkingsTitle: String { t("How this is worked out", "Como isto é calculado") }
     var growAssumptionsTitle: String { t("What this takes for granted", "O que isto dá como certo") }
     var growAssumptionCrossSection: String {
         t("This is a photograph of October 2024, not a career. The people in the 20+ tenure band are not the people in the first-year band twenty years later: they are the ones who stayed, in a different mix of jobs. So every point answers what people at that tenure earn today, never what you will earn then.",
@@ -1125,8 +1128,8 @@ struct Strings {
           "O teu percurso começa no teu salário a sério e mantém a tua distância à média. Isso assume que a forma dos degraus da antiguidade é igual para toda a gente do teu setor e que só o nível é que muda.")
     }
     var growAssumptionGross: String {
-        t("Everything on the path is gross, because that is what GEP publishes. Net appears only when you hold a single year, where it is worked out with your own tax situation.",
-          "Tudo no percurso é bruto, porque é isso que o GEP publica. O líquido só aparece quando seguras um ano, e aí é calculado com a tua situação fiscal.")
+        t("Everything on the path is gross, because that is what GEP publishes. Net appears only for one year at a time, under the chart, where it is worked out with your own tax situation.",
+          "Tudo no percurso é bruto, porque é isso que o GEP publica. O líquido só aparece para um ano de cada vez, por baixo do gráfico, e aí é calculado com a tua situação fiscal.")
     }
     func growAssumptionEntrant(_ amount: String) -> String {
         t("First-year people in this sector average \(amount) a month. That is here as a reference only: it is full of people entering the labour market, so it is not where an experienced person lands after a move, and the model never puts you there.",
