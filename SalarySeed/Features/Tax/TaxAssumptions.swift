@@ -140,8 +140,10 @@ struct TaxAssumptions: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .accessibilityValue(jovemValue)
-        .accessibilityAddTraits(showJovem ? .isSelected : [])
+        // No `.accessibilityValue` and no `.isSelected`, both removed in review:
+        // the value is already a Text in the label, so VoiceOver read it twice
+        // ("IRS Jovem, Off, Off"), and "selected" claimed a choice had been made
+        // when the row had only been opened.
     }
 
     private var jovemValue: String {

@@ -2368,8 +2368,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1184`.
 
 ### `euroFootnoteVintage`
 
-- **EN** `The European survey is from 2022 and runs every four years, so this half of the map is two years older than the Portuguese half.`
-- **PT** `O inquérito europeu é de 2022 e acontece de quatro em quatro anos, por isso esta metade do mapa é dois anos mais antiga do que a metade portuguesa.`
+- **EN** `The European survey is from 2022 and runs every four years, so these figures are two years older than the Portuguese ones.`
+- **PT** `O inquérito europeu é de 2022 e acontece de quatro em quatro anos, por isso estes valores são dois anos mais antigos do que os portugueses.`
 
 ### `euroFootnoteScope`
 

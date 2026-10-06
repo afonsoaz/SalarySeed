@@ -1227,9 +1227,11 @@ struct Strings {
         t("The percentages come entirely from the European survey, one country divided by Portugal. Your own salary is then moved by that ratio. The Portuguese and European figures are never added together or placed side by side, because they are different surveys of different people in different years.",
           "As percentagens vêm todas do inquérito europeu, um país a dividir por Portugal. O teu salário é depois movido por esse rácio. Os valores portugueses e europeus nunca são somados nem postos lado a lado, porque são inquéritos diferentes, de pessoas diferentes, em anos diferentes.")
     }
+    /// "This half of the map" until the map split: Europe is a screen of its
+    /// own now, and the Portuguese figures live under Compare in Portugal.
     var euroFootnoteVintage: String {
-        t("The European survey is from 2022 and runs every four years, so this half of the map is two years older than the Portuguese half.",
-          "O inquérito europeu é de 2022 e acontece de quatro em quatro anos, por isso esta metade do mapa é dois anos mais antiga do que a metade portuguesa.")
+        t("The European survey is from 2022 and runs every four years, so these figures are two years older than the Portuguese ones.",
+          "O inquérito europeu é de 2022 e acontece de quatro em quatro anos, por isso estes valores são dois anos mais antigos do que os portugueses.")
     }
     var euroFootnoteScope: String {
         t("Employees in companies with 10 or more people. Gross pay, before tax and before Social Security.",

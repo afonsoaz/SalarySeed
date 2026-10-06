@@ -66,13 +66,18 @@ struct SalaryUpdateScreen: View {
 
     /// Reads the payslip and pushes the checker, if the reader is still here.
     ///
-    /// THE GUARD IS NOT DEFENSIVE NOISE. `PhotosPicker` loads its picture in a
-    /// task that outlives this screen, and a slow iCloud photo can arrive after
-    /// the reader has gone back to Home. Without the check, that photo would
-    /// replace the reading Home was keeping and push a screen nobody asked for.
-    /// The push waits one turn of the main queue, so a picker that is still on
-    /// its way down is gone before the stack changes under it, and checks
-    /// again, because a turn is long enough to have left.
+    /// THE GUARD IS NOT DEFENSIVE NOISE. A photo can take seconds to load from
+    /// iCloud, and a reader can leave meanwhile. `PayslipSourceStep` now cancels
+    /// that load when it disappears, which is the real fix; this check is the
+    /// second line, so a hand-over that still arrives late can neither replace
+    /// the reading Home keeps nor push a screen nobody asked for.
+    ///
+    /// The push waits ONE TURN OF THE MAIN QUEUE, and that is all it waits: it
+    /// is not a wait for a picker's dismissal to finish. The file importer
+    /// hands over after it has closed, and the push has been driven on the
+    /// simulator after a file and after a photo and was clean both times. If a
+    /// dropped or janky push ever shows up after picking something, look here
+    /// first. It checks again after the turn, because the reader may have left.
     private func hand(_ load: () -> Void) {
         guard store.path == [.payslipUpdate] else { return }
         load()

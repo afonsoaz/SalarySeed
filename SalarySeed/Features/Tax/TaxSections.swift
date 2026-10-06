@@ -33,21 +33,22 @@ struct MoneyWaterfall: View {
                 SectionHint(s.perPeriod(yearly: period.isAnnual))
             }
 
+            let r = WaterfallRows(b, factor: factor)
             VStack(alignment: .leading, spacing: 0) {
-                total(s.treeCompanyTitle, b.employerCostMonthly * factor)
+                total(s.treeCompanyTitle, r.cost)
                 step(s.treeEmployerSS, Theme.segEmployerSS,
-                     amount: b.employerSSMonthly * factor,
+                     amount: r.employerSS,
                      rate: percent(TaxEngine.employerSSRate, decimals: 2))
                 rule
-                total(s.treeGross, b.grossMonthly * factor)
+                total(s.treeGross, r.gross)
                 step(s.cardYourSS, Theme.segEmployeeSS,
-                     amount: b.employeeSSMonthly * factor,
+                     amount: r.employeeSS,
                      rate: percent(TaxEngine.employeeSSRate, decimals: 0))
                 step(s.cardIRS, Theme.segIRS,
-                     amount: b.irsMonthly * factor,
+                     amount: r.irs,
                      rate: percent(b.irsRate))
                 rule
-                total(s.waterfallNet, b.netMonthly * factor, swatch: Theme.segNet)
+                total(s.waterfallNet, r.net, swatch: Theme.segNet)
             }
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -174,6 +175,11 @@ struct AnnualSettlementCard: View {
     var body: some View {
         // No real IRS due for the year (salary below the taxable threshold).
         let noIRS = b.annualIRSSettled < 1
+        // The branch is decided on the exact balance; the AMOUNTS printed are
+        // `SettlementRows`, the same whole euros as the Year row above, which
+        // add up among themselves. A one-euro rounding cannot flip a sign here:
+        // anything under 20 € either way already reads as "about even".
+        let shown = SettlementRows(b)
         let balance = b.annualBalance
         let evenish = abs(balance) < 20
         let refund = balance >= 0
@@ -184,9 +190,9 @@ struct AnnualSettlementCard: View {
             }
 
             HStack(spacing: 10) {
-                settlementFigure(label: s.annualWithheld, value: eur(b.annualIRSWithheld))
+                settlementFigure(label: s.annualWithheld, value: eur(shown.withheld))
                 Rectangle().fill(Color.white.opacity(0.08)).frame(width: 1, height: 34)
-                settlementFigure(label: s.annualSettled, value: eur(b.annualIRSSettled))
+                settlementFigure(label: s.annualSettled, value: eur(shown.settled))
             }
 
             if noIRS {
@@ -198,7 +204,7 @@ struct AnnualSettlementCard: View {
                         .appFont(13, weight: .medium)
                         .foregroundStyle(Theme.accent)
                 }
-                Text(b.annualIRSWithheld >= 1 ? s.annualNoIRSRefund(eur(b.annualIRSWithheld)) : s.annualNoIRSSub)
+                Text(b.annualIRSWithheld >= 1 ? s.annualNoIRSRefund(eur(shown.withheld)) : s.annualNoIRSSub)
                     .appFont(11)
                     .foregroundStyle(Theme.textSecondary)
                     .lineSpacing(2)
@@ -209,7 +215,8 @@ struct AnnualSettlementCard: View {
                         .foregroundStyle(accent)
                     Text(evenish
                          ? s.annualEven
-                         : (refund ? s.annualRefund(eur(abs(balance))) : s.annualToPay(eur(abs(balance)))))
+                         : (refund ? s.annualRefund(eur(abs(shown.balance)))
+                                   : s.annualToPay(eur(abs(shown.balance)))))
                         .appFont(13, weight: .medium)
                         .foregroundStyle(accent)
                 }

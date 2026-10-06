@@ -47,6 +47,16 @@ struct PayslipSourceStep: View {
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var importing = false
     @State private var photo: PhotosPickerItem?
+    /// The picked photo, still loading. Held so leaving can cancel it.
+    ///
+    /// `loadTransferable` can take seconds for a photo that lives only in
+    /// iCloud, and nothing is on screen while it does. Unheld, the load
+    /// outlived this view: a reader who gave up and went back, then read a
+    /// different payslip, could have that reading replaced by the late photo,
+    /// with "Ok, use this" then keeping a gross from a document they never
+    /// meant to hand over. Found in review; the PhotosPicker sheet does not
+    /// make this view disappear, leaving the screen does.
+    @State private var photoLoad: Task<Void, Never>?
     @State private var scanning = false
     @State private var cameraRefused = false
     @State private var cameraFailed = false
@@ -177,11 +187,19 @@ struct PayslipSourceStep: View {
             // photo a second time change nothing and fire no `onChange`
             // (rule 11).
             photo = nil
-            Task {
-                if let data = try? await item.loadTransferable(type: Data.self) {
-                    onImage(data)
-                }
+            photoLoad?.cancel()
+            photoLoad = Task {
+                let data = try? await item.loadTransferable(type: Data.self)
+                // Checked after the await, because the load itself cannot be
+                // interrupted part way: a photo that arrives after the reader
+                // left is dropped here rather than handed to anybody.
+                guard !Task.isCancelled, let data else { return }
+                onImage(data)
             }
+        }
+        .onDisappear {
+            photoLoad?.cancel()
+            photoLoad = nil
         }
     }
 

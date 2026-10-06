@@ -153,9 +153,15 @@ final class PayslipCheckModel: ObservableObject {
     }
 
     private func recogniseData(_ data: Data, context: PayslipContext?) async {
-        guard let image = await Task.detached(operation: { PayslipOCR.image(from: data) }).value
-        else { phase = .unreadable(.unsupportedFile); return }
+        let image = await Task.detached(operation: { PayslipOCR.image(from: data) }).value
+        // Cancellation FIRST, before even the failure is written. The decode is
+        // awaited, so a newer load can cancel this one part way; checked after
+        // the failure branch, a cancelled read of an undecodable image would land
+        // "could not read this" over the reading that replaced it, and stick
+        // there if that reading had already finished. Since the hub, Home's one
+        // model is loaded from whatever state it was left in, so this happens.
         guard !Task.isCancelled else { return }
+        guard let image else { phase = .unreadable(.unsupportedFile); return }
         await recognise([image], context: context)
     }
 
