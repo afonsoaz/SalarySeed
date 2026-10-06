@@ -271,7 +271,7 @@ struct HomeView: View {
 
     // MARK: The ways in
 
-    /// One row per feature, full width, in the order the questions arrive.
+    /// One row per feature, full width, in Afonso's order (see `HubFeature`).
     ///
     /// A glyph and a name each, and nothing else drawn: what each row opens is
     /// its VoiceOver hint. See `HubRow` for why the sentences came off. No
@@ -286,7 +286,7 @@ struct HomeView: View {
         return VStack(spacing: 10) {
             ForEach(HubFeature.allCases) { feature in
                 HubRow(glyph: feature.glyph,
-                       title: feature.title(s, offerKept: kept),
+                       title: feature.title(s),
                        hint: feature.hint(s, offerKept: kept),
                        locked: isLocked(feature)) {
                     store.path = [feature.route]

@@ -42,25 +42,22 @@ struct Strings {
 
     // MARK: The hub
 
-    // Home's rows: a title and one line each, and NO FIGURES. A row that names
-    // no number can never disagree with the screen it opens, which is the rule
-    // the offer card and the retired intro already kept. Where a screen's own
-    // words already say it, the row reuses them (`growTitle` and `toolsTitle`
-    // as titles, `euroTitle` as Europe's line) rather than saying the same
-    // thing twice in two wordings.
-    var hubTaxTitle: String { t("Tax", "Impostos") }
+    // Home's rows: a name each, and NO FIGURES. A row that names no number can
+    // never disagree with the screen it opens, which is the rule the offer card
+    // and the retired intro already kept. The line under each name is never
+    // drawn; it is what VoiceOver says after the name.
+    //
+    // THE SEVEN NAMES ARE AFONSO'S, SET AS ONE LIST, and they read as things
+    // you do: understand, compare, compare, check, a simulator, check, other
+    // tools. They are deliberately not the screens' own titles, which talk
+    // about what the screen shows ("What comes off your pay"); a row says what
+    // you go there to do. Change one and read the other six beside it.
+    // `toolsTitle` is the one shared with its screen, because there the two
+    // jobs are the same words.
+    var hubTaxTitle: String { t("Understand taxes", "Perceber os impostos") }
     var hubTaxSub: String {
         t("Where your money goes, and your IRS for the year",
           "Para onde vai o teu dinheiro, e o teu IRS do ano")
-    }
-    /// In the reader's own voice, like the "Update my salary" bubble above the
-    /// rows, which is why it is not the checker's own title: that screen talks
-    /// TO the reader ("Check your payslip"), and onboarding's cover uses the
-    /// same title, so it stays as it is. Afonso's wording.
-    var hubPayslipTitle: String { t("Check my payslip", "Conferir o meu recibo") }
-    var hubPayslipSub: String {
-        t("Whether it adds up, checked on your phone",
-          "Se as contas batem certo, conferido no teu telemóvel")
     }
     var hubPortugalTitle: String { t("Compare in Portugal", "Comparar em Portugal") }
     var hubPortugalSub: String {
@@ -68,8 +65,20 @@ struct Strings {
           "Como te comparas, e quanto paga o teu setor por distrito")
     }
     var hubEuropeTitle: String { t("Compare in Europe", "Comparar na Europa") }
+    /// Not the checker's own title, which talks TO the reader ("Check your
+    /// payslip") and is shared with onboarding's cover.
+    var hubPayslipTitle: String { t("Check payslip", "Conferir recibo") }
+    var hubPayslipSub: String {
+        t("Whether it adds up, checked on your phone",
+          "Se as contas batem certo, conferido no teu telemóvel")
+    }
+    /// Grow's screen still calls itself Grow; this is what you go there to do.
+    var hubGrowTitle: String { t("Growth simulator", "Simulador de crescimento") }
     var hubGrowSub: String { t("Where your pay could go", "Até onde pode ir o teu salário") }
-    var hubOfferTitle: String { t("Job offer", "Proposta de emprego") }
+    /// "Check", like the payslip, in English. Portuguese checks a payslip
+    /// ("conferir", against its own sums) but weighs an offer ("avaliar"), so
+    /// the two verbs differ there on purpose.
+    var hubOfferTitle: String { t("Check job offer", "Avaliar proposta de emprego") }
     var hubOfferSub: String {
         t("Put it next to the job you have", "Põe-na ao lado do emprego que tens")
     }
@@ -1815,10 +1824,9 @@ struct Strings {
     // model. Numbers that come from the data (the year of the tables, the last
     // tenure band, the horizons) are passed in, never written into a sentence.
 
-    // Home's offer row once an offer is kept; before that it reads
-    // `hubOfferTitle`. No figures, so it cannot disagree with the screen it
-    // opens.
-    var offerNudgeKeptTitle: String { t("Your job offer", "A tua proposta de emprego") }
+    // What Home's offer row says to VoiceOver once an offer is kept; before
+    // that it says `hubOfferSub`. The row's name stays `hubOfferTitle` either
+    // way. No figures, so it cannot disagree with the screen it opens.
     var offerNudgeKeptSub: String {
         t("Side by side with the job you have.", "Lado a lado com o emprego que tens.")
     }

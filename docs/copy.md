@@ -21,23 +21,13 @@ and the edits get applied back to the Swift source afterwards.
 
 ### `hubTaxTitle`
 
-- **EN** `Tax`
-- **PT** `Impostos`
+- **EN** `Understand taxes`
+- **PT** `Perceber os impostos`
 
 ### `hubTaxSub`
 
 - **EN** `Where your money goes, and your IRS for the year`
 - **PT** `Para onde vai o teu dinheiro, e o teu IRS do ano`
-
-### `hubPayslipTitle`
-
-- **EN** `Check my payslip`
-- **PT** `Conferir o meu recibo`
-
-### `hubPayslipSub`
-
-- **EN** `Whether it adds up, checked on your phone`
-- **PT** `Se as contas batem certo, conferido no teu telemóvel`
 
 ### `hubPortugalTitle`
 
@@ -54,6 +44,21 @@ and the edits get applied back to the Swift source afterwards.
 - **EN** `Compare in Europe`
 - **PT** `Comparar na Europa`
 
+### `hubPayslipTitle`
+
+- **EN** `Check payslip`
+- **PT** `Conferir recibo`
+
+### `hubPayslipSub`
+
+- **EN** `Whether it adds up, checked on your phone`
+- **PT** `Se as contas batem certo, conferido no teu telemóvel`
+
+### `hubGrowTitle`
+
+- **EN** `Growth simulator`
+- **PT** `Simulador de crescimento`
+
 ### `hubGrowSub`
 
 - **EN** `Where your pay could go`
@@ -61,8 +66,8 @@ and the edits get applied back to the Swift source afterwards.
 
 ### `hubOfferTitle`
 
-- **EN** `Job offer`
-- **PT** `Proposta de emprego`
+- **EN** `Check job offer`
+- **PT** `Avaliar proposta de emprego`
 
 ### `hubOfferSub`
 
@@ -613,7 +618,7 @@ and the edits get applied back to the Swift source afterwards.
 
 ### `ordinalPercentile` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:390`.
+Assembled in Swift rather than written as a pair. `Localization.swift:399`.
 
 ### `youMarker`
 
@@ -860,7 +865,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:390`.
 
 ### `sectorCohort` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:502`.
+Assembled in Swift rather than written as a pair. `Localization.swift:511`.
 
 ---
 
@@ -942,7 +947,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:502`.
 
 ### `appSection` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:538`.
+Assembled in Swift rather than written as a pair. `Localization.swift:547`.
 
 ### `languageLabel`
 
@@ -971,7 +976,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:538`.
 
 ### `sourcesValue` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:546`.
+Assembled in Swift rather than written as a pair. `Localization.swift:555`.
 
 ### `profileFooter`
 
@@ -1992,7 +1997,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:546`.
 
 ### `growStepArrow` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1011`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1020`.
 
 ### `growMoreTitle`
 
@@ -2220,7 +2225,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1011`.
 
 ### `euroDash` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1128`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1137`.
 
 ### `euroUnitEuros`
 
@@ -2299,7 +2304,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1128`.
 
 ### `ordinal` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1184`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1193`.
 
 ### `euroRank[0]`
 
@@ -3211,11 +3216,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1184`.
 ---
 
 ## v1.5 offerSeed
-
-### `offerNudgeKeptTitle`
-
-- **EN** `Your job offer`
-- **PT** `A tua proposta de emprego`
 
 ### `offerNudgeKeptSub`
 
