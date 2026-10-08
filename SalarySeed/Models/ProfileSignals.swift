@@ -292,6 +292,4 @@ enum Gender: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Only answers that carry information count towards the seed.
-    var informative: Bool { self != .preferNot }
 }

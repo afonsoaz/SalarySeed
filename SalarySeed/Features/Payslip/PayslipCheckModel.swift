@@ -26,6 +26,14 @@ import CoreGraphics
 /// presented, so the reader is not asked where the payslip comes from twice.
 /// Nothing is written to the phone, there is still no history, and `discard()`
 /// and `restart()` drop exactly what they dropped before.
+///
+/// THE HUB MOVED WHO HOLDS IT, AND NOT HOW LONG IT LIVES. The checker is no
+/// longer a tab; it is a screen Home opens, from a row or from "Update my
+/// salary". Home owns this object, and Home lives as long as the app does, so
+/// the window above is unchanged: a reading survives leaving the checker and
+/// coming back, is replaced when another payslip is read, and is gone when the
+/// app quits. That was Afonso's decision, made knowing a pushed screen could
+/// have let it die on the way out.
 @MainActor
 final class PayslipCheckModel: ObservableObject {
 
@@ -47,16 +55,17 @@ final class PayslipCheckModel: ObservableObject {
 
     /// Whether the reader has answered "should this become your salary?".
     ///
-    /// v1.2: only needed because the checker is a tab now. In a cover, both
-    /// answers dismissed the screen and the question could not be asked twice.
-    /// Here the verdict stays on screen afterwards, so the ask has to know it
-    /// has been answered and get out of the way.
+    /// v1.2: only needed once the checker stopped being a cover. In a cover,
+    /// both answers dismissed the screen and the question could not be asked
+    /// twice. Opened from Home, the verdict stays on screen afterwards, and
+    /// survives going back and returning, so the ask has to know it has been
+    /// answered and get out of the way.
     enum SalaryAsk {
         case unanswered
         /// They kept the figure they already had. Nothing more to say.
         case kept
         /// They took the payslip's figure. Worth confirming, because the number
-        /// it changed is on a different tab.
+        /// it changed is on Home, a screen away.
         case adopted
     }
 
@@ -95,7 +104,7 @@ final class PayslipCheckModel: ObservableObject {
     }
 
     func load(url: URL, context: PayslipContext?) {
-        phase = .reading
+        startFresh()
         reading?.cancel()
         reading = Task {
             let outcome = await Task.detached { PayslipPDF.read(url: url) }.value
@@ -122,15 +131,37 @@ final class PayslipCheckModel: ObservableObject {
     }
 
     func load(imageData data: Data, context: PayslipContext?) {
-        phase = .reading
+        startFresh()
         reading?.cancel()
         reading = Task { await recogniseData(data, context: context) }
     }
 
+    /// Every load begins here, whatever phase the model was in.
+    ///
+    /// Until the hub, a load only ever happened from a clean model: the tab
+    /// reached its file picker through `restart()`, and the cover was new.
+    /// "Update my salary" loads into Home's model from wherever it was left, so
+    /// a load now has to clear what `restart()` clears. Without it the previous
+    /// payslip's corrections, which are keyed by LINE NUMBER, would be applied
+    /// to whatever lines of the new one share those numbers, and an answer
+    /// already given to "use this as your salary?" would hide the question on a
+    /// verdict nobody has answered yet.
+    private func startFresh() {
+        edits = [:]
+        salaryAsk = .unanswered
+        phase = .reading
+    }
+
     private func recogniseData(_ data: Data, context: PayslipContext?) async {
-        guard let image = await Task.detached(operation: { PayslipOCR.image(from: data) }).value
-        else { phase = .unreadable(.unsupportedFile); return }
+        let image = await Task.detached(operation: { PayslipOCR.image(from: data) }).value
+        // Cancellation FIRST, before even the failure is written. The decode is
+        // awaited, so a newer load can cancel this one part way; checked after
+        // the failure branch, a cancelled read of an undecodable image would land
+        // "could not read this" over the reading that replaced it, and stick
+        // there if that reading had already finished. Since the hub, Home's one
+        // model is loaded from whatever state it was left in, so this happens.
         guard !Task.isCancelled else { return }
+        guard let image else { phase = .unreadable(.unsupportedFile); return }
         await recognise([image], context: context)
     }
 
@@ -220,8 +251,8 @@ final class PayslipCheckModel: ObservableObject {
     }
 
     /// The reader answered the ask. Recorded here rather than in the results
-    /// view so it survives the view being rebuilt, which it is on every tab
-    /// switch.
+    /// view so it survives the view being rebuilt, which it is every time the
+    /// checker is opened again from Home.
     func answerSalaryAsk(adopted: Bool) {
         salaryAsk = adopted ? .adopted : .kept
     }

@@ -6,8 +6,18 @@ struct ProfilePickerSheet: View {
     let dimension: CompareDimension
     @EnvironmentObject private var store: SalaryStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private var s: Strings { store.s }
+
+    /// Two chips across normally. Past an accessibility size one, with the
+    /// label wrapping: two columns shrank "Higher (degree or more)" and still
+    /// cut it to an ellipsis, so the reader could not read what they picked.
+    private var columns: [GridItem] {
+        typeSize.isAccessibilitySize
+            ? [GridItem(.flexible())]
+            : [GridItem(.adaptive(minimum: 150), spacing: 8)]
+    }
     private var selectedID: String? { dimension.selectedID(store) }
 
     /// Preview: what the sprout will look like once this detail is planted.
@@ -25,6 +35,10 @@ struct ProfilePickerSheet: View {
                     .frame(maxWidth: .infinity)
                     .padding(.top, 10)
 
+                // Scrolls, and can be pulled up to full height, for the room a
+                // single column takes. Two detents, not one (rule 26).
+                ScrollView {
+                VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 10) {
                     SproutView(stage: previewStage, size: 26)
                     VStack(alignment: .leading, spacing: 1) {
@@ -40,7 +54,7 @@ struct ProfilePickerSheet: View {
                 }
                 .padding(.top, 16)
 
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+                LazyVGrid(columns: columns, spacing: 8) {
                     ForEach(dimension.options(s.pt)) { option in
                         chip(option)
                     }
@@ -64,12 +78,14 @@ struct ProfilePickerSheet: View {
                     }
                     .padding(.top, 12)
                 }
-
-                Spacer()
+                }
+                .padding(.bottom, 20)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
             .padding(.horizontal, 20)
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
     }
 
@@ -83,8 +99,10 @@ struct ProfilePickerSheet: View {
                 .appFont(13, weight: isSelected ? .medium : .regular)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.82)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
+                .minimumScaleFactor(typeSize.isAccessibilitySize ? 1 : 0.82)
+                .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
+                .padding(.vertical, typeSize.isAccessibilitySize ? 8 : 0)
                 .frame(maxWidth: .infinity, minHeight: Theme.chipHeight)
                 .padding(.horizontal, 8)
                 .background(

@@ -78,15 +78,9 @@ struct SalaryBreakdown {
     var employerCostYearly: Double { employerCostMonthly * months }
 
     var ajudasYearly: Double { ajudasMonthly * 12 }
-    /// What actually lands in the pocket in a normal month: salary net plus ajudas.
-    var pocketMonthly: Double { netMonthly + ajudasMonthly }
-    var pocketYearly: Double { netYearly + ajudasYearly }
 
-    var deductionsMonthly: Double { irsMonthly + employeeSSMonthly }
-    /// Effective rates on the gross salary (0 when gross is 0).
+    /// The effective IRS rate on the gross salary (0 when gross is 0).
     var irsRate: Double { grossMonthly > 0 ? irsMonthly / grossMonthly : 0 }
-    var employeeSSEffRate: Double { grossMonthly > 0 ? employeeSSMonthly / grossMonthly : 0 }
-    var deductionsRate: Double { grossMonthly > 0 ? deductionsMonthly / grossMonthly : 0 }
 
     /// Positive: money back at settlement. Negative: still to pay. Zero-ish: even.
     var annualBalance: Double { annualIRSWithheld - annualIRSSettled }
@@ -107,6 +101,8 @@ struct SalaryBreakdown {
 /// - Social Security: 11% employee / 23.75% employer, on full gross, no ceiling.
 /// - IRS Jovem: exemption steps 100/75/50/25%, cap 55 × IAS.
 /// - IAS 2026 = €537,13; dedução específica cat. A = 8,54 × IAS.
+/// - Mínimo de existência: art. 70.º CIRS as amended by Lei 73-A/2025, an
+///   abatimento to taxable income for low earners (see `minimoAbatimento`).
 ///
 /// Everything here is an estimate for insight, not official tax advice.
 ///
@@ -195,6 +191,55 @@ enum TaxEngine {
     /// housing, general family expenses, VAT on invoices). A flat, deliberately
     /// modest assumption so the annual settlement reflects the usual small refund.
     static let generalExpenseCredit = 1_000.0
+
+    // MARK: Mínimo de existência (art. 70.º CIRS, 2026)
+    //
+    // WHY THIS EXISTS. Without it the annual settlement told a reader on the
+    // minimum wage, 920 € x14, that about 37 € was "left to pay", in red, when
+    // the law leaves them nothing to pay. Since 2024 the article is an
+    // abatimento taken off taxable income, in three tiers by gross income, and
+    // its constants are published in the article itself:
+    //
+    //   valor de referência  VR = max(12 880 €, 1,5 × 14 × IAS)
+    //   K                       = dedução específica + 250 € / 12,5%
+    //   a) gross ≤ VR:          VR − K
+    //   b) VR < gross ≤ L:      VR − 2,60 × (gross − VR) − K
+    //   c) gross > L:           L − limite do 1.º escalão − 1,35 × (gross − L) − dedução específica
+    //   L = VR + (limite do 1.º escalão − 250 € / 12,5%) / 3,60    (14 641,67 € in 2026)
+    //   never below zero, never above gross − dedução específica, and none at
+    //   all past 2,2 × 14 × IAS of gross per taxpayer.
+    //
+    // b) and c) meet at L, which is how L is defined, and c) reaches zero at
+    // about 15 910 €, below the exclusion. The 250 € and the 12,5% are the
+    // article's own "limite despesas gerais" and "taxa do 1.º escalão", which
+    // are national: the regions scale the rates, not this formula.
+    // tools/waterfall_probe checks the engine against worked examples and that
+    // every region's minimum wage settles to zero.
+
+    /// Valor de referência: 12 880 € (920 € x14) in 2026.
+    static let minimoReferencia = max(12_880, 1.5 * 14 * ias)
+    /// "Limite despesas gerais", per taxpayer.
+    static let minimoDespesasGerais = 250.0
+
+    /// The art. 70.º abatimento for one taxpayer's yearly gross from work.
+    static func minimoAbatimento(grossYear rb: Double) -> Double {
+        guard rb > 0, rb <= 2.2 * 14 * ias else { return 0 }
+        let vr = minimoReferencia
+        let rate1 = escaloes[0].normal
+        let limit1 = escaloes[0].upTo
+        let general = minimoDespesasGerais / rate1
+        let k = specificDeductionA + general
+        let l = vr + (limit1 - general) / 3.6
+        let raw: Double
+        if rb <= vr {
+            raw = vr - k
+        } else if rb <= l {
+            raw = vr - 2.6 * (rb - vr) - k
+        } else {
+            raw = l - limit1 - 1.35 * (rb - l) - specificDeductionA
+        }
+        return min(max(0, raw), max(0, rb - specificDeductionA))
+    }
 
     // MARK: Monthly withholding tables (retenção na fonte)
 
@@ -405,7 +450,7 @@ enum TaxEngine {
 
     /// Estimated real annual IRS (coleta líquida) for an employee.
     ///
-    /// taxable = gross − dedução específica − IRS Jovem exempt part.
+    /// taxable = gross − dedução específica − mínimo de existência − IRS Jovem exempt part.
     /// The IRS Jovem exempt income still counts for setting the *rate* (englobamento
     /// para taxa): the average rate is taken on the full taxable base and applied to
     /// the non-exempt part. Married single-earner uses the quociente conjugal (÷2 ×2).
@@ -451,7 +496,9 @@ enum TaxEngine {
                              jovemExemption: Double,
                              region: TaxRegion) -> AnnualSettlement {
         let grossYear = grossMonthly * months
-        let fullBase = max(0, grossYear - specificDeductionA)
+        // Per taxpayer, and only the reader earns in a single-earner couple, so
+        // this is the household's abatimento in every situation the app models.
+        let fullBase = max(0, grossYear - specificDeductionA - minimoAbatimento(grossYear: grossYear))
         let exemptYear = min(max(0, jovemExemption) * grossYear, jovemAnnualCap)
         let nonExemptBase = max(0, fullBase - exemptYear)
 
@@ -549,7 +596,7 @@ enum TaxEngine {
         case exhausted     // already past the 10th benefit year
     }
 
-    /// The outcome of the profileSeed self-assessment: whether IRS Jovem applies,
+    /// The outcome of the IRS Jovem self-check on Tax: whether IRS Jovem applies,
     /// which benefit year the person is in, and the exemption fraction to use.
     struct JovemAssessment {
         let eligible: Bool
@@ -575,7 +622,7 @@ enum TaxEngine {
         }
     }
 
-    /// Assess IRS Jovem from the plain inputs collected in profileSeed.
+    /// Assess IRS Jovem from the plain inputs collected on Tax (`IRSJovemAssessorView`).
     ///
     /// Rules (OE2025/2026, confirmed 2026): age ≤ 35 at year end, up to 10 benefit
     /// years counted from the first year of Category A/B income while not a dependant,

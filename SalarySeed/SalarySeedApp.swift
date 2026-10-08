@@ -25,7 +25,10 @@ struct SalarySeedApp: App {
         WindowGroup {
             Group {
                 if store.hasOnboarded {
-                    RootTabView()
+                    // Home is the whole app once onboarding is done: every other
+                    // screen is pushed onto its one navigation stack. There was a
+                    // tab bar here until the hub replaced it.
+                    HomeView()
                 } else {
                     OnboardingView()
                 }

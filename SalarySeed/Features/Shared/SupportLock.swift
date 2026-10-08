@@ -35,7 +35,7 @@ struct SupportLock<Content: View>: View {
     /// One or two lines. Anything longer turns the overlay back into a page.
     let blurb: String
     /// Bounds the blurred content, and MUST be set when the lock sits inside a
-    /// scroll view rather than filling a tab.
+    /// scroll view rather than filling the screen.
     ///
     /// Found by rendering it. `MapView` wraps its whole screen in a `ScrollView`,
     /// so an unbounded lock became as tall as the European grid, and the card,
@@ -51,11 +51,15 @@ struct SupportLock<Content: View>: View {
     /// about which NACE section is being used, and the 27 tiles do not begin for
     /// another 200 points. Without the shift the blur showed two blocks of
     /// unreadable text, which says nothing about what is behind the payment.
-    /// Grow needs none of this: its headline card is already the first thing.
+    /// Grow crops too, since phase two put a 56 point figure first that stays
+    /// legible through the blur; it measures the figure rather than guessing.
     var contentOffsetY: CGFloat = 0
     @ViewBuilder let content: () -> Content
 
     @State private var showSupport = false
+    /// The card's own height, measured, so a bounded lock is never shorter than
+    /// the card it carries. See `bound`.
+    @State private var cardHeight: CGFloat = 0
 
     private var s: Strings { store.s }
 
@@ -67,9 +71,20 @@ struct SupportLock<Content: View>: View {
             // layer alone either washes out the screen or loses the text.
             Theme.background.opacity(0.28)
             card
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardHeight = $0 }
         }
-        .frame(height: contentHeight)
+        .frame(height: bound)
         .clipped()
+    }
+
+    /// The bounded height, never less than the card plus a margin.
+    ///
+    /// Found in review: the card's text grows with the reader's, and at an
+    /// accessibility size it is taller than a 540 or 560 point bound, so the
+    /// block clipped it, buy button included. The card's height does not depend
+    /// on the bound (its text is fixed-size), so measuring it cannot loop.
+    private var bound: CGFloat? {
+        contentHeight.map { max($0, cardHeight + 40) }
     }
 
     /// The blurred screen underneath.
@@ -85,26 +100,33 @@ struct SupportLock<Content: View>: View {
     ///
     /// Only when bounded. Unbounded, the content is a full-screen scroll view
     /// with no natural height to fix.
+    ///
+    /// HIDDEN FROM VOICEOVER, in both shapes. `allowsHitTesting(false)` stops
+    /// fingers and nothing else: VoiceOver could read every blurred figure
+    /// aloud, and on Grow operate the chart behind the lock. To a sighted
+    /// reader the blur says "something is here"; the card says it to everyone.
     @ViewBuilder
     private var peek: some View {
-        if let contentHeight {
+        if let bound {
             ZStack(alignment: .top) {
                 Color.clear
                 content()
                     .fixedSize(horizontal: false, vertical: true)
                     .offset(y: contentOffsetY)
             }
-            .frame(height: contentHeight, alignment: .top)
+            .frame(height: bound, alignment: .top)
             .blur(radius: 6)
             .allowsHitTesting(false)
-            // Clipped after the blur, or the halo bleeds past the edges and the
-            // tab bar picks up a grey fringe.
+            // Clipped after the blur, or the halo bleeds past the edges and
+            // whatever sits beside the lock picks up a grey fringe.
             .clipped()
+            .accessibilityHidden(true)
         } else {
             content()
                 .blur(radius: 6)
                 .allowsHitTesting(false)
                 .clipped()
+                .accessibilityHidden(true)
         }
     }
 

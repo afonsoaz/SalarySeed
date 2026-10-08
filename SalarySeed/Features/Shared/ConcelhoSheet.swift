@@ -124,6 +124,7 @@ struct ConcelhoPickerList: View {
                     Text(group.label)
                         .appFont(14)
                         .foregroundStyle(Theme.textPrimary)
+                        .multilineTextAlignment(.leading)
                     Spacer()
                     Image(systemName: isOpen ? "chevron.up" : "chevron.down")
                         .appFont(11)
@@ -159,6 +160,7 @@ struct ConcelhoPickerList: View {
                         .appFont(10)
                         .foregroundStyle(isSelected ? Theme.ink.opacity(0.7) : Theme.textFaint)
                 }
+                .multilineTextAlignment(.leading)
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark")

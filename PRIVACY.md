@@ -1,6 +1,6 @@
 # SalarySeed privacy policy
 
-*Last updated: 4 October 2026. Applies to SalarySeed v1.5 for iOS.*
+*Last updated: 7 October 2026. Applies to SalarySeed v1.6 for iOS.*
 
 ## The whole of it
 
@@ -16,12 +16,14 @@ could send your answers anywhere.
 
 Everything you enter lives in the app's own storage on your device: your salary
 and how you are paid, your allowances, your município, your sector, job, time at
-your employer, age band, education and gender if you chose to give them, your
-household situation for the tax calculation, your name if you entered one, and
-your language and colour preferences.
+your employer, the kind of employer, whether you work full or part time and your
+weekly hours, any yearly bonus or commission, age band, education and gender if
+you chose to give them, your household situation for the tax calculation, your
+name if you entered one, and your language and colour preferences.
 
 If you compare a job offer, the last one you entered is kept there too: its pay,
-how it is paid, its allowance, and its sector and município. It stays until you
+how it is paid, its allowance, any yearly bonus you entered for it, and its sector
+and município. It stays until you
 remove it or enter another, and like everything else here it never leaves your
 phone. Nothing else about the offer is kept, and the comparison itself is worked
 out again each time rather than saved.
@@ -51,12 +53,14 @@ never written to disk by the app. There is no payslip history: nothing about a
 payslip is ever saved to your phone, so there is nothing to go back and look at,
 and nothing that survives closing the app.
 
-From v1.2 the checker is a tab rather than a screen you close, so the wording
-here is narrower than it used to be and it is exact. While the app is running,
-the payslip you checked and the verdict stay in memory, so that leaving the tab
-and coming back does not throw away what you were reading. They are replaced the
-moment you check another payslip, and they are gone when the app quits. At no
-point are they written down.
+Since v1.2 the checker has not been a screen that throws its reading away when
+you close it, so the wording here is narrower than it used to be and it is
+exact. It was a tab until the app gained a home screen that opens everything;
+now you reach it from there, by checking a payslip or by updating your salary
+from one. While the app is running, the payslip you read and the verdict stay in
+memory, so that leaving the checker and coming back does not throw away what you
+were reading. They are replaced the moment you read another payslip, and they are
+gone when the app quits. At no point are they written down.
 
 The text is recognised on the device by Apple's own Vision framework, which is
 part of iOS and does not go online either.

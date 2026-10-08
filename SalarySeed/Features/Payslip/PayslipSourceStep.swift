@@ -27,17 +27,36 @@ struct PayslipSourceStep: View {
     // Held because this view draws with Theme.accent, which is a computed
     // static SwiftUI cannot observe. See SalarySeedApp.
     @EnvironmentObject private var store: SalaryStore
-    /// v1.2: the tab's landing screen explains the checks before asking for a
-    /// file; the onboarding cover does not. Onboarding is already nine steps
-    /// long, and on that route the reader has no profile yet, so half the
-    /// checks listed would not run on what they are about to hand over.
+    /// v1.2: the checker's landing screen explains the checks before asking
+    /// for a file; the onboarding cover does not, and neither does "Update my
+    /// salary". Onboarding is already nine steps long, and on that route the
+    /// reader has no profile yet, so half the checks listed would not run on
+    /// what they are about to hand over; and somebody updating their salary
+    /// came for the number, which the verdict will still be put in front of.
     var showsWhatWeCheck: Bool = false
+    /// A line above the privacy note, saying what this screen is for when the
+    /// title alone does not. "Update my salary" uses it; the checker does not.
+    var lead: String? = nil
     let onFile: (URL) -> Void
     let onImage: (Data) -> Void
+    /// A fourth row, "Type it myself", for a screen whose job is a number
+    /// rather than a check. Onboarding draws the same row in its own fork;
+    /// here only "Update my salary" passes one.
+    var onTypeInstead: (() -> Void)? = nil
 
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var importing = false
     @State private var photo: PhotosPickerItem?
+    /// The picked photo, still loading. Held so leaving can cancel it.
+    ///
+    /// `loadTransferable` can take seconds for a photo that lives only in
+    /// iCloud, and nothing is on screen while it does. Unheld, the load
+    /// outlived this view: a reader who gave up and went back, then read a
+    /// different payslip, could have that reading replaced by the late photo,
+    /// with "Ok, use this" then keeping a gross from a document they never
+    /// meant to hand over. Found in review; the PhotosPicker sheet does not
+    /// make this view disappear, leaving the screen does.
+    @State private var photoLoad: Task<Void, Never>?
     @State private var scanning = false
     @State private var cameraRefused = false
     @State private var cameraFailed = false
@@ -54,13 +73,20 @@ struct PayslipSourceStep: View {
             VStack(alignment: .leading, spacing: 14) {
                 if showsWhatWeCheck { hero }
 
+                if let lead {
+                    Text(lead)
+                        .appFont(15)
+                        .foregroundStyle(Theme.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
                 Text(s.payslipSourceIntro)
                     .appFont(14)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.bottom, 4)
 
-                Button { importing = true } label: {
+                Button { dropPendingPhoto(); importing = true } label: {
                     PayslipSourceRow(icon: "doc.text.fill", title: s.payslipPickFile,
                                      subtitle: nil, accented: true)
                 }
@@ -76,6 +102,12 @@ struct PayslipSourceStep: View {
                 PhotosPicker(selection: $photo, matching: .images, photoLibrary: .shared()) {
                     PayslipSourceRow(icon: "photo.fill", title: s.payslipPickPhoto,
                                      subtitle: nil)
+                }
+                if let onTypeInstead {
+                    Button { dropPendingPhoto(); onTypeInstead() } label: {
+                        PayslipSourceRow(icon: "keyboard", title: s.onbTypeItMyself,
+                                         subtitle: s.onbSourceTypeSub)
+                    }
                 }
 
                 // Inline, never an alert. `PayslipUnreadableView` makes the same
@@ -148,16 +180,39 @@ struct PayslipSourceStep: View {
         }
         .onChange(of: photo) { _, item in
             guard let item else { return }
-            Task {
-                if let data = try? await item.loadTransferable(type: Data.self) {
-                    onImage(data)
-                }
+            // Cleared at once, because this view is not always replaced by
+            // what it hands over. In the checker the reading takes its place,
+            // but under "Update my salary" it stays alive beneath the pushed
+            // checker, and a selection left set would make picking the same
+            // photo a second time change nothing and fire no `onChange`
+            // (rule 11).
+            photo = nil
+            photoLoad?.cancel()
+            photoLoad = Task {
+                let data = try? await item.loadTransferable(type: Data.self)
+                // Checked after the await, because the load itself cannot be
+                // interrupted part way: a photo that arrives after the reader
+                // left is dropped here rather than handed to anybody.
+                guard !Task.isCancelled, let data else { return }
+                onImage(data)
             }
         }
+        .onDisappear { dropPendingPhoto() }
+    }
+
+    /// A newer choice always replaces a photo still loading. A slow photo (an
+    /// iCloud original can take seconds) used to arrive after the reader had
+    /// given up on it and picked a file, the camera or typing, and replace what
+    /// they chose: the checker was pushed under the file picker, the file was
+    /// then dropped, and the verdict was for the abandoned photo.
+    private func dropPendingPhoto() {
+        photoLoad?.cancel()
+        photoLoad = nil
     }
 
     /// Ask, or say why we cannot. Three states, three outcomes. Rule 21.
     private func startScan() {
+        dropPendingPhoto()
         cameraFailed = false
         switch CameraAccess.current {
         case .ready:
@@ -181,8 +236,8 @@ struct PayslipSourceStep: View {
     }
 
     /// The same sprout the rest of the app uses to mean "this is SalarySeed
-    /// doing something". A tab that opens on two buttons and a paragraph reads
-    /// as a dialog somebody left open; this is what makes it a place.
+    /// doing something". A screen that opens on two buttons and a paragraph
+    /// reads as a dialog somebody left open; this is what makes it a place.
     private var hero: some View {
         HStack {
             Spacer()

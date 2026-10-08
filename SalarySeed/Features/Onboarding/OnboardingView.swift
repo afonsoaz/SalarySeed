@@ -26,7 +26,7 @@ enum SalaryEntryMode: String, CaseIterable, Identifiable {
 /// then ajudas de custo, then the four profile questions one by one. Every step
 /// has an explicit OK button, so selecting an option never auto-advances; the
 /// skippable steps also show a clear, larger Skip. Everything is skippable EXCEPT
-/// the salary. The IRS Jovem exemption is set later in profileSeed.
+/// the salary. The IRS Jovem exemption is set later, on Tax.
 struct OnboardingView: View {
     @EnvironmentObject private var store: SalaryStore
     /// Read for the header only. See `header`.
@@ -134,7 +134,7 @@ struct OnboardingView: View {
     }
 
     private var salaryValue: Double? {
-        guard let v = Double(amountText), v > 0 else { return nil }
+        guard let v = Double(amountText), v > 0, v < typedAmountLimit else { return nil }
         return v
     }
 
@@ -469,6 +469,11 @@ struct OnboardingView: View {
                 // the reader confirms by pressing OK is the one they can see.
                 amountText = String(Int((Double(proposal.monthlyGrossCents) / 100).rounded()))
                 kind = .gross
+                // The figure is a monthly gross. A field left on "Yearly" from
+                // an earlier visit to step 2 would read it as a year and store
+                // a fourteenth of it. `.yearly` is 14 payments, so this keeps
+                // the schedule and only changes how the field is read.
+                if entryMode == .yearly { entryMode = .fourteen }
                 if let ajudas = proposal.ajudasMonthlyCents {
                     ajudasText = String(Int((Double(ajudas) / 100).rounded()))
                 }
@@ -738,7 +743,7 @@ struct OnboardingView: View {
                 .padding(.top, 8)
 
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+                LazyVGrid(columns: chipColumns, spacing: 8) {
                     ForEach(profileOptions(id)) { option in
                         profileChip(dimensionID: id, option: option)
                     }
@@ -825,7 +830,7 @@ struct OnboardingView: View {
                 .padding(.top, 8)
 
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+                LazyVGrid(columns: chipColumns, spacing: 8) {
                     ForEach(Sector.allCases) { sector in
                         sectorChip(sector)
                     }
@@ -867,6 +872,16 @@ struct OnboardingView: View {
         }
     }
 
+    /// Two chips across normally, one past an accessibility size with the
+    /// label wrapping, as in Profile's pickers: two columns shrank "Superior
+    /// (licenciatura ou mais)" and still cut it off. Both grids already sit in
+    /// a ScrollView of their own, so a taller column scrolls (rule 17).
+    private var chipColumns: [GridItem] {
+        typeSize.isAccessibilitySize
+            ? [GridItem(.flexible())]
+            : [GridItem(.adaptive(minimum: 150), spacing: 8)]
+    }
+
     private func sectorChip(_ sector: Sector) -> some View {
         let isSelected = sector == sectorSel
         return Button {
@@ -876,9 +891,10 @@ struct OnboardingView: View {
                 .appFont(12.5, weight: isSelected ? .medium : .regular)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.82)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
+                .minimumScaleFactor(typeSize.isAccessibilitySize ? 1 : 0.82)
+                .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
+                .padding(.vertical, typeSize.isAccessibilitySize ? 8 : 0)
                 .frame(maxWidth: .infinity, minHeight: Theme.chipHeight)
                 .padding(.horizontal, 8)
                 .background(
@@ -901,8 +917,10 @@ struct OnboardingView: View {
                 .appFont(13, weight: isSelected ? .medium : .regular)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.82)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
+                .minimumScaleFactor(typeSize.isAccessibilitySize ? 1 : 0.82)
+                .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
+                .padding(.vertical, typeSize.isAccessibilitySize ? 8 : 0)
                 .frame(maxWidth: .infinity, minHeight: Theme.chipHeight)
                 .padding(.horizontal, 8)
                 .background(

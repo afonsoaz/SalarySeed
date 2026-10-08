@@ -40,14 +40,6 @@ enum EnrichmentSignal: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Answered inline on the card, or does it need a sheet?
-    var needsSheet: Bool {
-        switch self {
-        case .jobTitle, .variablePay: return true
-        case .employerKind, .workSchedule, .gender: return false
-        }
-    }
-
     var icon: String {
         switch self {
         case .employerKind: return "building.columns"

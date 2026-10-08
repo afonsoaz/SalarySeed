@@ -67,16 +67,11 @@ final class SalaryStore: ObservableObject {
     @Published var ajudasMonthly: Double { didSet { save() } }
     @Published var employment: EmploymentType { didSet { save() } }
     @Published var hasOnboarded: Bool { didSet { save() } }
-    /// v1.4: whether the one-time intro screen has already run.
-    ///
-    /// Separate from `hasOnboarded` on purpose, so that quitting part way
-    /// through the intro keeps the profile and `OnboardingView.finish()` stays
-    /// the only writer of `hasOnboarded`.
-    @Published var hasSeenIntro: Bool { didSet { save() } }
     /// v1.2: the one place a figure read off a payslip becomes the salary.
     ///
-    /// Called from `HomeView`, never from inside `Features/Payslip/`, which goes
-    /// on reading the store and never writing to it. The proposal has already
+    /// Called from Home's payslip screens (`PayslipCheckScreen`, in
+    /// Features/Home), never from inside `Features/Payslip/`, which goes on
+    /// reading the store and never writing to it. The proposal has already
     /// been through `PayslipSalary`, which refuses rather than guesses, and the
     /// reader has already seen the number and tapped to keep it.
     ///
@@ -103,7 +98,8 @@ final class SalaryStore: ObservableObject {
     @Published var inputYearly: Bool { didSet { save() } }
 
     // v0.6: real tax inputs. Marital situation and dependants are asked in
-    // onboarding; the IRS Jovem exemption (1.0 = 100% ... 0 = off) lives in profileSeed.
+    // onboarding; the IRS Jovem exemption (1.0 = 100% ... 0 = off) is set on Tax
+    // (TaxAssumptions, through IRSJovemAssessorView), next to the figures it changes.
     @Published var maritalSituation: MaritalSituation { didSet { save() } }
     @Published var dependents: Int { didSet { save() } }
     @Published var irsJovemExemption: Double { didSet { save() } }
@@ -153,7 +149,7 @@ final class SalaryStore: ObservableObject {
     /// screen but the offer's, so it cannot leak into the reader's own figures.
     @Published var offer: OfferTerms? { didSet { save() } }
 
-    // v0.3: language. Follows the device by default, can be changed in the profile tab.
+    // v0.3: language. Follows the device by default, can be changed in Profile.
     @Published var language: AppLanguage { didSet { save() } }
 
     // MARK: v0.16 accent
@@ -178,27 +174,29 @@ final class SalaryStore: ObservableObject {
     /// The Grow scenario. It has NO `didSet { save() }` and is absent from
     /// `save()` on purpose. Grow explores rather than records, in the v0.9.4
     /// sense, and a hypothetical that survived a relaunch would start behaving
-    /// like a stored fact about the user. It does survive swiping between tabs,
-    /// which is the whole reason it lives here instead of inside the view.
+    /// like a stored fact about the user. It does survive leaving Grow and
+    /// coming back, which is the whole reason it lives here instead of inside
+    /// a view that is rebuilt on every visit.
     @Published var growScenario = GrowthEngine.Scenario()
 
-    /// Which tab is showing. The paged TabView and the custom bar both bind to
-    /// this, so the selection has one source of truth rather than a private copy
-    /// in the view that the bar can disagree with. It also leaves the door open
-    /// for one screen to send the user to another; nothing does that today,
-    /// since v0.10.1 took away the Home card that used to jump to Grow.
-    @Published var selectedTab: Int = 0
+    /// Where the reader is, below Home. See `HubRoute`.
+    ///
+    /// It replaced the selected tab when the hub replaced the tab bar, and it
+    /// lives here for the reason that did: one source of truth for where the
+    /// reader is, so any screen can send them somewhere. Session state like the
+    /// scenario above: it is the reader's place in the app right now, so it is
+    /// never saved, and a relaunch opens on Home.
+    @Published var path: [HubRoute] = []
 
-    /// Whether the intro screen is on screen right now.
+    /// The profile questions Compare was told "not now" about this session.
     ///
-    /// No `didSet { save() }` and absent from `save()`, for the same reason
-    /// `growScenario` is: it is what the app is doing at this moment, not
-    /// something it knows about the reader.
-    ///
-    /// It exists as a second value rather than a view reading `!hasSeenIntro`
-    /// because the intro marks itself seen the moment it appears, and a view
-    /// gated on the persisted flag would remove itself in the same frame.
-    @Published var showingIntro = false
+    /// v0.9 kept this in the view, deliberately in memory only, so "not now"
+    /// means not now and not never. That held for as long as the tab did, which
+    /// was the whole session. A pushed screen is rebuilt on every visit, so in
+    /// the view it would have meant "not this visit" and the same question
+    /// would be back the next time Compare opened. Here it lasts the session
+    /// again, and it is still never saved.
+    @Published var compareSnoozed: Set<String> = []
 
     private let defaults = UserDefaults.standard
 
@@ -209,7 +207,6 @@ final class SalaryStore: ObservableObject {
         ajudasMonthly = defaults.double(forKey: "ajudasMonthly")
         employment = EmploymentType(rawValue: defaults.string(forKey: "employment") ?? "") ?? .employee
         hasOnboarded = defaults.bool(forKey: "hasOnboarded")
-        hasSeenIntro = defaults.bool(forKey: "hasSeenIntro")
         inputYearly = defaults.bool(forKey: "inputYearly")
         maritalSituation = MaritalSituation(rawValue: defaults.string(forKey: "maritalSituation") ?? "") ?? .single
         dependents = defaults.integer(forKey: "dependents")
@@ -249,16 +246,12 @@ final class SalaryStore: ObservableObject {
         // The static mirror has to be right before the first view is built, so it
         // is set here rather than waiting for the first `didSet`.
         Theme.current = accent
-        // v1.4: THE INTRO ARMS ITSELF ONLY FOR SOMEBODY WHO HAS NOT ONBOARDED
-        // YET, and both halves of that condition matter.
-        //
-        // Without `!hasOnboarded`, upgrading to v1.4 would put a full-screen
-        // intro over an existing install on its next cold launch, which is the
-        // launch-time interstitial the money rules forbid. With it, the screen
-        // can only ever appear in the same session as onboarding: this is read
-        // before the first view is built, and `finish()` sets `hasOnboarded`
-        // afterwards, so the flag is still false here for a first run.
-        showingIntro = !hasSeenIntro && !hasOnboarded
+        // The v1.4 intro screen is retired, because Home now names every
+        // feature in place, every time. Its one stored flag is removed rather
+        // than left to mean nothing, so that if an intro ever comes back it
+        // starts from a clean slate instead of inheriting "already seen" from a
+        // screen that no longer exists.
+        defaults.removeObject(forKey: "hasSeenIntro")
         // v1.0: the consent keys are deliberately NOT read, and not cleared
         // either. Nobody ever ran a build that could send anything, so there is
         // nothing to migrate; leaving the old keys alone costs a few bytes and
@@ -272,7 +265,6 @@ final class SalaryStore: ObservableObject {
         defaults.set(ajudasMonthly, forKey: "ajudasMonthly")
         defaults.set(employment.rawValue, forKey: "employment")
         defaults.set(hasOnboarded, forKey: "hasOnboarded")
-        defaults.set(hasSeenIntro, forKey: "hasSeenIntro")
         defaults.set(inputYearly, forKey: "inputYearly")
         defaults.set(maritalSituation.rawValue, forKey: "maritalSituation")
         defaults.set(dependents, forKey: "dependents")
@@ -384,10 +376,10 @@ final class SalaryStore: ObservableObject {
             employerKind != nil,
             workSchedule != nil,
             // v0.9.3: any answer counts as answered, including "prefer not to
-            // say". `informative` still gates whether the value is usable as
-            // data, but a deliberate refusal is a completed question, and
-            // counting it otherwise made the finished state unreachable for
-            // anyone who chose it.
+            // say". A deliberate refusal is a completed question, and counting
+            // it otherwise made the finished state unreachable for anyone who
+            // chose it. Nothing compares on gender yet; whatever does first
+            // has to leave "prefer not to say" out of the data itself.
             gender != nil,
             variableAnnual != nil,
         ]
@@ -453,15 +445,6 @@ final class SalaryStore: ObservableObject {
             jovemExemption: irsJovemExemption,
             region: taxRegion
         )
-    }
-
-    /// National percentile for the current gross salary.
-    /// Ajudas de custo are deliberately NOT included: published distributions
-    /// are gross-salary based, and the UI says so wherever this number shows.
-    /// Neither is variable pay: GEP's ganho is a monthly figure that does not
-    /// carry annual bonuses, so folding them in would compare unlike with unlike.
-    var percentile: Double {
-        PercentileEngine.percentile(grossMonthly: breakdown.grossMonthly)
     }
 
     // MARK: Grow's inputs (v1.5: shared with the offer screen)

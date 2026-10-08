@@ -7,7 +7,7 @@ grouped by the screen it belongs to.
 Editing this file changes nothing on its own; it is here to be read and marked up,
 and the edits get applied back to the Swift source afterwards.
 
-- **710** string pairs.
+- **714** string pairs.
 - `\(name)` is a value dropped in at runtime. It has to survive a rewrite,
   and it can move within the sentence.
 - `\n` is a deliberate line break.
@@ -17,37 +17,127 @@ and the edits get applied back to the Swift source afterwards.
 
 ---
 
-## Tabs
+## The hub
 
-### `tabHome`
+### `hubTaxTitle`
 
-- **EN** `Home`
-- **PT** `Início`
+- **EN** `Understand taxes`
+- **PT** `Perceber os impostos`
 
-### `tabGrow`
+### `hubTaxSub`
 
-- **EN** `Grow`
-- **PT** `Crescer`
+- **EN** `Where your money goes, and your IRS for the year`
+- **PT** `Para onde vai o teu dinheiro, e o teu IRS do ano`
 
-### `tabCompare`
+### `hubPortugalTitle`
 
-- **EN** `Compare`
-- **PT** `Comparar`
+- **EN** `Compare in Portugal`
+- **PT** `Comparar em Portugal`
 
-### `tabMap`
+### `hubPortugalSub`
 
-- **EN** `Map`
-- **PT** `Mapa`
+- **EN** `Where you stand, and what your sector pays by district`
+- **PT** `Como te comparas, e quanto paga o teu setor por distrito`
 
-### `tabPayslip`
+### `hubEuropeTitle`
 
-- **EN** `Payslip`
-- **PT** `Recibo`
+- **EN** `Compare in Europe`
+- **PT** `Comparar na Europa`
 
-### `tabProfile`
+### `hubPayslipTitle`
+
+- **EN** `Check payslip`
+- **PT** `Conferir recibo`
+
+### `hubPayslipSub`
+
+- **EN** `Whether it adds up, checked on your phone`
+- **PT** `Se as contas batem certo, conferido no teu telemóvel`
+
+### `hubGrowTitle`
+
+- **EN** `Growth simulator`
+- **PT** `Simulador de crescimento`
+
+### `hubOfferTitle`
+
+- **EN** `Check job offer`
+- **PT** `Avaliar proposta de emprego`
+
+### `hubOfferSub`
+
+- **EN** `Put it next to the job you have`
+- **PT** `Põe-na ao lado do emprego que tens`
+
+### `hubToolsSub`
+
+- **EN** `Try another salary, and the hidden cost of ajudas`
+- **PT** `Experimenta outro salário, e o custo escondido das ajudas`
+
+### `hubLockedVoice`
+
+- **EN** `Included when you support the app`
+- **PT** `Incluído quando apoias a app`
+
+### `profileButtonVoice`
 
 - **EN** `Profile`
 - **PT** `Perfil`
+
+### `taxTitle`
+
+- **EN** `What comes off your pay`
+- **PT** `O que te descontam`
+
+### `toolsTitle`
+
+- **EN** `Other tools`
+- **PT** `Outras ferramentas`
+
+### `voiceExpanded`
+
+- **EN** `Expanded`
+- **PT** `Expandido`
+
+### `voiceCollapsed`
+
+- **EN** `Collapsed`
+- **PT** `Recolhido`
+
+### `updateSalaryTitle`
+
+- **EN** `Update my salary`
+- **PT** `Atualizar o meu salário`
+
+### `updateSalaryLead`
+
+- **EN** `Take it from your payslip, and we check the payslip as we read it. Or type it in.`
+- **PT** `Tira-o do teu recibo, e conferimos o recibo enquanto o lemos. Ou escreve-o tu.`
+
+### `updateSalaryBack`
+
+- **EN** `Back to my salary`
+- **PT** `Voltar ao meu salário`
+
+### `payslipCannot[0]`
+
+- **EN** `We could not find a gross on this payslip that its own sums confirm, so we will not take a figure from it.`
+- **PT** `Não encontrámos neste recibo um bruto confirmado pelas próprias contas, por isso não tiramos daqui nenhum valor.`
+
+### `payslipCannot[1]`
+
+- **EN** `We had to guess at part of the gross on this payslip, and a guess cannot become your salary.`
+- **PT** `Tivemos de adivinhar parte do bruto deste recibo, e um palpite não pode passar a ser o teu salário.`
+
+### `payslipCannot[2]`
+
+- **EN** `This payslip pays a holiday or Christmas subsidy on a line of its own, so its gross is not an ordinary month's.`
+- **PT** `Este recibo paga o subsídio de férias ou de Natal numa linha à parte, por isso o bruto não é o de um mês normal.`
+
+### `payslipCannot[3]`
+
+- **EN** `The earnings on this payslip include something we cannot place, so we cannot tell what your gross is.`
+- **PT** `Os abonos deste recibo incluem algo que não conseguimos situar, por isso não sabemos qual é o teu bruto.`
 
 ---
 
@@ -237,15 +327,10 @@ and the edits get applied back to the Swift source afterwards.
 - **EN** `What lands in each of your 14 payments.`
 - **PT** `O que entra em cada um dos teus 14 pagamentos.`
 
-### `homeSeeMore`
+### `resultCaption[2]`
 
-- **EN** `See more`
-- **PT** `Vê mais`
-
-### `homeSeeMoreHint`
-
-- **EN** `Scrolls down to the deductions and the yearly IRS.`
-- **PT** `Desce até aos descontos e ao IRS do ano.`
+- **EN** `Your yearly pay spread over 14 payments.`
+- **PT** `O teu salário anual repartido por 14 pagamentos.`
 
 ### `heroEditHint`
 
@@ -282,30 +367,6 @@ and the edits get applied back to the Swift source afterwards.
 - **EN** `Where the money goes`
 - **PT** `Para onde vai o dinheiro`
 
-### `legendNet`
-
-- **EN** `Net`
-- **PT** `Líquido`
-
-### `legendIRS` — built in code
-
-Assembled in Swift rather than written as a pair. `Localization.swift:182`.
-
-### `legendYourSS`
-
-- **EN** `Your SS`
-- **PT** `A tua SS`
-
-### `legendEmployerSS`
-
-- **EN** `Employer SS`
-- **PT** `SS da empresa`
-
-### `theDetails`
-
-- **EN** `Details`
-- **PT** `Detalhe`
-
 ### `perPeriod[0]`
 
 - **EN** `per year`
@@ -341,20 +402,40 @@ Assembled in Swift rather than written as a pair. `Localization.swift:182`.
 - **EN** `Social Security (employer)`
 - **PT** `Segurança Social (empresa)`
 
-### `treeDeductionsTitle`
-
-- **EN** `Your total discounts`
-- **PT** `Os teus descontos totais`
-
 ### `ofGross`
 
 - **EN** `\(pct) of gross`
 - **PT** `\(pct) do bruto`
 
-### `ofCost`
+### `waterfallTitle`
 
-- **EN** `\(pct) of cost`
-- **PT** `\(pct) do custo`
+- **EN** `From your company to you`
+- **PT** `Da tua empresa até ti`
+
+### `waterfallNet`
+
+- **EN** `Net, what reaches you`
+- **PT** `Líquido, o que te chega`
+
+### `taxAssumesTitle`
+
+- **EN** `What this assumes`
+- **PT** `O que isto assume`
+
+### `taxTablesLabel`
+
+- **EN** `Tax tables`
+- **PT** `Tabelas de IRS`
+
+### `taxTablesAssumed`
+
+- **EN** `No município yet`
+- **PT** `Ainda sem concelho`
+
+### `irsJovemExemptValue`
+
+- **EN** `\(pct)% exempt`
+- **PT** `\(pct)% isento`
 
 ### `annualTitle`
 
@@ -396,6 +477,16 @@ Assembled in Swift rather than written as a pair. `Localization.swift:182`.
 - **EN** `Your salary is below the level where IRS starts.`
 - **PT** `O teu salário fica abaixo do valor a partir do qual há IRS.`
 
+### `annualNoIRSJovem`
+
+- **EN** `IRS Jovem exempts all of it this year.`
+- **PT** `O IRS Jovem isenta-o todo este ano.`
+
+### `annualNoIRSDependants`
+
+- **EN** `The deductions for your dependants cover all of it.`
+- **PT** `As deduções pelos teus dependentes cobrem-no todo.`
+
 ### `annualNoIRSRefund`
 
 - **EN** `You get back the \(amount) withheld during the year.`
@@ -403,7 +494,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:182`.
 
 ### `annualNote`
 
-- **EN** `Estimate on the 2026 brackets. With fewer deductions than the €1,000 above, this drops, and it can turn into an amount to pay.`
+- **EN** `Estimate on the 2026 brackets. With fewer deductions than the 1000 € above, this drops, and it can turn into an amount to pay.`
 - **PT** `Estimativa nos escalões de 2026. Com menos deduções do que os 1000 € acima, isto baixa e pode passar a valor a pagar.`
 
 ### `annualJovemBoth`
@@ -436,6 +527,11 @@ Assembled in Swift rather than written as a pair. `Localization.swift:182`.
 - **EN** `Ajudas de custo`
 - **PT** `Ajudas de custo`
 
+### `ajudasSeeCost`
+
+- **EN** `See what it costs your pension`
+- **PT** `Vê quanto custa à tua reforma`
+
 ### `ajudasCardYearly`
 
 - **EN** `\(yearly) a year, paid over 12 months`
@@ -450,11 +546,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:182`.
 
 - **EN** `Ajudas de custo not included: comparisons use the gross salary only.`
 - **PT** `Ajudas de custo não incluídas: as comparações usam só o salário bruto.`
-
-### `whatIf`
-
-- **EN** `What if…`
-- **PT** `E se…`
 
 ### `ajudasNudgeTitle`
 
@@ -500,35 +591,40 @@ Assembled in Swift rather than written as a pair. `Localization.swift:182`.
 - **EN** `All of Portugal`
 - **PT** `Portugal inteiro`
 
-### `earnLessThanYou`
+### `compareLessThanYou`
 
-- **EN** `of workers earn less than you`
-- **PT** `dos trabalhadores ganham menos do que tu`
+- **EN** `of workers in Portugal earn less than you`
+- **PT** `dos trabalhadores em Portugal ganham menos do que tu`
+
+### `compareLessThan`
+
+- **EN** `of workers in Portugal earn less than \(amount) gross`
+- **PT** `dos trabalhadores em Portugal ganham menos de \(amount) brutos`
+
+### `compareBasis`
+
+- **EN** `Gross vs gross · 2024 · estimate`
+- **PT** `Bruto vs bruto · 2024 · estimativa`
 
 ### `grossVsGross`
 
-- **EN** `Gross vs gross · GEP-MTSSS e INE · 2024 · estimate`
+- **EN** `Gross vs gross · GEP-MTSSS and INE · 2024 · estimate`
 - **PT** `Bruto vs bruto · GEP-MTSSS e INE · 2024 · estimativa`
 
-### `natDistribution`
+### `compareExploreVoice`
 
-- **EN** `National distribution`
-- **PT** `Distribuição nacional`
+- **EN** `Explore the country's pay`
+- **PT** `Explorar os salários do país`
 
-### `releaseToReset`
+### `groupExploreVoice`
 
-- **EN** `Release to reset`
-- **PT** `Larga para voltar`
+- **EN** `Explore this group's pay`
+- **PT** `Explorar os salários deste grupo`
 
-### `exploreByPercentile`
+### `compareDistrictsLabel`
 
-- **EN** `Explore by percentile`
-- **PT** `Explora por percentil`
-
-### `exploreHint`
-
-- **EN** `Drag the handle. Let go to return to you.`
-- **PT** `Arrasta o cursor. Larga para voltar a ti.`
+- **EN** `Your sector by district`
+- **PT** `O teu setor por distrito`
 
 ### `percentileEarns`
 
@@ -537,27 +633,42 @@ Assembled in Swift rather than written as a pair. `Localization.swift:182`.
 
 ### `ordinalPercentile` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:305`.
-
-### `youMarker`
-
-- **EN** `You`
-- **PT** `Tu`
-
-### `lowestEarners`
-
-- **EN** `Lowest`
-- **PT** `Mais baixos`
-
-### `highestEarners`
-
-- **EN** `Highest`
-- **PT** `Mais altos`
+Assembled in Swift rather than written as a pair. `Localization.swift:420`.
 
 ### `peopleLikeYou`
 
 - **EN** `People like you`
 - **PT** `Pessoas como tu`
+
+### `groupVoiceValue`
+
+- **EN** `\(shown) of them earn less than you`
+- **PT** `\(shown) deles ganham menos do que tu`
+
+### `groupChange[0]`
+
+- **EN** `Change your sector or years`
+- **PT** `Muda o teu setor ou os anos`
+
+### `groupChange[1]`
+
+- **EN** `Change your age group`
+- **PT** `Muda a tua faixa etária`
+
+### `groupChange[2]`
+
+- **EN** `Change your município`
+- **PT** `Muda o teu concelho`
+
+### `groupChange[3]`
+
+- **EN** `Change your education`
+- **PT** `Muda a tua escolaridade`
+
+### `groupChange[4]`
+
+- **EN** `Change your profession`
+- **PT** `Muda a tua profissão`
 
 ### `medianCaption[0]`
 
@@ -583,11 +694,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:305`.
 
 - **EN** `Few data points at this level`
 - **PT** `Poucos dados neste nível`
-
-### `addPill`
-
-- **EN** `+ Add`
-- **PT** `+ Adicionar`
 
 ### `districtSourceLine`
 
@@ -729,8 +835,13 @@ Assembled in Swift rather than written as a pair. `Localization.swift:305`.
 
 ### `sectorRowTitle`
 
-- **EN** `Your sector`
-- **PT** `O teu setor`
+- **EN** `Sector`
+- **PT** `Setor`
+
+### `sectorAdd`
+
+- **EN** `Add your sector`
+- **PT** `Adiciona o teu setor`
 
 ### `sectorSheetTitle`
 
@@ -784,7 +895,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:305`.
 
 ### `sectorCohort` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:417`.
+Assembled in Swift rather than written as a pair. `Localization.swift:551`.
 
 ---
 
@@ -804,21 +915,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:417`.
 
 ## Profile
 
-### `profileTitle[0]`
-
-- **EN** `\(name)'s profile`
-- **PT** `Perfil de \(name)`
-
-### `profileTitle[1]`
-
-- **EN** `Your profile`
-- **PT** `O teu perfil`
-
-### `profileProgressTitle`
-
-- **EN** `Your details`
-- **PT** `Os teus dados`
-
 ### `profileProgressSub`
 
 - **EN** `Each one you add sharpens your comparison.`
@@ -828,11 +924,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:417`.
 
 - **EN** `Finish your profile`
 - **PT** `Completa o teu perfil`
-
-### `profileDoneTitle`
-
-- **EN** `All done`
-- **PT** `Está tudo`
 
 ### `profileDoneSub`
 
@@ -844,15 +935,15 @@ Assembled in Swift rather than written as a pair. `Localization.swift:417`.
 - **EN** `\(filled) of \(total)`
 - **PT** `\(filled) de \(total)`
 
+### `profileDetailsCount`
+
+- **EN** `\(filled) of \(total) details`
+- **PT** `\(filled) de \(total) dados preenchidos`
+
 ### `demographicsTitle`
 
 - **EN** `About you`
 - **PT** `Sobre ti`
-
-### `yourSalary`
-
-- **EN** `Your salary`
-- **PT** `O teu salário`
 
 ### `nameLabel`
 
@@ -862,11 +953,26 @@ Assembled in Swift rather than written as a pair. `Localization.swift:417`.
 ### `namePlaceholder`
 
 - **EN** `Add your name`
+- **PT** `Adiciona o teu nome`
+
+### `nameAlertTitle`
+
+- **EN** `Your name`
 - **PT** `O teu nome`
+
+### `nameAlertMessage`
+
+- **EN** `Only used to greet you. It stays on this phone.`
+- **PT** `Só serve para te cumprimentar. Fica neste telemóvel.`
+
+### `nameEditHint`
+
+- **EN** `Changes your name`
+- **PT** `Muda o teu nome`
 
 ### `appSection` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:453`.
+Assembled in Swift rather than written as a pair. `Localization.swift:593`.
 
 ### `languageLabel`
 
@@ -883,11 +989,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:453`.
 - **EN** `All data stays on this phone`
 - **PT** `Tudo fica neste telemóvel`
 
-### `versionLabel`
-
-- **EN** `Version`
-- **PT** `Versão`
-
 ### `sourcesLabel`
 
 - **EN** `Data sources`
@@ -895,17 +996,12 @@ Assembled in Swift rather than written as a pair. `Localization.swift:453`.
 
 ### `sourcesValue` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:461`.
+Assembled in Swift rather than written as a pair. `Localization.swift:600`.
 
 ### `profileFooter`
 
-- **EN** `SalarySeed v\(AppConfig.version). Estimates only, not official tax or financial advice.`
-- **PT** `SalarySeed v\(AppConfig.version). Só estimativas, não aconselhamento fiscal ou financeiro oficial.`
-
-### `taxSection`
-
-- **EN** `Tax details`
-- **PT** `Dados fiscais`
+- **EN** `Estimates only, not official tax or financial advice.`
+- **PT** `Só estimativas, não aconselhamento fiscal ou financeiro oficial.`
 
 ### `maritalLabel`
 
@@ -1299,7 +1395,12 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 - **EN** `Contracted hours a week`
 - **PT** `Horas contratadas por semana`
 
-### `hoursText`
+### `hoursText[0]`
+
+- **EN** `\(n) hour`
+- **PT** `\(n) hora`
+
+### `hoursText[1]`
 
 - **EN** `\(n) hours`
 - **PT** `\(n) horas`
@@ -1311,8 +1412,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 
 ### `jobRowTitle`
 
-- **EN** `Your job`
-- **PT** `A tua profissão`
+- **EN** `Job`
+- **PT** `Profissão`
 
 ### `jobAddHint`
 
@@ -1415,8 +1516,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 
 ### `concelhoRowTitle`
 
-- **EN** `Your município`
-- **PT** `O teu concelho`
+- **EN** `Município`
+- **PT** `Concelho`
 
 ### `concelhoAddHint`
 
@@ -1452,11 +1553,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 
 ## v0.9.2 mapSeed
 
-### `mapTitle`
-
-- **EN** `What your sector pays,\nby district`
-- **PT** `Quanto paga o teu setor,\npor distrito`
-
 ### `mapAllSectors`
 
 - **EN** `All sectors together`
@@ -1481,11 +1577,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 
 - **EN** `vs where I am`
 - **PT** `vs onde estou`
-
-### `mapNeedConcelho`
-
-- **EN** `Add your município`
-- **PT** `Adiciona o teu concelho`
 
 ### `mapBaselineNationalName`
 
@@ -1532,7 +1623,12 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 - **EN** `few data`
 - **PT** `poucos dados`
 
-### `mapBaselineLine`
+### `mapBaselineLine[0]`
+
+- **EN** `Monthly average across all sectors, compared with \(baseline).`
+- **PT** `Média mensal de todos os setores, comparada com \(baseline).`
+
+### `mapBaselineLine[1]`
 
 - **EN** `Monthly average for this sector, compared with \(baseline).`
 - **PT** `Média mensal deste setor, comparada com \(baseline).`
@@ -1576,10 +1672,20 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 - **EN** `Açores and Madeira are on the map but have no colour: the Quadros de Pessoal cover the mainland only, and there is no published figure for either region in this source. Their tax is another matter, and the app does compute that properly.`
 - **PT** `Os Açores e a Madeira estão no mapa mas sem cor: os Quadros de Pessoal só cobrem o continente, e não há valor publicado para nenhuma das regiões nesta fonte. Os impostos são outra história, e esses a app já calcula bem.`
 
-### `taxRegionNote`
+### `taxRegionNote[0]`
 
-- **EN** `Calculated with the \(region) IRS tables, which are lower than the mainland ones. Social Security is the same everywhere.`
-- **PT** `Calculado com as tabelas de IRS da \(region), que são mais baixas do que as do continente. A Segurança Social é igual em todo o lado.`
+- **EN** `Calculated with the Açores IRS tables, which are lower than the mainland ones. Social Security is the same everywhere.`
+- **PT** `Calculado com as tabelas de IRS dos Açores, que são mais baixas do que as do continente. A Segurança Social é igual em todo o lado.`
+
+### `taxRegionNote[1]`
+
+- **EN** `Calculated with the Madeira IRS tables, which are lower than the mainland ones. Social Security is the same everywhere.`
+- **PT** `Calculado com as tabelas de IRS da Madeira, que são mais baixas do que as do continente. A Segurança Social é igual em todo o lado.`
+
+### `taxRegionNote[2]`
+
+- **EN** `Calculated with the mainland IRS tables.`
+- **PT** `Calculado com as tabelas de IRS do continente.`
 
 ### `taxRegionAssumedNote`
 
@@ -1599,26 +1705,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 ---
 
 ## v0.9.4 salary explorer
-
-### `salaryChangeTitle`
-
-- **EN** `Has your salary actually changed?`
-- **PT** `O teu salário mudou mesmo?`
-
-### `salaryChangeMessage`
-
-- **EN** `Changing it here replaces the number the whole app works from.`
-- **PT** `Mudar aqui substitui o número com que a app toda trabalha.`
-
-### `salaryChangeYes`
-
-- **EN** `Yes, update my salary`
-- **PT** `Sim, atualizar o meu salário`
-
-### `salaryChangeNo`
-
-- **EN** `No, I'm just trying a number`
-- **PT** `Não, só estou a experimentar um valor`
 
 ### `cancelButton`
 
@@ -1691,8 +1777,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 
 ### `growTitle`
 
-- **EN** `Grow`
-- **PT** `Crescer`
+- **EN** `Where your pay could go`
+- **PT** `Até onde pode ir o teu salário`
 
 ### `growSub`
 
@@ -1726,23 +1812,28 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 
 ### `growBreakEvenBody`
 
-- **EN** `That is what time at one employer is worth in your sector. Over \(years) years the tenure step adds up to \(total), and you hand all of it back the day you leave, so a new job has to beat that yearly rate just to keep you level.`
-- **PT** `É isso que o tempo na mesma empresa vale no teu setor. Ao fim de \(years) anos o degrau da antiguidade soma \(total), e devolves tudo no dia em que sais, por isso um emprego novo tem de bater essa taxa anual só para ficares na mesma.`
+- **EN** `\(rate) a year is what time at one employer is worth in your sector. Over \(growYears(years)) the tenure step adds up to \(total), and you hand all of it back the day you leave, so a new job has to beat that yearly rate just to keep you level.`
+- **PT** `\(rate) por ano é o que o tempo na mesma empresa vale no teu setor. Ao fim de \(growYears(years)) o degrau da antiguidade soma \(total), e devolves tudo no dia em que sais, por isso um emprego novo tem de bater essa taxa anual só para ficares na mesma.`
 
 ### `growBreakEvenFlat`
 
-- **EN** `In \(sector.lowercased()) pay does not climb with time at one employer, so staying is not buying you anything and leaving costs you nothing.`
-- **PT** `Em \(sector.lowercased()) o salário não sobe com o tempo na mesma empresa, por isso ficar não te está a comprar nada e sair não te custa nada.`
+- **EN** `In \(midSentence(sector)) pay does not climb with time at one employer, so staying is not buying you anything and leaving costs you nothing.`
+- **PT** `Em \(midSentence(sector)) o salário não sobe com o tempo na mesma empresa, por isso ficar não te está a comprar nada e sair não te custa nada.`
+
+### `growBreakEvenTopBand`
+
+- **EN** `Your sector's figures stop rising at \(top) years at one company, and you are past that, so staying keeps your pay where it is.`
+- **PT** `Os valores do teu setor deixam de subir aos \(top) anos na mesma empresa, e já passaste isso, por isso ficar mantém o teu salário onde está.`
 
 ### `growBreakEvenNote`
 
 - **EN** `Leaving resets your time at the company to zero, so the whole step goes, not just the last year of it.`
 - **PT** `Sair põe o teu tempo na empresa a zero, por isso vai o degrau todo, não só o último ano dele.`
 
-### `growChartTitle`
+### `growUnitLabel`
 
-- **EN** `Gross per month`
-- **PT** `Bruto por mês`
+- **EN** `Amounts`
+- **PT** `Valores`
 
 ### `growNominal`
 
@@ -1754,35 +1845,45 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 - **EN** `Today's money`
 - **PT** `Dinheiro de hoje`
 
+### `growChartVoice`
+
+- **EN** `Your pay over the years`
+- **PT** `O teu salário ao longo dos anos`
+
+### `growHorizonVoice`
+
+- **EN** `How far ahead`
+- **PT** `Até quando`
+
 ### `growInYearsStaying`
 
-- **EN** `In \(years) years, staying put`
-- **PT** `Daqui a \(years) anos, se ficares`
+- **EN** `In \(growYears(years)), if you stay`
+- **PT** `Daqui a \(growYears(years)), se ficares`
+
+### `growInYearsChanged`
+
+- **EN** `In \(growYears(years)), with your changes`
+- **PT** `Daqui a \(growYears(years)), com as tuas mudanças`
 
 ### `growVsToday`
 
 - **EN** `\(amount) a month against today (\(pct))`
 - **PT** `\(amount) por mês em relação a hoje (\(pct))`
 
-### `growWithYourChanges`
-
-- **EN** `With your changes`
-- **PT** `Com as tuas mudanças`
-
 ### `growVsStaying`
 
-- **EN** `\(amount) against staying put`
-- **PT** `\(amount) em relação a ficar`
+- **EN** `\(amount) a month against staying`
+- **PT** `\(amount) por mês em relação a ficar`
 
 ### `growProjectionUnit[0]`
 
-- **EN** `Gross per paid month, in today's money.`
-- **PT** `Bruto por mês pago, em dinheiro de hoje.`
+- **EN** `Gross per paid month, in today's money`
+- **PT** `Bruto por mês pago, em dinheiro de hoje`
 
 ### `growProjectionUnit[1]`
 
-- **EN** `Gross per paid month. GEP publishes gross pay, so that is what the whole projection is made of.`
-- **PT** `Bruto por mês pago. O GEP publica o ganho bruto, e é disso que a projeção toda é feita.`
+- **EN** `Gross per paid month`
+- **PT** `Bruto por mês pago`
 
 ### `growLegendStay`
 
@@ -1799,40 +1900,25 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 - **EN** `Today`
 - **PT** `Hoje`
 
+### `growTodayChanged`
+
+- **EN** `Today, with your changes`
+- **PT** `Hoje, com as tuas mudanças`
+
 ### `growYears`
 
 - **EN** `\(n) \(n == 1 ? "year" : "years")`
 - **PT** `\(n) \(n == 1 ? "ano" : "anos")`
-
-### `growTenureAt`
-
-- **EN** `\(n) \(n == 1 ? "year" : "years") at that employer`
-- **PT** `\(n) \(n == 1 ? "ano" : "anos") nessa empresa`
 
 ### `growScrubNet`
 
 - **EN** `Net / month`
 - **PT** `Líquido / mês`
 
-### `growScrubGross`
-
-- **EN** `Gross / month`
-- **PT** `Bruto / mês`
-
 ### `growScrubEmployer`
 
 - **EN** `Costs the employer`
 - **PT** `Custa à empresa`
-
-### `growScrubVsStay`
-
-- **EN** `\(amount) a month against staying put.`
-- **PT** `\(amount) por mês em relação a ficar.`
-
-### `growEditToday`
-
-- **EN** `Change the starting salary`
-- **PT** `Mudar o salário de partida`
 
 ### `growCumulativeTitle`
 
@@ -1859,20 +1945,15 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 - **EN** `Changing job never pulls ahead in total inside \(years) years.`
 - **PT** `Mudar de emprego nunca passa à frente no total dentro de \(years) anos.`
 
-### `growLeversButton`
+### `growLeversTitle`
 
-- **EN** `Change parameters`
-- **PT** `Alterar parâmetros`
+- **EN** `Try a change`
+- **PT** `Experimenta uma mudança`
 
 ### `growLeversNone`
 
 - **EN** `Right now this is just you, staying where you are.`
 - **PT** `Neste momento és só tu, a ficar onde estás.`
-
-### `growLeversTitle`
-
-- **EN** `Change parameters`
-- **PT** `Alterar parâmetros`
 
 ### `growLeversSub`
 
@@ -1883,11 +1964,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 
 - **EN** `See the path`
 - **PT** `Ver o percurso`
-
-### `growLeverHorizon`
-
-- **EN** `How far ahead`
-- **PT** `Até quando`
 
 ### `growLeverCadence`
 
@@ -1921,7 +1997,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:461`.
 
 ### `growStepArrow` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:926`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1098`.
 
 ### `growMoreTitle`
 
@@ -2083,6 +2159,11 @@ Assembled in Swift rather than written as a pair. `Localization.swift:926`.
 - **EN** `The pay-side steps are all multipliers, so the order they are applied in cannot change the total. Tax is not a multiplier and inflation is a change of unit, so those two always come last, in that order.`
 - **PT** `Os passos do lado do salário são todos multiplicadores, por isso a ordem em que se aplicam não muda o total. O imposto não é multiplicador e a inflação é uma mudança de unidade, por isso esses dois vêm sempre no fim, por essa ordem.`
 
+### `growWorkingsTitle`
+
+- **EN** `How this is worked out`
+- **PT** `Como isto é calculado`
+
 ### `growAssumptionsTitle`
 
 - **EN** `What this takes for granted`
@@ -2100,8 +2181,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:926`.
 
 ### `growAssumptionGross`
 
-- **EN** `Everything on the path is gross, because that is what GEP publishes. Net appears only when you hold a single year, where it is worked out with your own tax situation.`
-- **PT** `Tudo no percurso é bruto, porque é isso que o GEP publica. O líquido só aparece quando seguras um ano, e aí é calculado com a tua situação fiscal.`
+- **EN** `Everything on the path is gross, because that is what GEP publishes. Net appears only for one year at a time, under the chart, where it is worked out with your own tax situation.`
+- **PT** `Tudo no percurso é bruto, porque é isso que o GEP publica. O líquido só aparece para um ano de cada vez, por baixo do gráfico, e aí é calculado com a tua situação fiscal.`
 
 ### `growAssumptionEntrant`
 
@@ -2125,8 +2206,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:926`.
 
 ### `growAssumptionJovem`
 
-- **EN** `Your IRS Jovem step-down is applied year by year, which is why the net line can fall in a year the gross line rises. The app knows your percentage but not which benefit year produced it, so it assumes the first year of that step, which is the most generous reading.`
-- **PT** `A descida do teu IRS Jovem é aplicada ano a ano, e é por isso que a linha do líquido pode cair num ano em que a do bruto sobe. A app sabe a tua percentagem mas não sabe que ano do benefício a produziu, por isso assume o primeiro ano desse degrau, que é a leitura mais generosa.`
+- **EN** `Your IRS Jovem step-down is applied year by year, which is why the net under the chart can fall from one year to the next while the gross rises. The app knows your percentage but not which benefit year produced it, so it assumes the first year of that step, which is the most generous reading.`
+- **PT** `A descida do teu IRS Jovem é aplicada ano a ano, e é por isso que o líquido por baixo do gráfico pode descer de um ano para o outro enquanto o bruto sobe. A app sabe a tua percentagem mas não sabe que ano do benefício a produziu, por isso assume o primeiro ano desse degrau, que é a leitura mais generosa.`
 
 ### `growAssumptionBracketsOn`
 
@@ -2142,16 +2223,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:926`.
 
 ## v0.11 mapSeed, the European half
 
-### `mapScopePortugal`
-
-- **EN** `Portugal`
-- **PT** `Portugal`
-
-### `mapScopeEurope`
-
-- **EN** `Europe`
-- **PT** `Europa`
-
 ### `euroTitle`
 
 - **EN** `Your sector across the EU`
@@ -2159,7 +2230,7 @@ Assembled in Swift rather than written as a pair. `Localization.swift:926`.
 
 ### `euroDash` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1045`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1218`.
 
 ### `euroUnitEuros`
 
@@ -2198,13 +2269,13 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1045`.
 
 ### `euroDirectChange[0]`
 
-- **EN** `\(country) pays \(pct) more than Portugal in this activity, a difference of \(amount) a month.`
-- **PT** `\(country) paga mais \(pct) do que Portugal nesta atividade, uma diferença de \(amount) por mês.`
+- **EN** `Pay here is \(pct) higher than in Portugal in this activity, a difference of \(amount) a month.`
+- **PT** `Aqui paga-se mais \(pct) do que em Portugal nesta atividade, uma diferença de \(amount) por mês.`
 
 ### `euroDirectChange[1]`
 
-- **EN** `\(country) pays \(pct) less than Portugal in this activity, a difference of \(amount) a month.`
-- **PT** `\(country) paga menos \(pct) do que Portugal nesta atividade, uma diferença de \(amount) por mês.`
+- **EN** `Pay here is \(pct) lower than in Portugal in this activity, a difference of \(amount) a month.`
+- **PT** `Aqui paga-se menos \(pct) do que em Portugal nesta atividade, uma diferença de \(amount) por mês.`
 
 ### `euroReferenceTag`
 
@@ -2234,11 +2305,11 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1045`.
 ### `euroNoDataBody`
 
 - **EN** `Eurostat publishes no figure for this activity in \(country). Usually that means there is almost nothing of it there to measure.`
-- **PT** `O Eurostat não publica valor para esta atividade em \(country). Normalmente é porque quase não existe lá nada para medir.`
+- **PT** `O Eurostat não publica valor desta atividade para este país. Normalmente é porque quase não existe lá nada para medir.`
 
 ### `ordinal` — built in code
 
-Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
+Assembled in Swift rather than written as a pair. `Localization.swift:1278`.
 
 ### `euroRank[0]`
 
@@ -2307,8 +2378,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 
 ### `euroFootnoteVintage`
 
-- **EN** `The European survey is from 2022 and runs every four years, so this half of the map is two years older than the Portuguese half.`
-- **PT** `O inquérito europeu é de 2022 e acontece de quatro em quatro anos, por isso esta metade do mapa é dois anos mais antiga do que a metade portuguesa.`
+- **EN** `The European survey is from 2022 and runs every four years, so these figures are two years older than the Portuguese ones.`
+- **PT** `O inquérito europeu é de 2022 e acontece de quatro em quatro anos, por isso estes valores são dois anos mais antigos do que os portugueses.`
 
 ### `euroFootnoteScope`
 
@@ -2552,11 +2623,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 - **EN** `The camera finds the page, straightens it, and reads it here on your phone.`
 - **PT** `A câmara encontra a folha, endireita-a e lê-a aqui no teu telemóvel.`
 
-### `payslipCameraNoLibrary`
-
-- **EN** `The photo is not saved to your library.`
-- **PT** `A foto não fica guardada na tua galeria.`
-
 ### `payslipCameraRefused`
 
 - **EN** `The camera is off for SalarySeed. You can turn it on in Settings, or use a file instead.`
@@ -2647,6 +2713,11 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 - **EN** `Type it myself`
 - **PT** `Escrevo eu`
 
+### `onbStepVoice`
+
+- **EN** `Step \(n) of \(total)`
+- **PT** `Passo \(n) de \(total)`
+
 ### `onbSourceTitle`
 
 - **EN** `Where should we get\nyour salary?`
@@ -2666,40 +2737,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 
 - **EN** `One number, and you can change it later.`
 - **PT** `Um número, e podes mudá-lo mais tarde.`
-
----
-
-## v1.4 The intro screen
-
-### `introTitle`
-
-- **EN** `Your salary is in.`
-- **PT** `O teu salário já está.`
-
-### `introSub`
-
-- **EN** `This is what the app does with it.`
-- **PT** `É isto que a app faz com ele.`
-
-### `introMore`
-
-- **EN** `More`
-- **PT** `Mais`
-
-### `introButton`
-
-- **EN** `Got it, let's go`
-- **PT** `Certo, vamos lá`
-
-### `introReplayTitle`
-
-- **EN** `What the app does`
-- **PT** `O que a app faz`
-
-### `introReplaySub`
-
-- **EN** `The four screens, again.`
-- **PT** `Os quatro ecrãs, outra vez.`
 
 ### `payslipNotCheckedYet`
 
@@ -2765,16 +2802,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 
 - **EN** `Read from a photo, so check this against the paper.`
 - **PT** `Lido de uma foto, por isso confirma no papel.`
-
-### `payslipReadAs`
-
-- **EN** `Payslip says \(value)`
-- **PT** `O recibo diz \(value)`
-
-### `payslipExpected`
-
-- **EN** `Should be \(value)`
-- **PT** `Devia ser \(value)`
 
 ### `payslipOutBy`
 
@@ -3128,8 +3155,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 
 ### `payslipAssumptions[3]`
 
-- **EN** `Checked against the 2026 tables for \(place), on a \(months) month year, using the profile you gave us.`
-- **PT** `Verificado com as tabelas de 2026 para \(place), num ano de \(months) meses, com o perfil que nos deste.`
+- **EN** `Checked against the 2026 tables for \(place), on a \(months) month year, with your household and IRS Jovem as you gave them.`
+- **PT** `Verificado com as tabelas de 2026 para \(place), num ano de \(months) meses, com o teu agregado e o IRS Jovem como os indicaste.`
 
 ### `payslipDisclaimer`
 
@@ -3185,21 +3212,6 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 
 ## v1.5 offerSeed
 
-### `offerNudgeTitle`
-
-- **EN** `Got a job offer?`
-- **PT** `Tens uma proposta de emprego?`
-
-### `offerNudgeSub`
-
-- **EN** `Put it next to the job you have: what reaches you, the tax, other people, and staying instead.`
-- **PT** `Põe-na ao lado do emprego que tens: o que te chega, os impostos, as outras pessoas e ficar onde estás.`
-
-### `offerNudgeKeptTitle`
-
-- **EN** `Your job offer`
-- **PT** `A tua proposta de emprego`
-
 ### `offerNudgeKeptSub`
 
 - **EN** `Side by side with the job you have.`
@@ -3212,8 +3224,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 
 ### `offerFormSub`
 
-- **EN** `Type what the offer says. Everything about you stays as in your profile: household, IRS Jovem, age and education.`
-- **PT** `Escreve o que diz a proposta. Tudo o que é sobre ti fica como no teu perfil: agregado, IRS Jovem, idade e escolaridade.`
+- **EN** `Type what the offer says. Everything about you stays as you have it: household, IRS Jovem, age and education.`
+- **PT** `Escreve o que diz a proposta. Tudo o que é sobre ti fica como o tens: agregado, IRS Jovem, idade e escolaridade.`
 
 ### `offerAmountNeeded`
 
@@ -3642,8 +3654,8 @@ Assembled in Swift rather than written as a pair. `Localization.swift:1101`.
 
 ### `offerStayAssumptions`
 
-- **EN** `In today's money, with no pay rises across the economy on either side. The offer stays at its starting pay, because nothing published says what happens to pay after a move. Grow uses the same rule.`
-- **PT** `Em dinheiro de hoje, sem aumentos gerais de nenhum dos lados. A proposta fica no salário de entrada, porque nada do que se publica diz o que acontece ao salário depois de uma mudança. O Crescer usa a mesma regra.`
+- **EN** `In today's money, with no pay rises across the economy on either side. The offer stays at its starting pay, because nothing published says what happens to pay after a move. The growth simulator uses the same rule.`
+- **PT** `Em dinheiro de hoje, sem aumentos gerais de nenhum dos lados. A proposta fica no salário de entrada, porque nada do que se publica diz o que acontece ao salário depois de uma mudança. O simulador de crescimento usa a mesma regra.`
 
 ### `offerStayEmptySub`
 

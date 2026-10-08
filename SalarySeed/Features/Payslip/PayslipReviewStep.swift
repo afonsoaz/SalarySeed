@@ -28,14 +28,12 @@ struct PayslipReviewStep: View {
         // v1.2: the pinned button is a `safeAreaInset` on the scroll view
         // rather than a sibling under it in a `VStack`.
         //
-        // In a full-screen cover the two were the same thing. In a tab they are
-        // not: iOS 26's tab bar floats OVER the content and minimises as you
-        // scroll, so it does not reserve room the way a docked bar did, and a
-        // button merely stacked under the scroll view ended up beneath the bar
-        // with the bar winning the taps. `safeAreaInset` is the shape the
-        // system understands: it insets the scroll content by the button's
-        // height AND places the button inside the real safe area, above the
-        // bar, on both routes.
+        // `safeAreaInset` is the shape the system understands: it insets the
+        // scroll content by the button's height AND places the button inside
+        // the real safe area, in a cover or a pushed screen alike. v1.2 found
+        // the sibling version sitting under iOS 26's floating tab bar with the
+        // bar winning its taps; there is no tab bar now, and the inset is still
+        // the right shape for anything that floats over the bottom edge.
     var body: some View {
         ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
@@ -70,8 +68,20 @@ struct PayslipReviewStep: View {
             .background(Theme.background)
         }
         .onAppear {
+            // The reader's correction wins over what was read.
+            //
+            // This screen is rebuilt every time the checker is opened again from
+            // Home, and `drafts` is its own state, so it starts empty each time,
+            // while the corrections live on in `model.edits` and are applied on
+            // confirm. Filled from the reading alone, a returning reader would
+            // see the figure the payslip printed while the one they typed was
+            // the one about to be used.
             for line in lines where drafts[line.lineIndex] == nil {
-                drafts[line.lineIndex] = line.cents.map { PayslipNumber.format(cents: $0) } ?? ""
+                if let edited = model.edits[line.lineIndex] {
+                    drafts[line.lineIndex] = edited.map { PayslipNumber.format(cents: $0) } ?? ""
+                } else {
+                    drafts[line.lineIndex] = line.cents.map { PayslipNumber.format(cents: $0) } ?? ""
+                }
             }
         }
     }

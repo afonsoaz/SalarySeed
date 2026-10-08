@@ -6,7 +6,8 @@ import Foundation
 /// disagrees with itself. The profile footer said "SalarySeed v0.9.4" through six
 /// releases, including the one that added a Version row four lines above it
 /// saying something else, and nothing could have caught that except somebody
-/// reading the screen. Both now read this.
+/// reading the screen. Since phase two the version is said once, at the foot of
+/// Profile, and it is read from here.
 enum AppConfig {
 
     /// `1.0.0`.
@@ -36,9 +37,10 @@ enum AppConfig {
     ///
     /// Changing this one word to `.supporter` brings the whole thing back: the
     /// sell card at the top of Profile, the two `SupportLock` gates over Grow and
-    /// the European grid, the padlock on the accent swatches, and the purchase,
+    /// the European grid, the padlock on the accent swatches, the lock on Home's
+    /// Grow and Compare in Europe rows (`HubFeature.tier`), and the purchase,
     /// the restore and the refund listener in `SupporterStore`. Nothing else has
-    /// to change, because all five gates read one boolean and that boolean reads
+    /// to change, because every gate reads one boolean and that boolean reads
     /// this.
     ///
     /// WHY A CONSTANT AND NOT A BRANCH. This repo already ran that experiment.

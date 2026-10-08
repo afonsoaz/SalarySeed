@@ -1,143 +1,167 @@
 import SwiftUI
-import UIKit
 
-/// profileSeed: the "give to get" hub and the sprout's home.
-/// Profile completeness IS the sprout's growth stage.
-/// v0.3: language switch lives here (Auto / English / Português).
+/// profileSeed: your answers, and the app.
+///
+/// Phase two (agreed with Afonso) made it the Settings shape: a centred header,
+/// then one card per section with a line per answer. It was ten separate cards,
+/// most of them with a bright "+ Add" pill, and the version said twice.
+///
+/// THE SPROUT IS THE PROFILE'S FACE. Profile completeness has always been the
+/// sprout's growth stage, so it sits where a profile picture would, centred
+/// like Home's figure, on a soft disc so that even the first hairline stage
+/// reads as a seedling and not as a smudge (rule 25). The name under it is the
+/// one thing the app calls you, and tapping it renames you.
+///
+/// THE SALARY IS NOT HERE, on purpose. It lives on Home, where the "Update my
+/// salary" bubble changes it, schedule included. Profile used to carry
+/// it as well, behind "Has your salary actually changed?", which made two doors
+/// to one number on two screens. The tax answers live on Tax, beside the
+/// figures they change. Profile is about you and the app.
 struct ProfileView: View {
     @EnvironmentObject private var store: SalaryStore
-    @State private var showEditor = false
-    @State private var showJovemAssessor = false
+    // v0.16. Read for the dormant support card and the colour lock, both of
+    // which only ever draw in a paid build.
+    @EnvironmentObject private var supporter: SupporterStore
+    @Environment(\.dynamicTypeSize) private var typeSize
+
     @State private var showSectorSheet = false
     @State private var activeDimension: CompareDimension?
     // v0.9
     @State private var activeSignalSheet: SignalSheet?
     // v0.9.1
     @State private var showConcelhoSheet = false
-    // v0.9.4
-    @State private var showExplorer = false
-    @State private var askingSalaryChange = false
     // v0.16
-    @EnvironmentObject private var supporter: SupporterStore
     @State private var showSupport = false
+    @State private var editingName = false
+    @State private var draftName = ""
 
     private var s: Strings { store.s }
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("profileSeed")
-                        .appFont(12)
-                        .foregroundStyle(Theme.accent)
-                    Text(s.profileTitle(store.displayName))
-                        .appFont(22, weight: .medium)
-                        .foregroundStyle(Theme.textPrimary)
-                }
-                .padding(.top, 8)
-
+            // A nil section adds no spacing to the stack, so the support card,
+            // which draws nothing in a free build, moves nothing.
+            VStack(alignment: .leading, spacing: 28) {
+                header
                 supportCard
-                progressCard
-                currentSalaryCard
-                nameCard
-
-                demographicsSection
-                workSection
-                taxSection
+                aboutYou
+                yourWork
                 appSection
-
-                Text(s.profileFooter)
-                    .appFont(10)
-                    .foregroundStyle(Theme.textFaint)
+                footer
             }
             .padding(.horizontal, 20)
+            .padding(.top, 8)
             .padding(.bottom, 24)
         }
-        .scrollDismissesKeyboard(.interactively)
         .background(Theme.background)
-        .sheet(isPresented: $showEditor) { SalaryEditorView() }
-        .sheet(isPresented: $showExplorer) { SalaryExplorerSheet() }
-        .salaryChangeConfirmation(
-            isPresented: $askingSalaryChange,
-            s: s,
-            onChange: { showEditor = true },
-            onExplore: { showExplorer = true }
-        )
-        .sheet(isPresented: $showJovemAssessor) { IRSJovemAssessorView() }
         .sheet(isPresented: $showSectorSheet) { SectorTenureSheet() }
         .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
         .sheet(isPresented: $showConcelhoSheet) { ConcelhoSheet() }
         .sheet(isPresented: $showSupport) { SupportSheet() }
-        .sheet(item: $activeDimension) { dim in
-            ProfilePickerSheet(dimension: dim)
+        .sheet(item: $activeDimension) { ProfilePickerSheet(dimension: $0) }
+        .alert(s.nameAlertTitle, isPresented: $editingName) {
+            TextField(s.nameLabel, text: $draftName)
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+            Button(s.saveButton) {
+                store.name = draftName.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            .keyboardShortcut(.defaultAction)
+            Button(s.cancelButton, role: .cancel) {}
+        } message: {
+            Text(s.nameAlertMessage)
         }
     }
 
-    // MARK: Your work (v0.9)
+    // MARK: The header
 
-    /// The signals added in v0.9. None of them are compared against yet, and the
-    /// footnote says so: an app that asks for something and then pretends it is
-    /// being used has spent trust it will need later.
-    /// v0.9.3: the profile is grouped by what the question is ABOUT rather than by
-    /// which version added it. Demographics, then the job, then tax.
-    private var demographicsSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(s.demographicsTitle)
-
-            ForEach(CompareDimension.all) { dim in
-                dimensionRow(dim)
+    /// The sprout, your name, and how much of the profile is answered.
+    ///
+    /// v0.9.3 counted the real signals rather than a hard-coded five (a full
+    /// profile used to read "11 de 5"), and the finished state still turns the
+    /// line green when there is nothing left to ask.
+    private var header: some View {
+        let filled = store.profileFilledCount
+        let total = store.signalTotal
+        let done = filled >= total
+        return VStack(spacing: 0) {
+            ZStack {
+                Circle()
+                    .fill(Theme.accentSoft)
+                    .overlay(Circle().stroke(Theme.accentBorder, lineWidth: 1))
+                SproutView(stage: store.sproutStage, size: 76, sways: true)
+                    .offset(y: 2)
             }
+            .frame(width: 104, height: 104)
+            .accessibilityHidden(true)
 
-            signalRow(
-                icon: "person.2",
-                title: s.genderRowTitle,
-                value: store.gender?.label(pt: s.pt),
-                hint: s.genderAddHint
-            ) { activeSignalSheet = .gender }
+            nameButton
+                .padding(.top, 16)
+
+            // The count stays when it is complete, in green: "Está tudo" on its
+            // own under a name read as a sentence cut short.
+            Text(s.profileDetailsCount(filled, total))
+                .appFont(15, weight: .medium)
+                .foregroundStyle(done ? Theme.accent : Theme.textSecondary)
+                .contentTransition(.numericText())
+                .padding(.top, 6)
+            Text(done ? s.profileDoneSub : s.profileProgressSub)
+                .appFont(13)
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 4)
         }
-        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
+        .frame(maxWidth: .infinity)
+        .multilineTextAlignment(.center)
+        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: filled)
     }
 
-    private var appSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(s.appSection)
-            languageCard
-            accentCard
-            // The "Premium: free version" row went in v0.16. There is a real
-            // purchase now, and its state is said twice on this screen already:
-            // the card at the top, and the lock on the colour picker. A third
-            // line that only ever reads "free version" would be wrong for
-            // everyone who paid.
-            // v1.4: the way back to the intro screen.
-            //
-            // It exists because a screen that can only be reached once is a
-            // screen nobody can check, including whoever has to change it next.
-            // It sets ONLY the session flag: `hasSeenIntro` stays true, so
-            // nothing about the once-only promise changes and the screen still
-            // never appears on its own again.
-            Button { store.showingIntro = true } label: {
-                SignalRow(icon: "sparkles", iconTint: Theme.accent,
-                          title: s.introReplayTitle,
-                          subtitle: s.introReplaySub) { EmptyView() }
+    /// The name, centred, with a small pencil hanging off it. An invisible
+    /// block the pencil's width sits on the left, so the NAME is what is on the
+    /// centre line, the way Home's figure carries its leaf. With no name the
+    /// line is "Add your name" in green, which already says what a tap does,
+    /// so the pencil goes.
+    private var nameButton: some View {
+        let pencil = Theme.scaled(16, typeSize)
+        let named = store.displayName != nil
+        return Button {
+            // The trimmed name, not the stored one: before phase two the field
+            // wrote straight to the store, so an older install can hold a name
+            // with stray spaces, or only spaces.
+            draftName = store.displayName ?? ""
+            editingName = true
+        } label: {
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                if named { Color.clear.frame(width: pencil, height: 1) }
+                Text(store.displayName ?? s.namePlaceholder)
+                    .appFont(28, weight: .medium)
+                    .foregroundStyle(named ? Theme.textPrimary : Theme.accent)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                if named {
+                    Image(systemName: "pencil")
+                        .appFont(14, weight: .semibold)
+                        .foregroundStyle(Theme.textFaint)
+                        .frame(width: pencil)
+                }
             }
-            InfoRow(label: s.privacyLabel, value: s.privacyValue)
-            InfoRow(label: s.sourcesLabel, value: s.sourcesValue)
-            // v1.0: which build this is. Nobody needs it until something is
-            // wrong, and then it is the first thing anyone asks for.
-            InfoRow(label: s.versionLabel, value: AppConfig.versionLine)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(RowPressStyle())
+        .accessibilityLabel(store.displayName.map { "\(s.nameLabel): \($0)" } ?? s.namePlaceholder)
+        .accessibilityHint(s.nameEditHint)
     }
 
     // MARK: Support (v0.16)
 
-    /// The first thing on the tab, above even the sprout, in a paid build.
+    /// The first card on the screen, under the header, in a paid build.
     ///
     /// v1.3: THERE IS NO CARD AT ALL IN A FREE BUILD, and drawing the thank-you
     /// state instead would have been the easy mistake. `isSupporter` is forced
     /// true when `AppConfig.monetisation` is `.free`, so the second branch below
     /// would otherwise draw "You are a SalarySeed supporter" at somebody who
-    /// never paid anything. Profile simply starts with the progress card instead.
-    /// A nil branch adds no spacing to the enclosing `VStack`, so nothing moves.
+    /// never paid anything.
     ///
     /// Accent-filled before purchase and quiet after, because the two states are
     /// asking for different things: one wants to be noticed, the other only needs
@@ -197,113 +221,121 @@ struct ProfileView: View {
         }
     }
 
-    /// The colour picker. Always visible; usable by everyone in a free build, and
-    /// only by supporters in a paid one.
-    ///
-    /// v1.3: the padlock, the dimmed swatches and the "supporters choose the
-    /// colour" line below all read `supporter.isSupporter`, which is forced true
-    /// in a free build, so this card comes right on its own with no edit. The
-    /// note under the swatches already picks `supportIconNote`, which is the
-    /// correct sentence for a free app.
-    ///
-    /// In a paid build it is visible-but-locked rather than hidden, because the
-    /// thing being sold should be something you can see. Tapping a locked swatch
-    /// opens the sheet rather than doing nothing, so the lock explains itself
-    /// instead of just refusing.
-    private var accentCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 6) {
-                Text(s.supportColourTitle)
-                    .appFont(12)
-                    .foregroundStyle(Theme.textSecondary)
-                if !supporter.isSupporter {
-                    Image(systemName: "lock.fill")
-                        .appFont(9)
-                        .foregroundStyle(Theme.textFaint)
+    // MARK: Your answers
+
+    /// v0.9.3: the profile is grouped by what the question is ABOUT rather than
+    /// by which version added it. About you, then the job. Tax was third until
+    /// phase two moved it onto the Tax screen.
+    private var aboutYou: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(s.demographicsTitle)
+            LineCard {
+                ForEach(CompareDimension.all) { dim in
+                    dimensionLine(dim)
+                    GlyphLineDivider()
                 }
-                Spacer(minLength: 0)
-            }
-            HStack(spacing: 10) {
-                ForEach(AccentTheme.allCases) { theme in
-                    accentSwatch(theme)
+                answerLine(glyph: "person.2", title: s.genderRowTitle,
+                           value: store.gender?.label(pt: s.pt), hint: s.genderAddHint) {
+                    activeSignalSheet = .gender
                 }
             }
-            Text(supporter.isSupporter ? s.supportIconNote : s.supportColourLocked)
-                .appFont(10)
-                .foregroundStyle(Theme.textFaint)
-                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(14)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
     }
 
-    private func accentSwatch(_ theme: AccentTheme) -> some View {
-        let isOn = store.accent == theme
-        return Button {
-            guard supporter.isSupporter else {
-                showSupport = true
-                return
-            }
-            withAnimation(.easeOut(duration: 0.18)) { store.accent = theme }
-            AppIcon.apply(theme)
-        } label: {
-            Circle()
-                .fill(theme.accent)
-                .frame(height: 34)
-                .opacity(supporter.isSupporter ? 1 : 0.45)
-                .overlay(Circle().stroke(Theme.textPrimary.opacity(isOn ? 0.9 : 0), lineWidth: 2))
-                .overlay(
-                    Image(systemName: "checkmark")
-                        .appFont(12, weight: .bold)
-                        .foregroundStyle(theme.ink)
-                        .opacity(isOn && supporter.isSupporter ? 1 : 0)
-                )
-                .accessibilityLabel(theme.label(pt: s.pt))
-        }
-        .frame(maxWidth: .infinity)
-    }
-
-    private var workSection: some View {
+    /// The signals added in v0.9 are not compared against yet, and the note
+    /// under the card says so: an app that asks for something and then
+    /// pretends it is being used has spent trust it will need later.
+    private var yourWork: some View {
         VStack(alignment: .leading, spacing: 10) {
             SectionLabel(s.workSectionTitle)
-
-            sectorRow
-
-            signalRow(
-                icon: "person.text.rectangle",
-                title: s.jobRowTitle,
-                value: store.jobTitle?.label(pt: s.pt),
-                hint: s.jobAddHint
-            ) { activeSignalSheet = .jobTitle }
-
-            signalRow(
-                icon: "building.columns",
-                title: s.employerRowTitle,
-                value: store.employerKind?.label(pt: s.pt),
-                hint: s.employerAddHint
-            ) { activeSignalSheet = .work }
-
-            signalRow(
-                icon: "clock",
-                title: s.scheduleRowTitle,
-                value: scheduleValue,
-                hint: s.scheduleAddHint
-            ) { activeSignalSheet = .work }
-
-            signalRow(
-                icon: "gift",
-                title: s.variableRowTitle,
-                value: variableValue,
-                hint: s.variableAddHint
-            ) { activeSignalSheet = .variablePay }
-
+            LineCard {
+                // Sector and time at the company, answered in one sheet.
+                answerLine(glyph: "building.2", title: s.sectorRowTitle,
+                           value: store.sector.map(sectorValue), hint: s.sectorAddHint) {
+                    showSectorSheet = true
+                }
+                GlyphLineDivider()
+                answerLine(glyph: "person.text.rectangle", title: s.jobRowTitle,
+                           value: store.jobTitle?.label(pt: s.pt), hint: s.jobAddHint) {
+                    activeSignalSheet = .jobTitle
+                }
+                GlyphLineDivider()
+                answerLine(glyph: "building.columns", title: s.employerRowTitle,
+                           value: store.employerKind?.label(pt: s.pt), hint: s.employerAddHint) {
+                    activeSignalSheet = .work
+                }
+                GlyphLineDivider()
+                answerLine(glyph: "clock", title: s.scheduleRowTitle,
+                           value: scheduleValue, hint: s.scheduleAddHint) {
+                    activeSignalSheet = .work
+                }
+                GlyphLineDivider()
+                answerLine(glyph: "gift", title: s.variableRowTitle,
+                           value: variableValue, hint: s.variableAddHint) {
+                    activeSignalSheet = .variablePay
+                }
+            }
             Text(s.collectedNotComparedNote)
                 .appFont(10)
                 .foregroundStyle(Theme.textFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .animation(.spring(response: 0.45, dampingFraction: 0.8), value: store.profileFilledCount)
+    }
+
+    /// One answer: its glyph, what it is, and the answer under it, or, with no
+    /// answer yet, what answering it gets you, in green with a plus. The
+    /// "+ Add" pills went with phase two: five of them down one card shouted
+    /// louder than the answers.
+    private func answerLine(glyph: String, title: String, value: String?, hint: String,
+                            action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            GlyphLine(glyph: glyph,
+                      accessory: value == nil ? "plus" : "chevron.right",
+                      accessoryTint: value == nil ? Theme.accent : Theme.textFaint,
+                      dimmedTile: value == nil) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .appFont(16, weight: .medium)
+                        .foregroundStyle(Theme.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Text(value ?? hint)
+                        .appFont(13)
+                        .foregroundStyle(value == nil ? Theme.accent : Theme.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                // `GlyphLine` aligns its words leading already; said here too,
+                // because this is a Button label and rule 27 is not something
+                // to leave to a component three files away.
+                .multilineTextAlignment(.leading)
+            }
+        }
+        .buttonStyle(RowPressStyle())
+    }
+
+    /// v0.9.1: the region is derived from the município, so its line opens the
+    /// município search; the others open their chip picker.
+    private func dimensionLine(_ dim: CompareDimension) -> some View {
+        let title = dim.usesConcelhoPicker ? s.concelhoRowTitle : s.dimShort(dim.id)
+        let value = dim.selectedOption(in: store, pt: s.pt).map {
+            dim.usesConcelhoPicker ? concelhoValue($0.label) : $0.label
+        }
+        let hint = dim.usesConcelhoPicker ? s.concelhoAddHint : s.dimProfileHint(dim.id)
+        return answerLine(glyph: dim.icon, title: title, value: value, hint: hint) {
+            if dim.usesConcelhoPicker { showConcelhoSheet = true } else { activeDimension = dim }
+        }
+    }
+
+    /// "Torres Vedras · Oeste e Vale do Tejo". The derived region is always
+    /// shown, because it is what the comparison actually uses.
+    private func concelhoValue(_ regionLabel: String) -> String {
+        guard let concelho = store.concelho else { return regionLabel }
+        return "\(concelho.name) · \(concelho.region.label)"
+    }
+
+    private func sectorValue(_ sector: Sector) -> String {
+        s.sectorCohort(sector.label(pt: s.pt), tenure: store.tenureYears.map { s.yearsText($0) })
     }
 
     private var scheduleValue: String? {
@@ -319,339 +351,187 @@ struct ProfileView: View {
         return amount > 0 ? s.variableYearly(eur(amount)) : s.variableNone
     }
 
-    /// One row of the v0.9 work section: filled shows the value and a pencil,
-    /// empty shows the reason to fill it and an add pill. Same shape as the
-    /// existing sector and dimension rows so the section does not read as bolted on.
-    private func signalRow(
-        icon: String,
-        title: String,
-        value: String?,
-        hint: String,
-        action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            SignalRow(icon: icon,
-                      iconTint: value == nil ? Theme.textSecondary : Theme.accent,
-                      title: title,
-                      subtitle: value ?? hint,
-                      subtitleTint: value == nil ? Theme.accent : Theme.textSecondary,
-                      dimmed: value == nil) {
-                if value == nil { AddPill() } else { EditGlyph() }
+    // MARK: The app
+
+    private var appSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionLabel(s.appSection)
+            LineCard {
+                languageLine
+                GlyphLineDivider()
+                colourLine
+                GlyphLineDivider()
+                // The "Premium: free version" row went in v0.16, and stays gone:
+                // the purchase state is said by the support card and by the
+                // colour lock, in a paid build, and by nothing in a free one.
+                infoLine(glyph: "lock.shield", label: s.privacyLabel, value: s.privacyValue)
+                GlyphLineDivider()
+                infoLine(glyph: "books.vertical", label: s.sourcesLabel, value: s.sourcesValue)
             }
         }
     }
 
-    // MARK: Tax details (v0.6)
-
-    /// Marital situation + dependants (also set in onboarding) and the IRS Jovem
-    /// exemption, which lives only here. All three feed the real 2026 IRS estimate.
-    private var taxSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            SectionLabel(s.taxSection)
-
-            VStack(spacing: 14) {
-                // v0.9.3: short labels and a fixed row height. "Casado, dois
-                // titulares" wrapped, which made this row taller than the
-                // dependants row underneath and the section look misaligned.
-                HStack {
-                    Text(s.maritalLabel)
-                        .appFont(14)
-                        .foregroundStyle(Theme.textPrimary)
-                    Spacer()
-                    Picker(s.maritalLabel, selection: $store.maritalSituation) {
-                        ForEach(MaritalSituation.allCases) { m in
-                            Text(m.shortLabel(pt: s.pt)).tag(m)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .tint(Theme.accent)
-                    .lineLimit(1)
-                    .fixedSize()
+    /// v0.3: Auto follows the device; English and Português force it. A menu
+    /// on the line, the way Settings picks one of a few, rather than the loud
+    /// segmented control it was: that one is for questions, this is a setting.
+    private var languageLine: some View {
+        GlyphLine(glyph: "globe") {
+            Text(s.languageLabel)
+                .appFont(16, weight: .medium)
+                .foregroundStyle(Theme.textPrimary)
+                .fixedSize(horizontal: false, vertical: true)
+                // The menu beside it says "Language" itself, with its value.
+                .accessibilityHidden(true)
+        } trailing: {
+            Menu {
+                Picker(selection: $store.language) {
+                    ForEach(AppLanguage.allCases) { Text($0.label(pt: s.pt)).tag($0) }
+                } label: {
+                    EmptyView()
                 }
-                .frame(height: Theme.fiscalRowHeight)
-
-                Divider().overlay(Theme.cardBorder)
-
-                HStack {
-                    Text(s.dependentsLabel)
-                        .appFont(14)
-                        .foregroundStyle(Theme.textPrimary)
-                    Spacer()
-                    HStack(spacing: 16) {
-                        Button {
-                            if store.dependents > 0 { store.dependents -= 1 }
-                        } label: {
-                            Image(systemName: "minus.circle")
-                                .appFont(20)
-                                .foregroundStyle(store.dependents > 0 ? Theme.accent : Theme.textFaint)
-                        }
-                        Text("\(store.dependents)")
-                            .appFont(16, weight: .medium)
-                            .foregroundStyle(Theme.textPrimary)
-                            .frame(minWidth: 18)
-                        Button {
-                            if store.dependents < 12 { store.dependents += 1 }
-                        } label: {
-                            Image(systemName: "plus.circle")
-                                .appFont(20)
-                                .foregroundStyle(Theme.accent)
-                        }
-                    }
-                }
-                .frame(height: Theme.fiscalRowHeight)
-            }
-            .padding(14)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-
-            irsJovemCard
-        }
-    }
-
-    private var irsJovemCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
-                Image(systemName: "leaf.fill")
-                    .appFont(12)
-                    .foregroundStyle(Theme.accent)
-                Text(s.irsJovemTitle)
-                    .appFont(14, weight: .medium)
-                    .foregroundStyle(Theme.textPrimary)
-            }
-            Text(s.irsJovemSub)
-                .appFont(11.5)
-                .foregroundStyle(Theme.textSecondary)
-                .lineSpacing(2)
-
-            // Primary path: the guided eligibility check.
-            Button { showJovemAssessor = true } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "sparkles")
-                        .appFont(13)
-                    Text(s.irsJovemCheck)
-                        .appFont(13, weight: .medium)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .appFont(11)
+            } label: {
+                HStack(spacing: 5) {
+                    Text(store.language.label(pt: s.pt))
+                        .appFont(15)
+                    Image(systemName: "chevron.up.chevron.down")
+                        .appFont(11, weight: .semibold)
+                        .accessibilityHidden(true)
                 }
                 .foregroundStyle(Theme.accent)
-                .padding(.vertical, 11)
-                .padding(.horizontal, 12)
-                .frame(maxWidth: .infinity)
-                .background(Color.white.opacity(0.05), in: RoundedRectangle(cornerRadius: 11))
-                .overlay(RoundedRectangle(cornerRadius: 11).stroke(Theme.accentBorder))
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
-            .padding(.top, 2)
-
-            // Manual fallback: set the exemption by hand.
-            Text(s.irsJovemManual)
-                .appFont(11)
-                .foregroundStyle(Theme.textFaint)
-                .padding(.top, 4)
-
-            HStack(spacing: 6) {
-                ForEach(ProfileView.jovemOptions, id: \.value) { option in
-                    jovemChip(option)
-                }
-            }
-
-            Text(s.irsJovemNote)
-                .appFont(10)
-                .foregroundStyle(Theme.textFaint)
-                .lineSpacing(2)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(Theme.accentSoft, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.accentBorder))
-    }
-
-    static let jovemOptions: [(label: String, value: Double)] = [
-        ("100%", 1.0), ("75%", 0.75), ("50%", 0.5), ("25%", 0.25), ("Off", 0.0),
-    ]
-
-    private func jovemChip(_ option: (label: String, value: Double)) -> some View {
-        let isSelected = abs(store.irsJovemExemption - option.value) < 0.001
-        let title = option.value == 0 ? s.irsJovemOff : option.label
-        return Button {
-            withAnimation(.easeOut(duration: 0.15)) { store.irsJovemExemption = option.value }
-        } label: {
-            Text(title)
-                .appFont(12, weight: .medium)
-                .foregroundStyle(isSelected ? Theme.ink : Theme.textSecondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 9)
-                .background(
-                    isSelected ? Theme.accent : Color.white.opacity(0.06),
-                    in: RoundedRectangle(cornerRadius: 9)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 9)
-                        .stroke(isSelected ? Theme.accent : Theme.cardBorder, lineWidth: 1)
-                )
+            .accessibilityLabel(s.languageLabel)
+            .accessibilityValue(store.language.label(pt: s.pt))
         }
     }
 
-    /// The sprout's home: profile completeness rendered as growth.
-    /// v0.9.3: the sprout stays, the seed vocabulary does not. The wording used
-    /// to say "a tua semente" and count "1 of 5", which was already wrong: v0.9
-    /// grew the profile from 4 signals to 10 while this card kept a hard-coded 5,
-    /// so a fully filled profile read "11 de 5". It now counts the real signals,
-    /// and turns green when there is nothing left to ask.
-    private var progressCard: some View {
-        let filled = store.profileFilledCount
-        let total = store.signalTotal
-        let done = filled >= total
-        return HStack(spacing: 16) {
-            SproutView(stage: store.sproutStage, size: 64, sways: true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(done ? s.profileDoneTitle : s.profileProgressTitle)
-                    .appFont(13)
-                    .foregroundStyle(done ? Theme.accent : Theme.textSecondary)
-                Text(s.profileProgressCount(filled, total))
-                    .appFont(19, weight: .medium)
-                    .foregroundStyle(Theme.textPrimary)
-                    .contentTransition(.numericText())
-                Text(done ? s.profileDoneSub : s.profileProgressSub)
-                    .appFont(11.5)
-                    .foregroundStyle(done ? Theme.accent : Theme.textSecondary)
-                    .lineSpacing(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Spacer(minLength: 0)
-        }
-        .padding(16)
-        .background(done ? Theme.accentSoft : Theme.card, in: RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(done ? Theme.accentBorder : Color.clear, lineWidth: 1)
-        )
-        .animation(.spring(response: 0.45, dampingFraction: 0.8), value: filled)
-    }
-
-    private var currentSalaryCard: some View {
-        Button { askingSalaryChange = true } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(s.yourSalary)
-                        .appFont(12)
-                        .foregroundStyle(Theme.textSecondary)
-                    Text("\(eur(store.amount)) \(store.kind.label(pt: s.pt).lowercased()) · \(store.schedule.label(pt: s.pt))")
+    /// The colour picker. Always visible; usable by everyone in a free build, and
+    /// only by supporters in a paid one.
+    ///
+    /// v1.3: the padlock, the dimmed swatches and the "supporters choose the
+    /// colour" line below all read `supporter.isSupporter`, which is forced true
+    /// in a free build, so this line comes right on its own with no edit. The
+    /// note under the swatches already picks `supportIconNote`, which is the
+    /// correct sentence for a free app.
+    ///
+    /// In a paid build it is visible-but-locked rather than hidden, because the
+    /// thing being sold should be something you can see. Tapping a locked swatch
+    /// opens the sheet rather than doing nothing, so the lock explains itself
+    /// instead of just refusing.
+    ///
+    /// The swatches sit UNDER the line rather than in it, so the glyph stays
+    /// beside its title; inside the line, the glyph was centred on the whole
+    /// block and floated level with the swatches.
+    private var colourLine: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            GlyphLine(glyph: "paintpalette") {
+                HStack(spacing: 6) {
+                    Text(s.supportColourTitle)
                         .appFont(16, weight: .medium)
                         .foregroundStyle(Theme.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if !supporter.isSupporter {
+                        Image(systemName: "lock.fill")
+                            .appFont(11)
+                            .foregroundStyle(Theme.textFaint)
+                    }
                 }
-                .multilineTextAlignment(.leading)
-                Spacer()
-                Image(systemName: "pencil")
-                    .appFont(14)
-                    .foregroundStyle(Theme.accent)
             }
-            .padding(16)
-            .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-        }
-    }
-
-    private var nameCard: some View {
-        HStack {
-            Text(s.nameLabel)
-                .appFont(14)
-                .foregroundStyle(Theme.textPrimary)
-            Spacer()
-            TextField(s.namePlaceholder, text: $store.name)
-                .textInputAutocapitalization(.words)
-                .autocorrectionDisabled()
-                .multilineTextAlignment(.trailing)
-                .appFont(14, weight: .medium)
-                .foregroundStyle(Theme.textPrimary)
-        }
-        .padding(14)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
-    }
-
-    /// v0.3: language choice. Auto follows the device; English and Português force it.
-    private var languageCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(s.languageLabel)
-                .appFont(14)
-                .foregroundStyle(Theme.textPrimary)
-            SegmentedPicker(options: AppLanguage.allCases, selection: $store.language) {
-                $0.label(pt: s.pt)
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    ForEach(AccentTheme.allCases) { theme in
+                        accentSwatch(theme)
+                    }
+                }
+                Text(supporter.isSupporter ? s.supportIconNote : s.supportColourLocked)
+                    .appFont(11)
+                    .foregroundStyle(Theme.textFaint)
+                    .fixedSize(horizontal: false, vertical: true)
             }
+            .padding(.leading, typeSize.isAccessibilitySize ? 16 : 16 + Theme.scaled(32, typeSize) + 14)
+            .padding(.trailing, 16)
+            .padding(.bottom, 14)
         }
-        .padding(14)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
     }
 
-    /// Sector + tenure, opened as one sheet. Shows the current pick or an add prompt.
-    private var sectorRow: some View {
-        Button { showSectorSheet = true } label: {
-            if let sector = store.sector {
-                SignalRow(icon: "building.2", iconTint: Theme.accent,
-                          title: s.sectorRowTitle,
-                          subtitle: sectorSubtitle(sector)) { EditGlyph() }
-            } else {
-                SignalRow(icon: "building.2",
-                          title: s.sectorRowTitle,
-                          subtitle: s.sectorAddHint,
-                          subtitleTint: Theme.accent,
-                          dimmed: true) { AddPill() }
+    private func accentSwatch(_ theme: AccentTheme) -> some View {
+        let isOn = store.accent == theme
+        // Scaled with the reader's text, and the tick is drawn as a share of
+        // the circle, so the two cannot drift apart: a fixed circle around a
+        // tick that grew on its own curve filled up at an accessibility size.
+        // Capped, because five of them must fit a 375 point phone at the
+        // largest size (AX5 would make each about 57 points).
+        let side = min(Theme.scaled(32, typeSize), 48)
+        return Button {
+            guard supporter.isSupporter else {
+                showSupport = true
+                return
             }
-        }
-    }
-
-    /// "Torres Vedras · Oeste e Vale do Tejo". The derived region is always shown,
-    /// because it is what the comparison actually uses.
-    private func concelhoSubtitle(_ regionLabel: String) -> String {
-        guard let concelho = store.concelho else { return regionLabel }
-        return "\(concelho.name) · \(concelho.region.label)"
-    }
-
-    private func sectorSubtitle(_ sector: Sector) -> String {
-        if let y = store.tenureYears {
-            return "\(sector.label(pt: s.pt)) · \(s.yearsText(y))"
-        }
-        return sector.label(pt: s.pt)
-    }
-
-    private func dimensionRow(_ dim: CompareDimension) -> some View {
-        Button {
-            // v0.9.1: region is derived, so its row opens the município search.
-            if dim.usesConcelhoPicker { showConcelhoSheet = true } else { activeDimension = dim }
+            withAnimation(.easeOut(duration: 0.18)) { store.accent = theme }
+            AppIcon.apply(theme)
         } label: {
-            let title = dim.usesConcelhoPicker ? s.concelhoRowTitle : s.dimShort(dim.id)
-            if let option = dim.selectedOption(in: store, pt: s.pt) {
-                SignalRow(icon: dim.icon, iconTint: Theme.accent, title: title,
-                          subtitle: dim.usesConcelhoPicker
-                                    ? concelhoSubtitle(option.label) : option.label) {
-                    EditGlyph()
-                }
-            } else {
-                SignalRow(icon: dim.icon, title: title,
-                          subtitle: dim.usesConcelhoPicker
-                                    ? s.concelhoAddHint : s.dimProfileHint(dim.id),
-                          subtitleTint: Theme.accent, dimmed: true) {
-                    AddPill()
-                }
+            Circle()
+                .fill(theme.accent)
+                .frame(width: side, height: side)
+                .opacity(supporter.isSupporter ? 1 : 0.45)
+                .overlay(Circle().stroke(Theme.textPrimary.opacity(isOn ? 0.9 : 0), lineWidth: 2))
+                .overlay(
+                    Image(systemName: "checkmark")
+                        .resizable()
+                        .scaledToFit()
+                        .fontWeight(.bold)
+                        .frame(width: side * 0.38, height: side * 0.38)
+                        .foregroundStyle(theme.ink)
+                        .opacity(isOn && supporter.isSupporter ? 1 : 0)
+                )
+                // Apple's 44 point minimum, without drawing a bigger swatch.
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(theme.label(pt: s.pt))
+        .accessibilityAddTraits(isOn ? .isSelected : [])
+    }
+
+    /// A line that states something and opens nothing, so it has no chevron.
+    private func infoLine(glyph: String, label: String, value: String) -> some View {
+        GlyphLine(glyph: glyph) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .appFont(16, weight: .medium)
+                    .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(value)
+                    .appFont(13)
+                    .foregroundStyle(Theme.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
+        .accessibilityElement(children: .combine)
     }
-}
 
-struct InfoRow: View {
-    let label: String
-    let value: String
+    // MARK: The foot
 
-    var body: some View {
-        HStack {
-            Text(label)
-                .appFont(14)
-                .foregroundStyle(Theme.textPrimary)
-            Spacer()
-            Text(value)
-                .appFont(12)
+    /// Which build this is, and what every figure in the app is.
+    ///
+    /// v1.0 added the version, read from the bundle rather than typed: the
+    /// footer said "v0.9.4" through six releases. Nobody needs it until
+    /// something is wrong, and then it is the first thing anyone asks for, so
+    /// it is small and at the foot. It was a row AND the footer until phase
+    /// two; once is enough.
+    private var footer: some View {
+        VStack(spacing: 4) {
+            Text("SalarySeed \(AppConfig.versionLine)")
+                .appFont(12, weight: .medium)
                 .foregroundStyle(Theme.textSecondary)
-                .multilineTextAlignment(.trailing)
+            Text(s.profileFooter)
+                .appFont(11)
+                .foregroundStyle(Theme.textFaint)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(14)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        .frame(maxWidth: .infinity)
+        .multilineTextAlignment(.center)
+        .accessibilityElement(children: .combine)
     }
 }

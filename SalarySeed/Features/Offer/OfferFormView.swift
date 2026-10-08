@@ -80,8 +80,10 @@ struct OfferFormView: View {
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        // Rule 24: a pinned button in a tab has to be an inset, or the floating
-        // tab bar sits over it and wins its taps.
+        // Rule 24: a pinned button is an inset, not a sibling under the scroll
+        // view. v1.2 found the sibling under iOS 26's floating tab bar, winning
+        // none of its taps; there is no tab bar now, and the inset is still the
+        // shape the system understands for anything over the bottom edge.
         .safeAreaInset(edge: .bottom) {
             PrimaryButton(title: s.offerCompareButton) { compare() }
                 .opacity(amountValue == nil ? 0.4 : 1)
@@ -230,9 +232,9 @@ struct OfferFormView: View {
             schedule = terms.schedule
             inputPeriod = terms.inputYearly ? .yearly : .monthly
             let shown = terms.inputYearly ? terms.amount * terms.schedule.months : terms.amount
-            amountText = String(Int(shown.rounded()))
+            amountText = fieldDigits(shown)
             ajudasText = terms.ajudasMonthly > 0 ? Self.plain(terms.ajudasMonthly) : ""
-            bonusText = terms.bonusAnnual.map { String(Int($0.rounded())) } ?? ""
+            bonusText = terms.bonusAnnual.map { fieldDigits($0) } ?? ""
             sector = terms.sector
             concelhoID = terms.concelhoID
         } else {
@@ -265,8 +267,8 @@ struct OfferFormView: View {
         guard let v = amountValue else { return }
         let months = schedule.months
         switch period {
-        case .yearly: amountText = String(Int((v * months).rounded()))
-        case .monthly: amountText = String(Int((v / months).rounded()))
+        case .yearly: amountText = fieldDigits(v * months)
+        case .monthly: amountText = fieldDigits(v / months)
         }
     }
 
@@ -277,7 +279,7 @@ struct OfferFormView: View {
             .replacingOccurrences(of: " ", with: "")
             .replacingOccurrences(of: "€", with: "")
             .replacingOccurrences(of: ",", with: ".")
-        guard let v = Double(cleaned), v.isFinite else { return nil }
+        guard let v = Double(cleaned), v.isFinite, v < typedAmountLimit else { return nil }
         return v
     }
 

@@ -56,12 +56,16 @@ struct PayslipUnreadableView: View {
                 PrimaryButton(title: s.payslipTryAgain, action: onRetry)
                     .padding(.horizontal, 20)
                 if let onGiveUp {
+                    // A 44 point target, like the same button on the verdict.
                     Button(action: onGiveUp) {
                         Text(s.onbTypeItMyself)
                             .appFont(14, weight: .semibold)
                             .foregroundStyle(Theme.textSecondary)
-                            .padding(.top, 12)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
                 }
             }
             .padding(.top, 8)

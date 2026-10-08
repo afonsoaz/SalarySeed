@@ -75,6 +75,24 @@ enum OfferComparison {
         /// Gross less Social Security less settled IRS. The allowance is not in
         /// it, because it was never taxed to begin with.
         var afterTax: Double { gross - socialSecurity - irs }
+
+        /// The year as the offer screen prints it: whole euros that add up,
+        /// on the same footing as Tax's waterfall (`WaterfallRows`). Rounded one
+        /// by one, gross less Social Security less IRS missed "after tax" by a
+        /// euro for about a quarter of salaries. Gross and after tax are rounded
+        /// on their own; Social Security and IRS share the difference.
+        /// `tools/offer_probe` checks that the rows add up.
+        var shown: Shown {
+            let g = WaterfallRows.whole(gross)
+            let after = WaterfallRows.whole(afterTax)
+            let (ss, tax) = WaterfallRows.split(socialSecurity, irs, into: g - after)
+            return Shown(gross: g, socialSecurity: ss, irs: tax, afterTax: after,
+                         employerCost: WaterfallRows.whole(employerCost))
+        }
+
+        struct Shown {
+            let gross, socialSecurity, irs, afterTax, employerCost: Double
+        }
     }
 
     /// Where a salary sits in one cohort, now and with the offer. Either side can

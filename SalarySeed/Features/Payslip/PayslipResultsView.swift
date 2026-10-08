@@ -19,7 +19,7 @@ struct PayslipResultsView: View {
     let verdict: PayslipVerdict
     let workings: PayslipCheckModel.Workings
     /// Called when the reader taps to keep the figure. The payslip feature does
-    /// not write to the store itself; `HomeView` owns that.
+    /// not write to the store itself; Home owns that.
     var onAccept: ((PayslipSalary.GrossProposal) -> Void)?
     /// False during onboarding, where the reader has not answered enough for the
     /// tax checks to run. Passed rather than inferred from the skip reasons,
@@ -30,14 +30,18 @@ struct PayslipResultsView: View {
     /// Whether the "use this as your salary?" question has been answered.
     ///
     /// v1.2: it lives on the model rather than here. In a cover both answers
-    /// dismissed the screen, so the question could not come back; in a tab the
-    /// verdict stays up afterwards, and a view's own `@State` would forget the
-    /// answer every time the reader visited another tab.
+    /// dismissed the screen, so the question could not come back; opened from
+    /// Home the verdict stays up afterwards and survives leaving and coming
+    /// back, and a view's own `@State` would forget the answer on every visit.
     var ask: PayslipCheckModel.SalaryAsk = .unanswered
     var onAnswerAsk: (Bool) -> Void = { _ in }
-    /// "Close" in the cover, "Check another payslip" in the tab.
+    /// "Close" in the cover, "Check another payslip" in the checker, "Back to
+    /// my salary" under "Update my salary".
     var doneTitle: String = ""
     var onDone: () -> Void = {}
+    /// "Update my salary" only: the way to type the number instead, offered
+    /// when this payslip cannot give one. See `salaryAsk`.
+    var onTypeInstead: (() -> Void)?
 
     private var s: Strings { store.s }
 
@@ -49,10 +53,9 @@ struct PayslipResultsView: View {
     /// other terminal step in this flow ends in a full width button. This one
     /// is the end of the whole thing and ended in a disclaimer.
     /// v1.2: the pinned button is a `safeAreaInset` on the scroll view rather
-    /// than a sibling under it in a `VStack`. In a cover the two were the same
-    /// thing; in a tab they are not, because iOS 26's bar floats over the
-    /// content and minimises as you scroll, so a button merely stacked under
-    /// the scroll view sat beneath the bar and lost its taps to it.
+    /// than a sibling under it in a `VStack`. That is the shape the system
+    /// understands for anything floating over the bottom edge; v1.2 found the
+    /// sibling version under iOS 26's floating tab bar, losing its taps to it.
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
@@ -106,34 +109,68 @@ struct PayslipResultsView: View {
     /// before the findings would be collecting an answer to a question the
     /// reader cannot yet have thought about.
     ///
-    /// Nothing appears when `PayslipSalary` refuses. Home already has a salary,
-    /// so saying nothing is not a claim, and a line explaining a proposal that
-    /// was never offered would be noise on a screen whose job is the verdict.
     @ViewBuilder private var salaryAsk: some View {
-        if let onAccept, case .proposal(let proposal) = PayslipSalary.propose(workings.facts) {
-            VStack(alignment: .leading, spacing: 12) {
-                Divider().overlay(Theme.cardBorder)
-                switch ask {
-                case .unanswered:
-                    SectionLabel(s.payslipUseTitle)
-                    proposalCard(proposal)
-                    askButtons(proposal, onAccept: onAccept)
-                case .adopted:
-                    // Said because the figure it changed is on another tab. A
-                    // screen closing used to be the confirmation; nothing closes
-                    // now, so the screen has to say it.
-                    Text(s.payslipUseDone)
-                        .appFont(13)
-                        .foregroundStyle(Theme.accent)
-                        .fixedSize(horizontal: false, vertical: true)
-                case .kept:
-                    // Nothing. They declined; repeating the question, or
-                    // announcing that nothing happened, is the app talking to
-                    // itself.
-                    EmptyView()
+        if let onAccept {
+            switch PayslipSalary.propose(workings.facts) {
+            case .proposal(let proposal):
+                VStack(alignment: .leading, spacing: 12) {
+                    Divider().overlay(Theme.cardBorder)
+                    switch ask {
+                    case .unanswered:
+                        SectionLabel(s.payslipUseTitle)
+                        proposalCard(proposal)
+                        askButtons(proposal, onAccept: onAccept)
+                    case .adopted:
+                        // Said because the figure it changed is on Home, a
+                        // screen away. A screen closing used to be the
+                        // confirmation; in the checker nothing closes, so the
+                        // screen has to say it.
+                        Text(s.payslipUseDone)
+                            .appFont(13)
+                            .foregroundStyle(Theme.accent)
+                            .fixedSize(horizontal: false, vertical: true)
+                    case .kept:
+                        // Nothing. They declined; repeating the question, or
+                        // announcing that nothing happened, is the app talking
+                        // to itself.
+                        EmptyView()
+                    }
+                }
+                .padding(.top, 6)
+            case .cannot(let reason):
+                // In the checker, nothing appears when `PayslipSalary` refuses.
+                // Home already has a salary, so saying nothing is not a claim,
+                // and a line explaining a proposal that was never offered would
+                // be noise on a screen whose job is the verdict.
+                //
+                // Under "Update my salary" the same silence would strand the
+                // reader, who came here for a number: they would get a verdict
+                // and no figure and no reason. So it says which of the four
+                // reasons it was, because "we could not read the base" and "the
+                // figures disagree" are different things to be told (rule 21),
+                // and offers the way to type it instead.
+                if let onTypeInstead {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Divider().overlay(Theme.cardBorder)
+                        Text(s.payslipCannot(reason))
+                            .appFont(13)
+                            .foregroundStyle(Theme.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        // A 44 point target, not the height of the words: this
+                        // is the only way forward to a number from here.
+                        Button(action: onTypeInstead) {
+                            Text(s.onbTypeItMyself)
+                                .appFont(14, weight: .semibold)
+                                .foregroundStyle(Theme.accent)
+                                .multilineTextAlignment(.leading)
+                                .frame(minHeight: 44, alignment: .leading)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.top, 6)
                 }
             }
-            .padding(.top, 6)
         }
     }
 
@@ -167,18 +204,24 @@ struct PayslipResultsView: View {
     /// Side by side normally, stacked once the text is large enough that two
     /// columns of figures would each be a column of wrapped fragments. Reflow,
     /// not shrink: nobody asked for smaller text.
+    ///
+    /// "What you have now" is the GROSS the app works from, because the payslip
+    /// figure beside it is a gross: the stored amount is a net for a reader who
+    /// typed a net, and showed a 1 200 € net beside a 1 600 € gross as a raise.
+    /// With no profile (the onboarding cover) there is no salary yet, only the
+    /// store's default, so that column is left out.
     @ViewBuilder private func figures(_ proposal: PayslipSalary.GrossProposal) -> some View {
-        let mine = PayslipNumber.format(cents: Int((store.amount * 100).rounded()))
+        let mine = PayslipNumber.format(cents: Int(exactly: (store.breakdown.grossMonthly * 100).rounded()) ?? 0)
         let theirs = PayslipNumber.format(cents: proposal.monthlyGrossCents)
         if typeSize.isAccessibilitySize {
             VStack(alignment: .leading, spacing: 10) {
                 figure(s.payslipUseGrossLabel, theirs, tint: Theme.accent)
-                figure(s.payslipUseCurrentLabel, mine, tint: Theme.textSecondary)
+                if hasProfile { figure(s.payslipUseCurrentLabel, mine, tint: Theme.textSecondary) }
             }
         } else {
             HStack(alignment: .top, spacing: 16) {
                 figure(s.payslipUseGrossLabel, theirs, tint: Theme.accent)
-                figure(s.payslipUseCurrentLabel, mine, tint: Theme.textSecondary)
+                if hasProfile { figure(s.payslipUseCurrentLabel, mine, tint: Theme.textSecondary) }
             }
         }
     }
@@ -345,11 +388,16 @@ struct PayslipResultsView: View {
 
     private var footer: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(s.payslipAssumptions(store.taxRegion,
-                                      months: String(Int(store.schedule.months))))
-                .appFont(10)
-                .foregroundStyle(Theme.textFaint)
-                .fixedSize(horizontal: false, vertical: true)
+            // With no profile (the onboarding cover) no table check ran, and
+            // the region and months would be store defaults nobody gave, so
+            // the line saying what the check assumed would be untrue.
+            if hasProfile {
+                Text(s.payslipAssumptions(store.taxRegion,
+                                          months: String(Int(store.schedule.months))))
+                    .appFont(10)
+                    .foregroundStyle(Theme.textFaint)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             Text(s.payslipDisclaimer)
                 .appFont(10)
                 .foregroundStyle(Theme.textFaint)

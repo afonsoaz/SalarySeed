@@ -1,12 +1,15 @@
 # How this app gets checked
 
-There is no test target. Two scripts and two probes stand in for it, and the list below is
-what they cannot cover.
+There is no test target. Four scripts and three probes stand in for it, and the list below
+is what they cannot cover.
 
 ```bash
 python3 tools/verify_tax_engine.py        # must pass before any release
 python3 tools/verify_payslip_reader.py    # must pass before any release
+python3 tools/dump_copy.py --verify       # must pass before any release
+python3 tools/audit_layout.py             # should print "0 places to look at"
 tools/offer_probe/build.sh && .build/offer_probe   # must pass before any release
+tools/waterfall_probe/build.sh && .build/waterfall_probe   # must pass before any release
 tools/payslip_probe/build.sh              # then: .build/payslip_probe <file.pdf|.png>
 
 tools/payslip_corpus/build.sh                                 # generated payslips
@@ -50,7 +53,17 @@ checked against `GrowthEngine.bandStarts` itself, so a future table with wider b
 here instead of quietly bringing back a staying card that says nothing changes. It was run
 against three deliberately broken copies of the engine before it was trusted, and failed
 all three. It is Swift and not Python for `payslip_corpus`'s reason, and the one file in it
-that is not shipping code, a stand-in for `SalaryStore`, says why it has to exist.
+that is not shipping code, a stand-in for `SalaryStore`, says why it has to exist. Since
+v1.6 it also checks that the offer's "where the difference goes" card adds up in whole
+euros, which one-by-one rounding failed 34,944 times.
+
+`tools/waterfall_probe` is the third, also a pass or a fail. It compiles
+`WaterfallRows.swift` and `TaxEngine.swift` unmodified and sweeps about 255,000 of Tax's
+waterfalls (regions, households, IRS Jovem, both schedules, all three lenses, salaries in
+cents) for figures that add up, agree with Home, and agree with the settlement card. It also
+checks the mínimo de existência (art. 70.º CIRS) against the article's own worked examples,
+and that every region's minimum wage settles to no IRS for every household, which the engine
+without it failed by 36,61 €.
 
 ## The checks a compiler cannot do
 
@@ -190,13 +203,6 @@ An erase resets the device's text size too, so set `content_size` again afterwar
 resets the language, so a freshly erased device runs the app in English rather than
 Portuguese. Both are useful in their own right: the erase is the only way to see a genuine
 first run, which is the one thing worth being sure about on a screen every new reader meets.
-
-The intro screen has the same problem and a much cheaper answer: **Profile has a replay
-row** ("What the app does"), which sets the session flag and leaves `hasSeenIntro` alone.
-Use that for everything except the handoff itself. The one thing it cannot show you is the
-intro arriving out of onboarding's last step, which needs the erase above, and the one
-thing to know when you do use it is that the intro then fades back onto Profile rather than
-onto Home, because Profile is a pushed screen.
 
 ## A note on the numbers in the payslip comments
 

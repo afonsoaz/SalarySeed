@@ -11,6 +11,15 @@ struct SalaryEditorView: View {
     @State private var kind: AmountKind = .gross
     @State private var schedule: PaySchedule = .fourteen
     @State private var inputPeriod: SalaryInputPeriod = .monthly
+    /// Told when the reader saves, as opposed to swiping the sheet away.
+    ///
+    /// "Update my salary" returns to Home after a save, so the reader sees the
+    /// number change, and stays where it was after a cancel. A sheet's
+    /// `onDismiss` cannot tell the two apart on its own, and popping the screen
+    /// underneath while the sheet is still going down is the wrong moment, so
+    /// the presenter records this and acts in `onDismiss`. See
+    /// `salaryEditor(isPresented:onSaved:)`.
+    var onSaved: (() -> Void)? = nil
 
     private var s: Strings { store.s }
 
@@ -100,13 +109,14 @@ struct SalaryEditorView: View {
                     .padding(.top, 4)
 
                     PrimaryButton(title: s.updateButton) {
-                        if let v = Double(amountText), v > 0 {
+                        if let v = Double(amountText), v > 0, v < typedAmountLimit {
                             store.amount = inputPeriod == .yearly ? v / schedule.months : v
                         }
                         store.ajudasMonthly = max(0, Double(ajudasText) ?? 0)
                         store.kind = kind
                         store.schedule = schedule
                         store.inputYearly = inputPeriod == .yearly
+                        onSaved?()
                         dismiss()
                     }
                     .padding(.top, 8)
@@ -120,8 +130,8 @@ struct SalaryEditorView: View {
             schedule = store.schedule
             inputPeriod = store.inputYearly ? .yearly : .monthly
             let shown = store.inputYearly ? store.amount * store.schedule.months : store.amount
-            amountText = String(Int(shown.rounded()))
-            ajudasText = store.ajudasMonthly > 0 ? String(Int(store.ajudasMonthly)) : ""
+            amountText = fieldDigits(shown)
+            ajudasText = store.ajudasMonthly > 0 ? fieldDigits(store.ajudasMonthly.rounded(.down)) : ""
         }
     }
 
@@ -131,8 +141,8 @@ struct SalaryEditorView: View {
         guard let v = Double(amountText), v > 0 else { return }
         let months = schedule.months
         switch period {
-        case .yearly:  amountText = String(Int((v * months).rounded()))   // was monthly
-        case .monthly: amountText = String(Int((v / months).rounded()))   // was yearly
+        case .yearly:  amountText = fieldDigits(v * months)   // was monthly
+        case .monthly: amountText = fieldDigits(v / months)   // was yearly
         }
     }
 }

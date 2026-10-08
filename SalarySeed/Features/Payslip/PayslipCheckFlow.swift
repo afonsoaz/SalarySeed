@@ -1,15 +1,30 @@
 import SwiftUI
 
+/// Why the checker was opened, when Home opens it.
+///
+/// A ROUTE PARAMETER AND NOTHING ELSE. It lives in `HubRoute.payslipCheck` for
+/// as long as the screen does and is never written anywhere: a "this salary
+/// came from a payslip" flag on the store would be the one-bit payslip history
+/// CLAUDE.md forbids, and it is exactly the shape this would take if it leaked.
+enum PayslipIntent: Hashable {
+    /// "Check payslip". The verdict is the point; the offer to keep the
+    /// figure comes after it, and the reader stays on the verdict afterwards.
+    case check
+    /// "Update my salary". The reader came for the number. The verdict still
+    /// comes first, and answering the question about the figure takes them
+    /// back to Home, where the number is.
+    case update
+}
+
 /// Where the checker lives, which decides what its chrome means.
 ///
-/// v1.2: it is a tab now, and it was a full-screen cover. Onboarding still
+/// v1.2 made it a tab, and it had been a full-screen cover. Onboarding still
 /// presents the cover, because there it genuinely is a detour off a step that
-/// is asking for a number. The two differ in three places and nowhere else: an
-/// X that closes versus a button that starts again, "Close" versus "Check
-/// another payslip" under the verdict, and whether the landing screen explains
-/// what the checks are before asking for a file.
-enum PayslipChrome {
-    case tab
+/// is asking for a number. The hub made the tab a screen Home opens, for one
+/// of two reasons, and the reason changes the title, what "done" does, and
+/// whether the reader is offered to type the number instead.
+enum PayslipChrome: Equatable {
+    case check(PayslipIntent)
     case cover
 }
 
@@ -20,11 +35,11 @@ enum PayslipChrome {
 /// a push: there is no back from a verdict to the file picker that means
 /// anything other than starting again.
 ///
-/// THE MODEL IS NOT OWNED HERE any more. `PayslipTabView` and
-/// `PayslipCheckCover` each own one, and which of them is holding it is exactly
-/// the difference between a reading that survives a tab switch and one that
-/// dies with a dismissed cover. See `PayslipCheckModel` for what that changed
-/// about the promise on screen.
+/// THE MODEL IS NOT OWNED HERE. Home owns the one the checker uses, and
+/// `PayslipCheckCover` owns onboarding's, and which of them is holding it is
+/// exactly the difference between a reading that survives leaving the checker
+/// and one that dies with a dismissed cover. See `PayslipCheckModel` for what
+/// that means for the promise on screen.
 struct PayslipCheckFlow: View {
     // Held for `s`, and because everything below draws with `Theme.accent`,
     // which is a computed static SwiftUI cannot observe. See SalarySeedApp.
@@ -57,14 +72,26 @@ struct PayslipCheckFlow: View {
     /// offering to keep anything, and the results screen then asks nothing.
     var onAccept: ((PayslipSalary.GrossProposal) -> Void)?
 
-    /// Closes the cover. `nil` in a tab, where there is nothing to close.
+    /// Closes the cover. `nil` when Home opened the checker.
     var onClose: (() -> Void)?
 
-    /// Drives the push into Profile. Only the tab passes one: onboarding's
-    /// cover has no business offering a way into a screen the reader has not
-    /// finished filling in yet, and there is no navigation stack under it to
-    /// push onto either.
-    var showProfile: Binding<Bool>?
+    /// "Update my salary" only: the way back to Home once the reader has
+    /// answered, or is done. A closure for the same reason `onAccept` is one:
+    /// moving the reader means writing the navigation path, which lives on the
+    /// store, and this feature never writes the store.
+    var onFinished: (() -> Void)?
+
+    /// "Update my salary" only: open the salary editor instead, when the
+    /// payslip could not be read or could not give a figure.
+    var onTypeInstead: (() -> Void)?
+
+    /// "Update my salary" only: back to the chooser, for "Try again" on a
+    /// payslip that could not be read. The chooser is right underneath, so
+    /// trying again there is one step back rather than a second chooser drawn
+    /// inside this screen.
+    var onChooseAgain: (() -> Void)?
+
+    private var isUpdate: Bool { chrome == .check(.update) }
 
     var body: some View {
         ZStack {
@@ -84,98 +111,48 @@ struct PayslipCheckFlow: View {
         }
     }
 
-    /// v1.1a: the header sits above all five steps, so anything it does badly
-    /// it does five times.
-    ///
-    /// It used to be one row with a 20pt title and a fixed 34 by 34 circle. At
-    /// an accessibility size the title wrapped to three or four lines beside an
-    /// unmoved button, eating the vertical room every step below it needs, and
-    /// the `xmark` grew straight out of its own background because the glyph
-    /// scaled and the circle did not. The row now becomes two rows past the
-    /// threshold, which is what `HomeView.topBar` does with the same problem,
-    /// and the circle scales with the glyph inside it.
-    ///
-    /// The 34 also failed Apple's 44 point minimum tap target at the DEFAULT
-    /// size, on the only way out of this screen.
+    /// The checker carries the same accent eyebrow as every other place in the
+    /// app (`taxSeed`, `compareSeed`, `growSeed`). The cover does not: that
+    /// is a detour off an onboarding step, not a place. Nor does "Update my
+    /// salary", which is a way to change one number and looks exactly like the
+    /// chooser it came from.
     private var header: some View {
-        Group {
-            if typeSize.isAccessibilitySize {
-                VStack(alignment: .leading, spacing: 10) {
-                    if hasTrailingButton {
-                        HStack {
-                            Spacer()
-                            trailingButton
-                        }
-                    }
-                    title
-                }
-            } else {
-                // v1.2b: `.bottom`, and it used to be `.firstTextBaseline`.
-                //
-                // A baseline alignment asks SwiftUI for the first text baseline
-                // of each child, and an `Image` has no text in it, so it offers
-                // its bottom edge instead. While the trailing slot was empty on
-                // the source step that cost nothing. The moment it held a 44
-                // point profile button, the title was dragged down to meet the
-                // bottom of it and "payslipSeed" sat 44 points lower than on
-                // every other tab. Home, Compare and Map all align this row on
-                // `.bottom` already.
-                HStack(alignment: .bottom) {
-                    title
-                    Spacer(minLength: 12)
-                    trailingButton
-                }
-            }
-        }
-        .padding(.horizontal, 20)
-        .padding(.top, chrome == .tab ? 8 : 18)
-        .padding(.bottom, 10)
-    }
-
-    /// In the tab the title carries the same accent eyebrow every other tab has
-    /// (`mapSeed`, `profileSeed`, `compareSeed`). In the cover it does not: that
-    /// is a detour off an onboarding step, not a place.
-    private var title: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            if chrome == .tab {
-                Text("payslipSeed")
-                    .appFont(12)
-                    .foregroundStyle(Theme.accent)
-            }
-            Text(s.payslipTitle)
-                .appFont(chrome == .tab ? 22 : 20, weight: .medium)
-                .foregroundStyle(Theme.textPrimary)
-                .fixedSize(horizontal: false, vertical: true)
+        PayslipHeader(eyebrow: chrome == .check(.check) ? "payslipSeed" : nil,
+                      title: isUpdate ? s.updateSalaryTitle : s.payslipTitle,
+                      titleSize: chrome == .cover ? 20 : 22,
+                      topPadding: chrome == .cover ? 18 : 8,
+                      hasTrailing: hasTrailingButton) {
+            trailingButton
         }
     }
 
-    /// An X in the cover. In the tab, a way back to the file picker, shown only
-    /// once there is something to go back from: on the source step it would be
-    /// a button that starts again from where you already are.
+    /// An X in the cover. In the checker, a way back to the file picker, shown
+    /// only once there is something to go back from: on the source step it would
+    /// be a button that starts again from where you already are. Nothing under
+    /// "Update my salary", where back already means "choose again".
     @ViewBuilder
     private var trailingButton: some View {
         switch chrome {
         case .cover:
             circleButton(icon: "xmark", label: s.closeButton) { onClose?() }
-        case .tab:
-            HStack(spacing: 4) {
-                if !isAtStart {
-                    circleButton(icon: "arrow.counterclockwise",
-                                 label: s.payslipCheckAnother) { model.restart() }
-                }
-                if let showProfile {
-                    ProfileButton(isPresented: showProfile)
-                }
+        case .check(.check):
+            // No way into Profile here: the hub leaves Profile to Home.
+            if !isAtStart {
+                circleButton(icon: "arrow.counterclockwise",
+                             label: s.payslipCheckAnother) { model.restart() }
             }
+        case .check(.update):
+            EmptyView()
         }
     }
 
-    /// Ends the run. In the tab that means going back to the file picker,
-    /// which is the only "done" a screen with no way out can offer. In the
-    /// cover it closes.
+    /// Ends the run. In the checker that means going back to the file picker,
+    /// which is the only "done" a screen with nothing to close can offer; under
+    /// "Update my salary" it means going back to Home; in the cover it closes.
     private func onDone() {
         switch chrome {
-        case .tab: model.restart()
+        case .check(.check): model.restart()
+        case .check(.update): onFinished?()
         case .cover: onClose?()
         }
     }
@@ -185,12 +162,20 @@ struct PayslipCheckFlow: View {
         return false
     }
 
-    /// Asked separately rather than by testing `trailingButton`, because a
-    /// `some View` is never nil: an empty `@ViewBuilder` branch is a real view
-    /// that draws nothing, and the accessibility-size layout needs to know
-    /// whether to give it a row of its own.
     private var hasTrailingButton: Bool {
-        chrome == .cover || !isAtStart || showProfile != nil
+        switch chrome {
+        case .cover: return true
+        case .check(.check): return !isAtStart
+        case .check(.update): return false
+        }
+    }
+
+    private var doneTitle: String {
+        switch chrome {
+        case .check(.check): return s.payslipCheckAnother
+        case .check(.update): return s.updateSalaryBack
+        case .cover: return s.closeButton
+        }
     }
 
     private func circleButton(icon: String, label: String,
@@ -211,54 +196,46 @@ struct PayslipCheckFlow: View {
         switch model.phase {
         case .source:
             PayslipSourceStep(
-                showsWhatWeCheck: chrome == .tab,
+                showsWhatWeCheck: chrome == .check(.check),
                 onFile: { model.load(url: $0, context: context) },
-                onImage: { model.load(imageData: $0, context: context) })
+                onImage: { model.load(imageData: $0, context: context) },
+                onTypeInstead: isUpdate ? onTypeInstead : nil)
         case .reading:
             PayslipReadingStep()
         case .review(let workings):
             PayslipReviewStep(model: model, workings: workings,
                               onConfirm: { model.confirmReview(context: context) })
-        case .results(let verdict, let workings):
+        case .results(_, let workings):
+            // Checked again against the answers as they are now, not as they
+            // were when the payslip was read. Home keeps the reading for the
+            // whole session and the tax answers are one screen away on Tax, so
+            // a household or município changed in between used to leave a
+            // verdict judged on the old one under a footer naming the new one.
+            // The facts already carry the review's corrections, and the check
+            // is pure, so with unchanged answers the verdict is identical.
             PayslipResultsView(
-                verdict: verdict, workings: workings,
+                verdict: PayslipReconciler.check(workings.facts, context: context),
+                workings: workings,
                 onAccept: onAccept, hasProfile: context != nil,
                 ask: model.salaryAsk,
-                onAnswerAsk: { model.answerSalaryAsk(adopted: $0) },
-                doneTitle: chrome == .tab ? s.payslipCheckAnother : s.closeButton,
-                onDone: onDone)
+                onAnswerAsk: { adopted in
+                    model.answerSalaryAsk(adopted: adopted)
+                    // Either answer ends an update: the reader came for the
+                    // number, and now it is settled one way or the other.
+                    if isUpdate { onFinished?() }
+                },
+                doneTitle: doneTitle,
+                onDone: onDone,
+                onTypeInstead: isUpdate ? onTypeInstead : nil)
         case .unreadable(let why):
-            PayslipUnreadableView(why: why, onRetry: { model.restart() },
-                                  onGiveUp: chrome == .cover && context == nil ? onClose : nil)
-        }
-    }
-}
-
-/// The checker as a tab. Owns the model, so a verdict survives a trip to
-/// another tab and back.
-///
-/// `context` and `onAccept` are handed in by `RootTabView` rather than built
-/// here, for the same reason `HomeView` used to build them: `Features/Payslip/`
-/// reads the store and never writes to it, and `SalaryStore.adopt` is a write.
-struct PayslipTabView: View {
-    @StateObject private var model = PayslipCheckModel()
-    @State private var showProfile = false
-
-    let context: PayslipContext
-    var onAccept: (PayslipSalary.GrossProposal) -> Void
-
-    /// The `NavigationStack` exists only so the profile button has somewhere to
-    /// push to. This is the one tab that never had one, because the flow is a
-    /// state machine rather than a stack and nothing in it navigates.
-    var body: some View {
-        NavigationStack {
-            PayslipCheckFlow(model: model, chrome: .tab,
-                             context: context, onAccept: onAccept,
-                             showProfile: $showProfile)
-                // Nothing here wants a navigation bar: the screen draws its
-                // own header, and the stack exists only to push Profile.
-                .toolbar(.hidden, for: .navigationBar)
-                .profileDestination(isPresented: $showProfile)
+            PayslipUnreadableView(
+                why: why,
+                onRetry: {
+                    model.restart()
+                    if isUpdate { onChooseAgain?() }
+                },
+                onGiveUp: chrome == .cover && context == nil ? onClose
+                    : (isUpdate ? onTypeInstead : nil))
         }
     }
 }

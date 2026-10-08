@@ -38,7 +38,6 @@ struct GrowthLeversSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     header
-                    horizonBlock
                     cadenceBlock
                     expectedBlock
                     sectorBlock
@@ -68,23 +67,9 @@ struct GrowthLeversSheet: View {
         .padding(.top, 14)
     }
 
-    // MARK: How far ahead
-
-    private var horizonBlock: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            SectionLabel(s.growLeverHorizon)
-            HStack(spacing: 8) {
-                ForEach(GrowthEngine.Scenario.horizons, id: \.self) { years in
-                    chip(label: s.growYears(years), on: scenario.horizon == years) {
-                        scenario.horizon = years
-                        // Shortening the window can strand the cadence outside
-                        // it, which would leave a lit chip doing nothing.
-                        if scenario.switchEvery > years { scenario.switchEvery = 0 }
-                    }
-                }
-            }
-        }
-    }
+    // How far ahead (5, 10 or 20 years) lived here until phase two, which made
+    // it a quiet switch on Grow itself, under the figure it re-reads. Grow now
+    // clears a cadence the shorter window can no longer contain.
 
     // MARK: Changing employer
 
@@ -176,7 +161,7 @@ struct GrowthLeversSheet: View {
                         Spacer(minLength: 6)
                         Text(signedEur(step.uplift))
                             .appFont(12, weight: .medium)
-                            .foregroundStyle(step.uplift >= 0 ? Theme.accent : Theme.danger)
+                            .foregroundStyle(step.uplift.rounded(.toNearestOrEven) >= 0 ? Theme.accent : Theme.danger)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     }

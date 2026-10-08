@@ -13,14 +13,14 @@ the phone, because the app has no networking code at all.
 **[Watch the demo](https://afonsoaz.github.io/SalarySeed)**
 
 <p align="center">
-  <img src="docs/img/home.png" width="24%" alt="Home: one net figure, and where the money goes">
+  <img src="docs/img/home.png" width="24%" alt="Home: one net figure, and a row for each feature">
   <img src="docs/img/payslip.png" width="24%" alt="Payslip result, including the checks that declined to run">
-  <img src="docs/img/compare.png" width="24%" alt="Compare: national percentile with its caveat">
+  <img src="docs/img/compare.png" width="24%" alt="Compare in Portugal: the national percentile and people like you">
   <img src="docs/img/map.png" width="24%" alt="A district choropleth of what your sector pays">
 </p>
 
-SwiftUI, iOS 17, no dependencies and no backend. 82 Swift files, and the tax and payslip
-engines are a quarter of them. Built for the App Store, not yet submitted.
+SwiftUI, iOS 17, no dependencies and no backend. 100 Swift files, and the tax and payslip
+engines are about a fifth of them. Built for the App Store, not yet submitted.
 
 If you only have a minute, the three parts worth reading about are:
 
@@ -33,19 +33,27 @@ If you only have a minute, the three parts worth reading about are:
 
 ## What it does
 
-| Tab | What it answers |
+Home is the whole app. It shows what you earn now, one net figure read as a month over
+twelve, a month over fourteen or a year, with an **Update my salary** bubble on it that
+reads the figure off a payslip or lets you type it. Below it, one row per thing the app
+does, each opening its own screen. There is no tab bar.
+
+| Row | What it answers |
 |---|---|
-| **Home** | What you earn now. One net figure, read as a month over twelve, a month over fourteen or a year, and the share of what your employer spends that reaches you. A scroll below that: the full breakdown, the total cost to your employer, and the annual IRS settlement with every assumption written out. |
-| **Payslip** | Whether your last payslip adds up. Give it a PDF, photograph it with the camera, or pick a photo, and it checks ten things, on the device, and says which ones it could not check and why. The most interesting part of the app. |
-| **Compare** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region. |
-| **Map** | Where it would sit differently. A Portuguese district choropleth, and a 27-tile grid of the European Union. |
-| **Grow** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. |
+| **Understand taxes** | Where the money goes: the share of what your employer spends that reaches you, then one line per step from what your company pays to what reaches you, each with its rate, then the annual IRS settlement. Underneath, what all of it assumes (married or not, dependants, IRS Jovem, the tax tables), editable right there. |
+| **Compare in Portugal** | How that sits against other people, now. National percentile plus cohort comparisons by sector, tenure, age, education and region, and a district map of what your sector pays. |
+| **Compare in Europe** | Where it would sit in the rest of the EU, on a 27-tile grid. |
+| **Check payslip** | Whether your last payslip adds up. Give it a PDF, photograph it with the camera, or pick a photo, and it checks ten things, on the device, and says which ones it could not check and why. The most interesting part of the app. |
+| **Growth simulator** | What it might become. Your pay projected over 5, 10 or 20 years, staying put against changing employer. |
+| **Check job offer** | An offer next to the job you have. See below. |
+| **Other tools** | Trying another salary without changing yours, and what being paid in ajudas de custo costs later. |
 
-The sixth thing is not a tab. **Profile** holds the inputs behind all of it, each with what
-it unlocks. It is reached from the top of Home, because a native iPhone tab bar shows five
-items and the checker earned one of them.
+**Profile** holds the answers the comparisons run on, each with what it unlocks, plus your
+name, the language and the colour, and is reached from the person at the top of Home. The
+sprout that grows as you answer is its picture. The tax answers are on Tax, beside the
+figures they change, and the salary is changed from Home, not from here.
 
-Nor is the seventh. **A job offer** goes in from Home, under "What if…", and is put next to
+**A job offer** goes in from its row on Home, and is put next to
 the job you have in the order the questions arrive: what reaches you each month, where the
 difference goes in tax, where each sits against other people, and what staying where you are
 would pay at 5, 10 and 20 years. It is a different job and the same person, so the household,
@@ -59,14 +67,10 @@ offer is kept on the phone until you remove it, and it never reaches any other s
 
 Before any of that there are nine questions, and the first one offers to read a payslip
 rather than asking you to type a number, because the number is on a document most people
-already have. Answer them and the app introduces itself once, on a single screen of four
-cards: Compare, Map, Grow, and one for everything else. The checker is deliberately not the
-fourth, because naming the app's best screen here would be introducing something the reader
-has already used. The cards carry no figures at all, which is what makes the screen safe: a
-card that cannot contradict the tab it names is worth more than one that could. Nothing on
-it leads to a price, it is armed only for an install that has neither onboarded nor seen it,
-and Profile has a row that replays it, because a screen you can reach exactly once is a
-screen nobody can check.
+already have. Answer them and the app opens on Home. Version 1.4 put a one-time screen of
+four cards between the two, naming what each tab was for; it is gone, because a Home that
+lists every feature with a line saying what it does is that screen, every time rather than
+once.
 
 Everything above is free. There is no in-app purchase, no subscription, no advertising and
 no analytics.
@@ -153,11 +157,10 @@ Three rules keep the feature honest, and they are why it is allowed to exist:
   reading rather than let the app accuse somebody's employer of underpaying them.
 
 Nothing about the payslip is ever written to disk. The file is read into memory, checked,
-and dropped when you check another one or quit the app, and leaving mid-read cancels the
-recognition rather than letting it finish over a screen that has gone. There is no history.
-The promise is "never written to disk" rather than "gone when you close the screen", which
-is the narrower thing a tab can actually keep: since v1.2 the checker is a tab, so a verdict
-survives a trip to Compare and back.
+and dropped when you read another one or quit the app. There is no history. The promise
+is "never written to disk" rather than "gone when you close the screen", and that is
+deliberate: the home screen keeps the one reading for as long as the app runs, so a verdict
+survives going back to Home and returning, from either way in.
 
 One figure can outlive the reading, and only one: the screen ends by asking whether the
 monthly gross it read should become your salary, and a yes keeps that number, which is the
@@ -201,6 +204,7 @@ python3 tools/verify_payslip_reader.py    # must pass before any release
 python3 tools/dump_copy.py --verify       # must pass before any release
 python3 tools/audit_layout.py             # should print "0 places to look at"
 tools/offer_probe/build.sh && .build/offer_probe   # must pass before any release
+tools/waterfall_probe/build.sh && .build/waterfall_probe   # must pass before any release
 tools/payslip_probe/build.sh              # then: .build/payslip_probe <file.pdf|.png>
 ```
 
@@ -288,10 +292,13 @@ SalarySeed/
     PayslipFinding       the findings model and the one function that tiers them
     PayslipSalary        the one value the checker may hand back, and nothing else
   Features/    one folder per screen
+    Home/                  the hub: the figure, the rows, and every screen it pushes
     Onboarding/            the nine questions, led by the payslip
-    Intro/                 the one-screen tour, shown once to a new install
     Payslip/               the checker: PDF, camera and Vision extraction, then the flow
-    Shared/SupportLock     the real screen, blurred, where Grow and the Europe map live
+    Compare/ Map/          where you stand in Portugal, ending on the district map; Europe
+    Tax/                   what comes off the salary, in detail
+    Tools/                 the things to try that are not a screen of their own
+    Shared/SupportLock     the real screen, blurred, where Grow and Compare in Europe live
   Models/      SalaryStore (the single source of truth), Localization, catalogues
   Theme.swift  design tokens, the OKLCH diverging ramp, and .appFont, which is
                how every point size in the app becomes the reader's point size
@@ -350,9 +357,9 @@ Two things were built and are deliberately not switched on. The first is the sup
 payment, and it is still in this repo, still compiled on every build, behind one constant
 in [`AppConfig.swift`](SalarySeed/Models/AppConfig.swift). `.free` is what ships: the
 entitlement is forced true, StoreKit is never called, and the sell card, the two blurred
-gates over Grow and the European map and the padlock on the accent swatches all disappear.
-`.supporter` brings the whole thing back, because all five gates read one boolean and that
-boolean reads the constant. It is a constant rather than a branch because this repo already
+gates over Grow and the European map, the padlock on the accent swatches and the locks on
+Home's two paid rows all disappear. `.supporter` brings the whole thing back, because every
+gate reads one boolean and that boolean reads the constant. It is a constant rather than a branch because this repo already
 tried a branch, and the second unshipped thing is what happened to it.
 
 That second thing is a contribution pool, and it was deliberately not shipped. It worked:

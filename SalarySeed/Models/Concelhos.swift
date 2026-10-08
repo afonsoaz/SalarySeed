@@ -88,6 +88,17 @@ enum District: String, CaseIterable, Identifiable {
         case .viseu: return "Viseu"
         }
     }
+
+    /// The name as it sits after "com" in a Portuguese sentence. Porto and
+    /// Guarda take the article ("com o Porto", "com a Guarda"); the other
+    /// sixteen do not.
+    var labelWithArticlePT: String {
+        switch self {
+        case .porto: return "o Porto"
+        case .guarda: return "a Guarda"
+        default: return label
+        }
+    }
 }
 
 struct Concelho: Identifiable, Hashable {

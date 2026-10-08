@@ -169,9 +169,11 @@ struct WorkDetailsSheet: View {
                     Text(kind.hint(pt: s.pt))
                         .appFont(10.5)
                         .foregroundStyle(Theme.textFaint)
-                        .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                // On the column, so every line in it is left-aligned when it
+                // wraps, not just the hint (rule 27).
+                .multilineTextAlignment(.leading)
                 Spacer(minLength: 0)
             }
             .padding(12)
@@ -192,7 +194,10 @@ struct WorkDetailsSheet: View {
         return Button {
             withAnimation(.easeOut(duration: 0.12)) {
                 schedule = option
-                hours = store.weeklyHours ?? option.defaultHours
+                // The stored hours belong to the stored schedule. Switching
+                // starts from the new one's default, or "Part-time · 40 hours"
+                // was saved by a reader who only tapped Part-time.
+                hours = (option == store.workSchedule ? store.weeklyHours : nil) ?? option.defaultHours
             }
         } label: {
             Text(option.label(pt: s.pt))

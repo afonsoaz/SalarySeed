@@ -26,20 +26,29 @@
 		<!-- UserDefaults. SalaryStore persists the salary and the profile there
 		     and SupporterStore mirrors the entitlement. All of it is this app
 		     reading and writing its own defaults, which is what CA92.1 covers.
-		     Nothing reads another app's defaults or an app group. -->
-		<key>NSPrivacyAccessedAPIType</key>
-		<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
-		<key>NSPrivacyAccessedAPITypeReasons</key>
-		<array>
-			<string>CA92.1</string>
-		</array>
+		     Nothing reads another app's defaults or an app group.
+
+		     Each declaration is a DICTIONARY inside this array. Until v1.6 the
+		     four values below sat loose in the array, which parses as a list of
+		     four strings and declares no reason at all; found in review, and
+		     tools/check_privacy_manifest.sh now reads the reason back by path. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
 	</array>
 
 	<!-- NOTHING IS COLLECTED, and unlike most apps that say so, there is no code
 	     path here that could. The app has no networking of its own: no URLSession,
-	     no endpoint, no analytics. The only traffic it generates is StoreKit
-	     talking to Apple around the support sheet, and that is between the device
-	     and Apple, carries no app data, and is not collection by us.
+	     no endpoint, no analytics. While the app is free (AppConfig.monetisation
+	     is .free, since v1.3) it makes no request at all: StoreKit is never
+	     started. A paid build would have StoreKit talk to Apple around the
+	     support sheet, which is between the device and Apple, carries no app
+	     data, and is not collection by us.
 
 	     The Keychain is not used. The salary, the profile answers and the
 	     preferences live in this app's own UserDefaults and go when the app is
@@ -73,10 +82,12 @@
 
 	     v1.2 made the checker a tab, and this array did not change either. What
 	     changed is only how long the reading lives in MEMORY: it used to die
-	     with the cover, and it now survives a trip to another tab, until the
-	     reader checks another payslip or quits the app. Nothing about that
-	     reaches storage, which is the only thing this file is about. The
-	     sentence that has to stay true is "never written to disk", and it is.
+	     with the cover, and it now survives leaving the checker and coming
+	     back, until the reader reads another payslip or quits the app. The
+	     tab bar has since gone and the checker opens from the home screen; the
+	     lifetime did not change with it. Nothing about that reaches storage,
+	     which is the only thing this file is about. The sentence that has to
+	     stay true is "never written to disk", and it is.
 
 	     A contribution pool was built and tested and is NOT in this build. It
 	     lives on the pool-backend branch. If it ever ships, this array stops
