@@ -83,5 +83,8 @@ docs/fixtures/corpus/photos.json
 # .claude/ is the permission config that goes with it. Both stay on disk so the
 # tooling keeps working, and neither belongs in a public repository: one is a
 # candid list of what is still wrong with the app, the other is not app source.
+# AGENTS.md is a copy of the same manual for other agents, with the same
+# reasons to stay out, and was one `git add -A` from being published.
 CLAUDE.md
+AGENTS.md
 .claude/

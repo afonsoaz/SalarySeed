@@ -13,14 +13,14 @@ the phone, because the app has no networking code at all.
 **[Watch the demo](https://afonsoaz.github.io/SalarySeed)**
 
 <p align="center">
-  <img src="docs/img/home.png" width="24%" alt="Home: one net figure, and where the money goes">
+  <img src="docs/img/home.png" width="24%" alt="Home: one net figure, and a row for each feature">
   <img src="docs/img/payslip.png" width="24%" alt="Payslip result, including the checks that declined to run">
-  <img src="docs/img/compare.png" width="24%" alt="Compare: national percentile with its caveat">
+  <img src="docs/img/compare.png" width="24%" alt="Compare in Portugal: the national percentile and people like you">
   <img src="docs/img/map.png" width="24%" alt="A district choropleth of what your sector pays">
 </p>
 
-SwiftUI, iOS 17, no dependencies and no backend. 82 Swift files, and the tax and payslip
-engines are a quarter of them. Built for the App Store, not yet submitted.
+SwiftUI, iOS 17, no dependencies and no backend. 100 Swift files, and the tax and payslip
+engines are about a fifth of them. Built for the App Store, not yet submitted.
 
 If you only have a minute, the three parts worth reading about are:
 
@@ -204,6 +204,7 @@ python3 tools/verify_payslip_reader.py    # must pass before any release
 python3 tools/dump_copy.py --verify       # must pass before any release
 python3 tools/audit_layout.py             # should print "0 places to look at"
 tools/offer_probe/build.sh && .build/offer_probe   # must pass before any release
+tools/waterfall_probe/build.sh && .build/waterfall_probe   # must pass before any release
 tools/payslip_probe/build.sh              # then: .build/payslip_probe <file.pdf|.png>
 ```
 
@@ -356,9 +357,9 @@ Two things were built and are deliberately not switched on. The first is the sup
 payment, and it is still in this repo, still compiled on every build, behind one constant
 in [`AppConfig.swift`](SalarySeed/Models/AppConfig.swift). `.free` is what ships: the
 entitlement is forced true, StoreKit is never called, and the sell card, the two blurred
-gates over Grow and the European map and the padlock on the accent swatches all disappear.
-`.supporter` brings the whole thing back, because all five gates read one boolean and that
-boolean reads the constant. It is a constant rather than a branch because this repo already
+gates over Grow and the European map, the padlock on the accent swatches and the locks on
+Home's two paid rows all disappear. `.supporter` brings the whole thing back, because every
+gate reads one boolean and that boolean reads the constant. It is a constant rather than a branch because this repo already
 tried a branch, and the second unshipped thing is what happened to it.
 
 That second thing is a contribution pool, and it was deliberately not shipped. It worked:
