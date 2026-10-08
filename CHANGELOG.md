@@ -4,6 +4,103 @@ What changed in each version and why, including the bugs that shipped and what t
 Versions before 1.0 were never released; they are here because the mistakes in them are
 the reason later versions are shaped the way they are.
 
+**v1.6**: Home becomes the only way around the app.
+
+Features were spread over five tabs and the bottom of Home, found by exploring, and every
+feature still to come would have made that worse. Home now holds the salary, an "Update my
+salary" bubble on it, the ×12 / ×14 / Year lens, and one row per thing you can do there, in
+Afonso's words and order: Understand taxes, Compare in Portugal, Compare in Europe, Check
+payslip, Growth simulator, Check job offer, Other tools. Each row pushes its screen onto
+Home's one navigation stack, with Apple's back chevron and swipe-back, and Profile is behind
+the person at the top right and nowhere else. The rows are a glyph and a name and carry no
+figures, because a row that names no number cannot disagree with the screen it opens. The
+intro screen v1.4 added retired with the tab bar: Home says what every feature is every time,
+so a screen saying it once first would be an echo.
+
+**Four screens were rebuilt as one story each, agreed with Afonso screen by screen.** Tax runs
+from what the company pays to what reaches you as one waterfall of whole euros that add up,
+with every rate on gross, then the settlement, then what it assumes: married or not,
+dependants and IRS Jovem moved there from Profile, next to the figures they change. Compare in
+Portugal is where you stand, then people like you, then your sector by district, under one
+title, with the explorer's handle on the same salary axis as the bars and every national
+percentile stopping at 99. Profile is your answers and the app, in the Settings shape, with
+the sprout as its picture. Grow opens on one centred figure, what you would earn at the end
+of the horizon, with the years as a quiet switch and the workings folded one tap away.
+
+**Found in the release review, and fixed.** The whole branch was reviewed area by area, each
+finding argued against by a second reviewer before anything changed, and the screens were
+driven on the simulator in both languages and at the largest text sizes. What it found, most
+serious first:
+
+- **The privacy manifest declared nothing, and had since v1.0.** Its UserDefaults entry sat
+  loose in the array instead of inside a dictionary. That is valid XML and a valid plist, so
+  every check passed, and Apple would have read it as no declaration at all: the ITMS-91053
+  rejection the file exists to prevent. The app was never submitted, so it never cost
+  anything. The build now reads the reason back by its path and fails if it cannot.
+- **A reader on the minimum wage was told they owed IRS.** At 920 € ×14 the settlement card
+  said, in red, that about 37 € was left to pay, and the law says nothing is. The engine now
+  applies the mínimo de existência (art. 70.º CIRS, the 2026 formula and values), and
+  `tools/waterfall_probe` checks it against the article's worked examples and that every
+  region's minimum wage settles to nothing; without it, the probe fails by 36,61 €.
+- **A 19-digit salary crashed the app on every launch afterwards**, in the editor and in "Try
+  another salary", because the stored number could no longer be turned back into text. Typed
+  amounts now have a ceiling, and nothing turns a stored amount into text with a conversion
+  that can trap.
+- **On a British or American phone, 1850.50 € read as 185 050 €** in "Try another salary" and
+  the bonus sheet, which dropped the decimal point that phone's keypad types. One reader for
+  typed amounts now follows the keypad's own separator.
+- **The payslip's "What you have now" showed a net beside a gross** for a reader who typed a
+  net, which looks like a raise that is not there, and showed the store's 1500 € default in
+  onboarding, where there is no salary yet. It is the gross the app works from now, and it is
+  left out in onboarding. A verdict Home keeps is checked again against the answers as they
+  are, so changing the household on Tax no longer leaves a verdict judged on the old one; a
+  slow photo no longer replaces a file, scan or typed salary chosen after it; and a payslip
+  figure dropped into an onboarding field left on "Yearly" is no longer stored at a
+  fourteenth of itself.
+- **The offer's "where the difference goes" missed adding up by a euro** for about a quarter
+  of salaries, the shape Tax was fixed for and the offer was not. It uses the same whole-euro
+  rounding now, and `tools/offer_probe` fails the old rounding 34 944 times.
+- **Tax told a reader with 100% IRS Jovem, or enough dependants, that their salary was below
+  the level where IRS starts.** It now names the reason.
+- **Grow**: the chart jumped under the finger at year 0, the legend coloured "Changing job"
+  by a different rule from the line, the totals card stayed in nominal euros under "Today's
+  money", and a reader with 20+ years at their employer was told their sector's pay does not
+  climb, about "it & information services". All fixed.
+- **Copy**: "tabelas de IRS da Açores", "Grow uses the same rule" for a name no longer on
+  screen, "GEP-MTSSS e INE" in English, "O percentil 62º", "Over 1 years", "1 hours", "0
+  years" for under a year, "this sector" with no sector picked, "comparada com Porto",
+  "Países Baixos paga", a net line the chart has not drawn since v0.10, and a footer saying a
+  payslip was checked against "the profile you gave us" when no check had run.
+- **At the largest text sizes**: Home's row names broke mid-word, so past an accessibility
+  size the glyph goes above the name; Compare in Europe's card and list, never checked at that
+  size before, broke "Portugal" and cut every country name, and now reflow like the district
+  list; the profile and sector pickers cut their own options with an ellipsis and are one
+  column there; the bonus sheet's buttons sat below the sheet; and several labels wrapped
+  with a centred second line (rule 27).
+- **Accessibility otherwise**: with Reduce Motion on, Home's figure no longer rolls and its
+  leaf no longer springs on every lens tap; Tax's new rows and both "Type it myself" buttons
+  are 44 point targets; the dependants stepper is one adjustable element instead of "Remove,
+  button" and "Add, button"; and the onboarding progress dots spoke English to a Portuguese
+  reader.
+- **Documents**: the README and the demo page showed the tab bar, so every screenshot was
+  retaken from this build; `PRIVACY.md` now lists everything the app keeps, the offer's bonus
+  and the work answers included; and the release checks list the waterfall probe.
+
+Members, strings and comments the hub left behind were deleted or corrected, since a folder
+synchronised group compiles everything in it.
+
+**Not done, and each needs a decision rather than a fix.** The national chart's bars are not
+drawn from the distribution its percentage comes from, so the area left of "you" does not
+match the headline; drawing it honestly shows a step at the median. With a sector or district
+lever and no job change, Grow compares its figure with today's salary, not with the start of
+the line it draws. Profile says every detail sharpens the comparison, and three of them change
+nothing yet. Onboarding's payslip cover says "Saved" when it has only filled a field, and gives
+no reason when a payslip cannot give a figure. Compare in Europe with no sector says "All
+sectors together", a view it does not have. At the very largest text size Grow's "10 years"
+still breaks mid-word. And VoiceOver has labels and has still not been listened to.
+
+Like v1.3 to v1.5, v1.6 ships free, so the grandfathering threshold moves to it.
+
 **v1.5**: A job offer goes next to the job you have.
 
 People in Portugal meet their pay as a number twice, on the payslip and in the offer, and the

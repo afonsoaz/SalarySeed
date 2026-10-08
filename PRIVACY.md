@@ -1,6 +1,6 @@
 # SalarySeed privacy policy
 
-*Last updated: 4 October 2026. Applies to SalarySeed v1.5 for iOS.*
+*Last updated: 7 October 2026. Applies to SalarySeed v1.6 for iOS.*
 
 ## The whole of it
 
@@ -16,12 +16,14 @@ could send your answers anywhere.
 
 Everything you enter lives in the app's own storage on your device: your salary
 and how you are paid, your allowances, your município, your sector, job, time at
-your employer, age band, education and gender if you chose to give them, your
-household situation for the tax calculation, your name if you entered one, and
-your language and colour preferences.
+your employer, the kind of employer, whether you work full or part time and your
+weekly hours, any yearly bonus or commission, age band, education and gender if
+you chose to give them, your household situation for the tax calculation, your
+name if you entered one, and your language and colour preferences.
 
 If you compare a job offer, the last one you entered is kept there too: its pay,
-how it is paid, its allowance, and its sector and município. It stays until you
+how it is paid, its allowance, any yearly bonus you entered for it, and its sector
+and município. It stays until you
 remove it or enter another, and like everything else here it never leaves your
 phone. Nothing else about the offer is kept, and the comparison itself is worked
 out again each time rather than saved.
