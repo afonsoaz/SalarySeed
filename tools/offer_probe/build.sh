@@ -22,6 +22,7 @@ swiftc -O \
     tools/offer_probe/StoreShim.swift \
     SalarySeed/Engine/OfferComparison.swift \
     SalarySeed/Engine/TaxEngine.swift \
+    SalarySeed/Engine/WaterfallRows.swift \
     SalarySeed/Engine/GrowthEngine.swift \
     SalarySeed/Engine/PercentileEngine.swift \
     SalarySeed/Engine/CohortEngine.swift \

@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// v1.5: offerSeed, pushed onto Home's navigation stack from "What if…".
+/// v1.5: offerSeed, pushed onto Home's navigation stack from "What if…". Since
+/// the hub it is Home's "Check job offer" row (`HubRoute.offer`).
 ///
 /// One screen in two states: the form, when there is no offer yet or the
 /// reader is changing it, and the comparison otherwise. A push and not a sheet,

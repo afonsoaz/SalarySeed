@@ -52,7 +52,7 @@ struct TaxAssumptions: View {
             if store.taxRegionAssumed {
                 footnote(s.taxRegionAssumedNote)
             } else if store.taxRegion != .continente {
-                footnote(s.taxRegionNote(store.taxRegion.label(pt: s.pt)))
+                footnote(s.taxRegionNote(store.taxRegion))
             }
         }
         .sheet(isPresented: $showAssessor) { IRSJovemAssessorView() }
@@ -96,7 +96,9 @@ struct TaxAssumptions: View {
                     Image(systemName: "minus.circle")
                         .appFont(20)
                         .foregroundStyle(store.dependents > 0 ? Theme.accent : Theme.textFaint)
+                        .modifier(TapTarget(inset: 10))
                 }
+                .disabled(store.dependents == 0)
                 Text("\(store.dependents)")
                     .appFont(16, weight: .medium)
                     .foregroundStyle(Theme.textPrimary)
@@ -107,10 +109,25 @@ struct TaxAssumptions: View {
                     Image(systemName: "plus.circle")
                         .appFont(20)
                         .foregroundStyle(Theme.accent)
+                        .modifier(TapTarget(inset: 10))
                 }
+                .disabled(store.dependents >= 12)
             }
         }
         .frame(minHeight: Theme.fiscalRowHeight)
+        // One element to VoiceOver, "Dependants, 2, adjustable", swiped up or
+        // down. It was "Remove, button", "2", "Add, button": the symbols' own
+        // names, with nothing saying what they changed.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(s.dependentsLabel)
+        .accessibilityValue("\(store.dependents)")
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment: if store.dependents < 12 { store.dependents += 1 }
+            case .decrement: if store.dependents > 0 { store.dependents -= 1 }
+            @unknown default: break
+            }
+        }
     }
 
     // MARK: IRS Jovem
@@ -126,10 +143,12 @@ struct TaxAssumptions: View {
                 Text(s.irsJovemTitle)
                     .appFont(14)
                     .foregroundStyle(Theme.textPrimary)
+                    .multilineTextAlignment(.leading)
                 Spacer()
                 Text(jovemValue)
                     .appFont(14, weight: store.irsJovemExemption > 0 ? .medium : .regular)
                     .foregroundStyle(store.irsJovemExemption > 0 ? Theme.accent : Theme.textSecondary)
+                    .multilineTextAlignment(.trailing)
                 Image(systemName: "chevron.down")
                     .appFont(11, weight: .semibold)
                     .foregroundStyle(Theme.textFaint)
@@ -137,13 +156,15 @@ struct TaxAssumptions: View {
                     .accessibilityHidden(true)
             }
             .frame(minHeight: Theme.fiscalRowHeight)
-            .contentShape(Rectangle())
+            .modifier(TapTarget())
         }
         .buttonStyle(.plain)
-        // No `.accessibilityValue` and no `.isSelected`, both removed in review:
-        // the value is already a Text in the label, so VoiceOver read it twice
-        // ("IRS Jovem, Off, Off"), and "selected" claimed a choice had been made
-        // when the row had only been opened.
+        // The share is already a Text in the label, so the value is the open
+        // state, like the other disclosures: "IRS Jovem, Off, Collapsed". An
+        // earlier value repeated the share ("IRS Jovem, Off, Off"), and
+        // `.isSelected` claimed a choice had been made when the row had only
+        // been opened; both went in review.
+        .accessibilityValue(showJovem ? s.voiceExpanded : s.voiceCollapsed)
     }
 
     private var jovemValue: String {
@@ -250,29 +271,50 @@ struct TaxAssumptions: View {
     /// sheet, the only thing that can change it.
     private var tablesRow: some View {
         Button { showConcelho = true } label: {
-            HStack(alignment: .center) {
-                Text(s.taxTablesLabel)
-                    .appFont(14)
-                    .foregroundStyle(Theme.textPrimary)
-                Spacer(minLength: 8)
-                VStack(alignment: .trailing, spacing: 1) {
-                    Text(store.taxRegion.label(pt: s.pt))
-                        .appFont(14, weight: .medium)
-                        .foregroundStyle(Theme.textPrimary)
-                    Text(store.concelho?.name ?? s.taxTablesAssumed)
-                        .appFont(11)
-                        .foregroundStyle(store.taxRegionAssumed ? Theme.accent : Theme.textFaint)
+            Group {
+                // Past an accessibility size the label gets a line and the
+                // region and município go under it: on one line beside a
+                // chevron, "Tabelas de IRS" and "Continente" broke mid-word.
+                if typeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(s.taxTablesLabel)
+                            .appFont(14)
+                            .foregroundStyle(Theme.textPrimary)
+                        tablesValue
+                    }
+                    .multilineTextAlignment(.leading)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                } else {
+                    HStack(alignment: .center) {
+                        Text(s.taxTablesLabel)
+                            .appFont(14)
+                            .foregroundStyle(Theme.textPrimary)
+                            .multilineTextAlignment(.leading)
+                        Spacer(minLength: 8)
+                        tablesValue
+                            .multilineTextAlignment(.trailing)
+                        Image(systemName: "chevron.right")
+                            .appFont(11)
+                            .foregroundStyle(Theme.textFaint)
+                            .accessibilityHidden(true)
+                    }
                 }
-                .multilineTextAlignment(.trailing)
-                Image(systemName: "chevron.right")
-                    .appFont(11)
-                    .foregroundStyle(Theme.textFaint)
-                    .accessibilityHidden(true)
             }
             .frame(minHeight: Theme.fiscalRowHeight)
-            .contentShape(Rectangle())
+            .modifier(TapTarget())
         }
         .buttonStyle(.plain)
+    }
+
+    private var tablesValue: some View {
+        VStack(alignment: typeSize.isAccessibilitySize ? .leading : .trailing, spacing: 1) {
+            Text(store.taxRegion.label(pt: s.pt))
+                .appFont(14, weight: .medium)
+                .foregroundStyle(Theme.textPrimary)
+            Text(store.concelho?.name ?? s.taxTablesAssumed)
+                .appFont(11)
+                .foregroundStyle(store.taxRegionAssumed ? Theme.accent : Theme.textFaint)
+        }
     }
 
     private func footnote(_ text: String) -> some View {
@@ -281,5 +323,21 @@ struct TaxAssumptions: View {
             .foregroundStyle(Theme.textFaint)
             .lineSpacing(2)
             .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+/// A hit area of at least 44 points for a control drawn smaller, without
+/// moving anything: the padding is taken back outside the content shape, so
+/// the row keeps the 30 point rhythm of the rows around it while a finger
+/// landing a little above or below it still counts.
+private struct TapTarget: ViewModifier {
+    /// 7 takes a 30 point row to 44; the stepper's 24 point glyphs take 10.
+    var inset: CGFloat = 7
+
+    func body(content: Content) -> some View {
+        content
+            .padding(inset)
+            .contentShape(Rectangle())
+            .padding(-inset)
     }
 }

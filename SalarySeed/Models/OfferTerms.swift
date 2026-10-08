@@ -11,8 +11,9 @@ import Foundation
 /// kind of thing. It IS a fact, one the reader holds (a company offered this),
 /// and it can take days to weigh. So the last one is kept until it is removed
 /// or replaced. What stays true from the old rule is the part that mattered:
-/// it is never mixed into the reader's own answers. Home, Compare, Map and Grow
-/// go on describing the job they have, and only the offer screen reads this.
+/// it is never mixed into the reader's own answers. Home, Tax, Compare in
+/// Portugal and Europe, and Grow go on describing the job they have, and only
+/// the offer screen reads this.
 ///
 /// Its place and sector are stored as the concrete município and sector, not as
 /// "same as mine". They are facts about the job, and an offer in Porto does not

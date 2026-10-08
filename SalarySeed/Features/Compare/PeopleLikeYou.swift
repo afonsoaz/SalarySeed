@@ -68,6 +68,12 @@ struct PeopleLikeYou: View {
             )
         }
         .sheet(item: $activeSignalSheet) { SignalSheetView(sheet: $0) }
+        // The sector can be removed and given again without touching its line:
+        // the map's own sector row further down is a second way to answer. No
+        // `.task` twin (rule 11), because `open` starts nil.
+        .onChange(of: store.sector == nil) { _, gone in
+            if gone { close("sector") }
+        }
     }
 
     // MARK: The lines
@@ -138,7 +144,8 @@ struct PeopleLikeYou: View {
 
     /// A line that has lost its figure (its answer removed, or moved to an
     /// island with no regional cell) forgets that it was open, so that it does
-    /// not come back already open when it gets a figure again.
+    /// not come back already open when it gets a figure again. The sector also
+    /// forgets when its answer goes by any route (see the `onChange` in `body`).
     private func close(_ id: String) {
         if open == id { open = nil }
     }

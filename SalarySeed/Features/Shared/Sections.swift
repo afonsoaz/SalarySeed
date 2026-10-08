@@ -67,17 +67,28 @@ struct SectionHint: View {
 struct DetailCard: View {
     let label: String
     let value: String
+    /// For a value that is words rather than a figure. A figure stays on one
+    /// line; a phrase wraps, because shrinking it to fit cut "Sick leave ·
+    /// unemployment · parental pay" off at an accessibility size.
+    var wraps: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(label)
                 .appFont(11)
                 .foregroundStyle(Theme.textSecondary)
-            Text(value)
-                .appFont(16, weight: .medium)
-                .foregroundStyle(Theme.textPrimary)
-                .minimumScaleFactor(0.7)
-                .lineLimit(1)
+            if wraps {
+                Text(value)
+                    .appFont(16, weight: .medium)
+                    .foregroundStyle(Theme.textPrimary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text(value)
+                    .appFont(16, weight: .medium)
+                    .foregroundStyle(Theme.textPrimary)
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(1)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)

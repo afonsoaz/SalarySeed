@@ -97,10 +97,14 @@ struct OfferResultView: View {
     // MARK: a. What reaches you
 
     private func reaches(_ r: OfferComparison.Result) -> some View {
-        let now = r.now.pocket(in: period)
-        let offer = r.offer.pocket(in: period)
+        // Whole euros first, so the difference above is the difference of the
+        // two figures under it. Each column is rounded the way Home rounds it,
+        // so "now" is still Home's figure; rounded one by one, the hero and its
+        // columns could disagree by a euro.
+        let now = WaterfallRows.whole(r.now.pocket(in: period))
+        let offer = WaterfallRows.whole(r.offer.pocket(in: period))
         let delta = offer - now
-        let same = abs(delta) < 0.5
+        let same = delta == 0
         let grossDelta = (r.offer.grossMonthly * period.factor(months: r.offer.months))
             - (r.now.grossMonthly * period.factor(months: r.now.months))
         return VStack(alignment: .leading, spacing: 14) {
@@ -177,8 +181,8 @@ struct OfferResultView: View {
     // MARK: b. Where the difference goes
 
     private func tax(_ r: OfferComparison.Result) -> some View {
-        let now = r.nowYear
-        let offer = r.offerYear
+        let now = r.nowYear.shown
+        let offer = r.offerYear.shown
         return VStack(alignment: .leading, spacing: 12) {
             SectionHeader(s.offerTaxTitle) { SectionHint(s.offerTaxHint) }
 

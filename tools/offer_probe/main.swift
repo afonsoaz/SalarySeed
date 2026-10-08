@@ -228,6 +228,17 @@ for sector in Sector.allCases {
                             }
                         }
 
+                        // The year as the screen prints it adds up, on both
+                        // sides, and every figure is a rounding of its own.
+                        for (side, y) in [("now", r.nowYear), ("offer", r.offerYear)] {
+                            let w = y.shown
+                            check(w.gross - w.socialSecurity - w.irs == w.afterTax,
+                                  "\(tag): \(side) shown year does not add up")
+                            check(abs(w.socialSecurity - y.socialSecurity) < 1 && abs(w.irs - y.irs) < 1
+                                  && abs(w.afterTax - y.afterTax) <= 0.5 && abs(w.gross - y.gross) <= 0.5,
+                                  "\(tag): \(side) shown year is not a rounding of the exact one")
+                        }
+
                         // 2. Monotonic in the offer.
                         if let p = previous, let pst = p.staying {
                             check(r.offer.netMonthly >= p.offer.netMonthly - 0.005, "\(tag): net fell as the offer rose")

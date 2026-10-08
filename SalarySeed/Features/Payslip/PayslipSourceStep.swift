@@ -86,7 +86,7 @@ struct PayslipSourceStep: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.bottom, 4)
 
-                Button { importing = true } label: {
+                Button { dropPendingPhoto(); importing = true } label: {
                     PayslipSourceRow(icon: "doc.text.fill", title: s.payslipPickFile,
                                      subtitle: nil, accented: true)
                 }
@@ -104,7 +104,7 @@ struct PayslipSourceStep: View {
                                      subtitle: nil)
                 }
                 if let onTypeInstead {
-                    Button(action: onTypeInstead) {
+                    Button { dropPendingPhoto(); onTypeInstead() } label: {
                         PayslipSourceRow(icon: "keyboard", title: s.onbTypeItMyself,
                                          subtitle: s.onbSourceTypeSub)
                     }
@@ -197,14 +197,22 @@ struct PayslipSourceStep: View {
                 onImage(data)
             }
         }
-        .onDisappear {
-            photoLoad?.cancel()
-            photoLoad = nil
-        }
+        .onDisappear { dropPendingPhoto() }
+    }
+
+    /// A newer choice always replaces a photo still loading. A slow photo (an
+    /// iCloud original can take seconds) used to arrive after the reader had
+    /// given up on it and picked a file, the camera or typing, and replace what
+    /// they chose: the checker was pushed under the file picker, the file was
+    /// then dropped, and the verdict was for the abandoned photo.
+    private func dropPendingPhoto() {
+        photoLoad?.cancel()
+        photoLoad = nil
     }
 
     /// Ask, or say why we cannot. Three states, three outcomes. Rule 21.
     private func startScan() {
+        dropPendingPhoto()
         cameraFailed = false
         switch CameraAccess.current {
         case .ready:

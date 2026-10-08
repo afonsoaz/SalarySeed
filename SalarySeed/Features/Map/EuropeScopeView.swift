@@ -15,6 +15,7 @@ import SwiftUI
 /// letting the user assume the comparison is about their job.
 struct EuropeScopeView: View {
     @EnvironmentObject private var store: SalaryStore
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     let sector: Sector?
     let yourGross: Double
@@ -132,27 +133,20 @@ struct EuropeScopeView: View {
     private var focusCard: some View {
         if let focus {
             VStack(alignment: .leading, spacing: 7) {
-                HStack(spacing: 8) {
-                    Text(focus.country.label(pt: s.pt))
-                        .appFont(17, weight: .medium)
-                        .foregroundStyle(Theme.textPrimary)
-                        // v1.0.4: was lineLimit(1), which turned Portugal into
-                        // "Portu..." at an accessibility text size, on the one card
-                        // whose whole job is to name the country you tapped.
-                        .fixedSize(horizontal: false, vertical: true)
-                    if focus.isPortugal {
-                        Text(s.euroReferenceTag)
-                            .appFont(9, weight: .medium)
-                            .foregroundStyle(Theme.ink)
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 2)
-                            .background(Theme.accent, in: Capsule())
-                    }
-                    Spacer(minLength: 6)
-                    if let pct = focus.pct, let bucket = focus.bucket {
-                        Text(EuroComparison.formatted(pct))
-                            .appFont(19, weight: .semibold)
-                            .foregroundStyle(Theme.mapColor(bucket: bucket))
+                // Reflow, do not shrink: past an accessibility size the name
+                // and the percentage each get a row. On one row they broke
+                // "Portugal" into "Portuga / l" and "Luxembourg" into
+                // "Luxembour / g", found by looking at it at
+                // accessibility-extra-large. The district card had the same
+                // shape and the same fix.
+                if typeSize.isAccessibilitySize {
+                    HStack(spacing: 8) { focusName(focus) }
+                    focusFigure(focus)
+                } else {
+                    HStack(spacing: 8) {
+                        focusName(focus)
+                        Spacer(minLength: 6)
+                        focusFigure(focus)
                     }
                 }
                 focusBody(focus)
@@ -160,6 +154,34 @@ struct EuropeScopeView: View {
             .padding(14)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+        }
+    }
+
+    @ViewBuilder
+    private func focusName(_ focus: EuroReading) -> some View {
+        Text(focus.country.label(pt: s.pt))
+            .appFont(17, weight: .medium)
+            .foregroundStyle(Theme.textPrimary)
+            // v1.0.4: was lineLimit(1), which turned Portugal into
+            // "Portu..." at an accessibility text size, on the one card
+            // whose whole job is to name the country you tapped.
+            .fixedSize(horizontal: false, vertical: true)
+        if focus.isPortugal {
+            Text(s.euroReferenceTag)
+                .appFont(9, weight: .medium)
+                .foregroundStyle(Theme.ink)
+                .padding(.horizontal, 7)
+                .padding(.vertical, 2)
+                .background(Theme.accent, in: Capsule())
+        }
+    }
+
+    @ViewBuilder
+    private func focusFigure(_ focus: EuroReading) -> some View {
+        if let pct = focus.pct, let bucket = focus.bucket {
+            Text(EuroComparison.formatted(pct))
+                .appFont(19, weight: .semibold)
+                .foregroundStyle(Theme.mapColor(bucket: bucket))
         }
     }
 
@@ -212,8 +234,7 @@ struct EuropeScopeView: View {
                     euroFigure(s.euroPortugalShort, eur(pt), Theme.textSecondary)
                 }
                 if let pct = focus.pct {
-                    Text(s.euroDirectChange(focus.country.label(pt: s.pt),
-                                            String(format: "%.0f%%", abs(pct)),
+                    Text(s.euroDirectChange(String(format: "%.0f%%", abs(pct)),
                                             eur(abs(mine - pt)),
                                             higher: pct >= 0))
                         .appFont(12)
@@ -226,10 +247,13 @@ struct EuropeScopeView: View {
 
     private func euroFigure(_ label: String, _ value: String, _ tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 2) {
+            // Half the card's width: past an accessibility size a long name
+            // such as "Netherlands" wraps rather than losing its end.
             Text(label)
                 .appFont(10)
                 .foregroundStyle(Theme.textSecondary)
-                .lineLimit(1)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 1)
+                .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
             Text(value)
                 .appFont(16, weight: .medium)
                 .foregroundStyle(tint)
@@ -281,34 +305,69 @@ struct EuropeScopeView: View {
                 selected = isSelected ? nil : reading.country
             }
         } label: {
-            HStack(spacing: 10) {
-                RoundedRectangle(cornerRadius: 3)
-                    .fill(reading.bucket.map { Theme.mapColor(bucket: $0) } ?? Theme.textFaint.opacity(0.4))
-                    .frame(width: 4, height: 22)
-                Text(reading.country.label(pt: s.pt))
-                    .appFont(13.5, weight: reading.isPortugal ? .semibold : .regular)
-                    .foregroundStyle(reading.hasData ? Theme.textPrimary : Theme.textFaint)
-                    .lineLimit(1)
-                if reading.isPortugal {
-                    Image(systemName: "location.fill")
-                        .appFont(8)
-                        .foregroundStyle(Theme.accent)
+            // Past an accessibility size the name gets a row of its own and
+            // the figures go under it: on one row "Denmark" was cut to
+            // "Denm…" and "Netherlands" to "Nether…", found by looking. The
+            // district list had the same shape and the same fix.
+            if typeSize.isAccessibilitySize {
+                HStack(alignment: .top, spacing: 10) {
+                    swatch(reading)
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 6) { rowName(reading) }
+                        HStack(alignment: .firstTextBaseline, spacing: 12) { rowFigures(reading) }
+                    }
+                    .multilineTextAlignment(.leading)
+                    Spacer(minLength: 0)
                 }
-                Spacer(minLength: 6)
-                Text(reading.mean.map { eur($0) } ?? s.euroDash)
-                    .appFont(12)
-                    .foregroundStyle(Theme.textSecondary)
-                    .frame(minWidth: 62, alignment: .trailing)
-                Text(reading.pct.map { EuroComparison.formatted($0) } ?? s.euroDash)
-                    .appFont(13, weight: .medium)
-                    .foregroundStyle(reading.bucket.map { Theme.mapColor(bucket: $0) } ?? Theme.textFaint)
-                    .frame(minWidth: 46, alignment: .trailing)
+                .padding(.vertical, 7)
+                .padding(.horizontal, 10)
+                .background(isSelected ? Color.white.opacity(0.06) : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 10))
+            } else {
+                HStack(spacing: 10) {
+                    swatch(reading)
+                    rowName(reading)
+                    Spacer(minLength: 6)
+                    rowFigures(reading)
+                }
+                .padding(.vertical, 7)
+                .padding(.horizontal, 10)
+                .background(isSelected ? Color.white.opacity(0.06) : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 10))
             }
-            .padding(.vertical, 7)
-            .padding(.horizontal, 10)
-            .background(isSelected ? Color.white.opacity(0.06) : Color.clear,
-                        in: RoundedRectangle(cornerRadius: 10))
         }
+    }
+
+    private func swatch(_ reading: EuroReading) -> some View {
+        RoundedRectangle(cornerRadius: 3)
+            .fill(reading.bucket.map { Theme.mapColor(bucket: $0) } ?? Theme.textFaint.opacity(0.4))
+            .frame(width: 4, height: 22)
+    }
+
+    @ViewBuilder
+    private func rowName(_ reading: EuroReading) -> some View {
+        Text(reading.country.label(pt: s.pt))
+            .appFont(13.5, weight: reading.isPortugal ? .semibold : .regular)
+            .foregroundStyle(reading.hasData ? Theme.textPrimary : Theme.textFaint)
+            .lineLimit(typeSize.isAccessibilitySize ? nil : 1)
+            .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
+        if reading.isPortugal {
+            Image(systemName: "location.fill")
+                .appFont(8)
+                .foregroundStyle(Theme.accent)
+        }
+    }
+
+    @ViewBuilder
+    private func rowFigures(_ reading: EuroReading) -> some View {
+        Text(reading.mean.map { eur($0) } ?? s.euroDash)
+            .appFont(12)
+            .foregroundStyle(Theme.textSecondary)
+            .frame(minWidth: typeSize.isAccessibilitySize ? nil : 62, alignment: .trailing)
+        Text(reading.pct.map { EuroComparison.formatted($0) } ?? s.euroDash)
+            .appFont(13, weight: .medium)
+            .foregroundStyle(reading.bucket.map { Theme.mapColor(bucket: $0) } ?? Theme.textFaint)
+            .frame(minWidth: typeSize.isAccessibilitySize ? nil : 46, alignment: .trailing)
     }
 
     // MARK: Prompts and footnotes

@@ -216,11 +216,7 @@ struct GrowView: View {
         let today = ctx.grossToday
         let figure = (result.headline.point(year: year)?.gross ?? today) * f
         let staying = (result.stay.point(year: year)?.gross ?? today) * f
-        // At year 0 a sector or district lever already moves the path, so the
-        // first point is not the salary Home shows; the label says so.
-        let label = year == 0 && abs(figure - today) > 0.5
-            ? s.growTodayChanged
-            : heroLabel(year: year, changed: changed)
+        let label = figureLabel(year: year, changed: changed, figure: figure, today: today)
         return VStack(spacing: 0) {
             Text(label)
                 .appFont(15)
@@ -236,20 +232,24 @@ struct GrowView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)
                 .padding(.top, 2)
-            if year > 0 {
-                Group {
-                    if result.move != nil {
-                        Text(s.growVsStaying(signedEur(figure - staying)))
-                            .foregroundStyle(figure >= staying ? Theme.accent : Theme.danger)
-                    } else {
-                        Text(vsToday(from: today, to: figure))
-                            .foregroundStyle(Theme.textSecondary)
-                    }
+            // Laid out at year 0 too, invisible, so holding the chart's first
+            // year does not take a line out from above the chart and move it
+            // under the finger. Compare reserves its headline's height for the
+            // same reason.
+            Group {
+                if result.move != nil {
+                    Text(s.growVsStaying(signedEur(figure - staying)))
+                        .foregroundStyle(figure >= staying ? Theme.accent : Theme.danger)
+                } else {
+                    Text(vsToday(from: today, to: figure))
+                        .foregroundStyle(Theme.textSecondary)
                 }
-                .appFont(13)
-                .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 4)
             }
+            .appFont(13)
+            .fixedSize(horizontal: false, vertical: true)
+            .padding(.top, 4)
+            .opacity(year > 0 ? 1 : 0)
+            .accessibilityHidden(year == 0)
             Text(s.growProjectionUnit(store.growScenario.inTodaysMoney))
                 .appFont(11)
                 .foregroundStyle(Theme.textFaint)
@@ -264,6 +264,15 @@ struct GrowView: View {
     private func heroLabel(year: Int, changed: Bool) -> String {
         if year == 0 { return s.growToday }
         return changed ? s.growInYearsChanged(year) : s.growInYearsStaying(year)
+    }
+
+    /// The words over the figure, built once for the screen and for VoiceOver
+    /// (rule 33). At year 0 a sector or district lever already moves the path,
+    /// so the first point is not the salary Home shows, and the label says so.
+    private func figureLabel(year: Int, changed: Bool, figure: Double, today: Double) -> String {
+        year == 0 && abs(figure - today) > 0.5
+            ? s.growTodayChanged
+            : heroLabel(year: year, changed: changed)
     }
 
     private func vsToday(from: Double, to: Double) -> String {
@@ -316,7 +325,9 @@ struct GrowView: View {
         GrowthLegend(
             s: s,
             showMove: result.move != nil,
-            moveAhead: (result.cumulativeDelta ?? 0) >= 0
+            // The same rule GrowthChart colours the line by: where the two
+            // paths end. The cumulative card judges the total, and says so.
+            moveAhead: (result.move?.last?.gross ?? 0) >= (result.stay.last?.gross ?? 0)
         )
     }
 
@@ -337,7 +348,8 @@ struct GrowView: View {
     private func spokenYear(ctx: GrowthEngine.Context, result: GrowthEngine.Result,
                             year: Int, changed: Bool) -> String {
         let gross = (result.headline.point(year: year)?.gross ?? ctx.grossToday) * moneyScale(year)
-        return "\(heroLabel(year: year, changed: changed)): \(eur(gross))"
+        let label = figureLabel(year: year, changed: changed, figure: gross, today: ctx.grossToday)
+        return "\(label): \(eur(gross))"
     }
 
     private var axisRow: some View {
@@ -495,6 +507,15 @@ struct GrowView: View {
     /// its own sentence rather than a minus sign left to speak for itself.
     private func breakEvenCard(ctx: GrowthEngine.Context, result: GrowthEngine.Result) -> some View {
         let positive = result.stayAnnual > 0.0005
+        // Already in the survey's last band (20+ years): the rate is zero
+        // because the table stops there, not because the sector's pay is flat,
+        // so it gets its own sentence and no alarm colour.
+        let topBand = ctx.startTenure >= (GrowthEngine.bandStarts.last ?? 20)
+        // The sector the path is drawn for, which is the lever's when one is set.
+        let pathSector = store.growScenario.sector ?? ctx.sector
+        let note = positive ? s.growBreakEvenNote
+            : topBand ? s.growBreakEvenTopBand(Int(GrowthEngine.bandStarts.last ?? 20))
+            : s.growBreakEvenFlat(pathSector.label(pt: s.pt))
         return VStack(alignment: .leading, spacing: 6) {
             Text(s.growBreakEvenTitle)
                 .appFont(13)
@@ -502,14 +523,14 @@ struct GrowView: View {
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(percent(result.stayAnnual, signed: true))
                     .appFont(32, weight: .medium)
-                    .foregroundStyle(positive ? Theme.accent : Theme.danger)
+                    .foregroundStyle(positive ? Theme.accent : topBand ? Theme.textPrimary : Theme.danger)
                     .contentTransition(.numericText())
                 Text(s.growPerYearOfTenure)
                     .appFont(13)
                     .foregroundStyle(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            Text(positive ? s.growBreakEvenNote : s.growBreakEvenFlat(ctx.sector.label(pt: s.pt)))
+            Text(note)
                 .appFont(13)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -521,10 +542,24 @@ struct GrowView: View {
 
     /// Monthly deltas look ignorable and are not. The cumulative figure is the
     /// one worth showing, so it gets its own card, whenever a move is modelled.
+    ///
+    /// The totals are summed here, a year at a time in the euros the rest of
+    /// the screen is drawn in. GrowthEngine's own totals are nominal, so with
+    /// "Today's money" picked this card used to be the one thing on the screen
+    /// in a different unit, and near break-even it could even disagree about
+    /// which path was ahead. In nominal euros the two are identical.
     @ViewBuilder
     private func cumulativeCard(result: GrowthEngine.Result) -> some View {
-        if let move = result.move, let delta = result.cumulativeDelta {
+        if let move = result.move {
             let months = store.breakdown.months
+            let stayTotals = runningTotals(result.stay)
+            let moveTotals = runningTotals(move)
+            let stayTotal = stayTotals.last ?? 0
+            let moveTotal = moveTotals.last ?? 0
+            let delta = moveTotal - stayTotal
+            let crossoverYear = zip(stayTotals, moveTotals).enumerated()
+                .first { $0.element.1 > $0.element.0 }
+                .map { $0.offset + 1 }
             let ahead = delta >= 0
             VStack(alignment: .leading, spacing: 8) {
                 Text(s.growCumulativeTitle(horizon))
@@ -537,9 +572,9 @@ struct GrowView: View {
                 } else {
                     HStack(alignment: .firstTextBaseline, spacing: 6) { cumulativeHeadline(delta * months, ahead: ahead) }
                 }
-                figurePair((s.growLegendStay, eur(result.stay.cumulativeGross * months)),
-                           (s.growLegendMove, eur(move.cumulativeGross * months)))
-                Text(result.crossoverYear.map { s.growCrossover($0) } ?? s.growNoCrossover(horizon))
+                figurePair((s.growLegendStay, eur(stayTotal * months)),
+                           (s.growLegendMove, eur(moveTotal * months)))
+                Text(crossoverYear.map { s.growCrossover($0) } ?? s.growNoCrossover(horizon))
                     .appFont(12)
                     .foregroundStyle(Theme.textFaint)
                     .fixedSize(horizontal: false, vertical: true)
@@ -548,6 +583,15 @@ struct GrowView: View {
             .padding(16)
             .background(Theme.card, in: RoundedRectangle(cornerRadius: 18))
             .padding(.top, 12)
+        }
+    }
+
+    /// A path's gross summed year by year from year 1, in the screen's euros.
+    private func runningTotals(_ track: GrowthEngine.Track) -> [Double] {
+        var total = 0.0
+        return track.points.filter { $0.year >= 1 }.sorted { $0.year < $1.year }.map {
+            total += $0.gross * moneyScale($0.year)
+            return total
         }
     }
 

@@ -161,7 +161,7 @@ struct GrowthLeversSheet: View {
                         Spacer(minLength: 6)
                         Text(signedEur(step.uplift))
                             .appFont(12, weight: .medium)
-                            .foregroundStyle(step.uplift >= 0 ? Theme.accent : Theme.danger)
+                            .foregroundStyle(step.uplift.rounded(.toNearestOrEven) >= 0 ? Theme.accent : Theme.danger)
                             .lineLimit(1)
                             .minimumScaleFactor(0.8)
                     }

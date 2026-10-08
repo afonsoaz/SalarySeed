@@ -109,7 +109,7 @@ struct SalaryEditorView: View {
                     .padding(.top, 4)
 
                     PrimaryButton(title: s.updateButton) {
-                        if let v = Double(amountText), v > 0 {
+                        if let v = Double(amountText), v > 0, v < typedAmountLimit {
                             store.amount = inputPeriod == .yearly ? v / schedule.months : v
                         }
                         store.ajudasMonthly = max(0, Double(ajudasText) ?? 0)
@@ -130,8 +130,8 @@ struct SalaryEditorView: View {
             schedule = store.schedule
             inputPeriod = store.inputYearly ? .yearly : .monthly
             let shown = store.inputYearly ? store.amount * store.schedule.months : store.amount
-            amountText = String(Int(shown.rounded()))
-            ajudasText = store.ajudasMonthly > 0 ? String(Int(store.ajudasMonthly)) : ""
+            amountText = fieldDigits(shown)
+            ajudasText = store.ajudasMonthly > 0 ? fieldDigits(store.ajudasMonthly.rounded(.down)) : ""
         }
     }
 
@@ -141,8 +141,8 @@ struct SalaryEditorView: View {
         guard let v = Double(amountText), v > 0 else { return }
         let months = schedule.months
         switch period {
-        case .yearly:  amountText = String(Int((v * months).rounded()))   // was monthly
-        case .monthly: amountText = String(Int((v / months).rounded()))   // was yearly
+        case .yearly:  amountText = fieldDigits(v * months)   // was monthly
+        case .monthly: amountText = fieldDigits(v / months)   // was yearly
         }
     }
 }

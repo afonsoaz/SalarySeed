@@ -47,7 +47,7 @@ struct FutureSeedView: View {
                         SectionLabel(s.tomorrowsLoss)
                         DetailCard(label: s.ssNotPaid, value: eur(lostSSContributions))
                         DetailCard(label: s.pensionLost, value: eur(monthlyPensionLoss))
-                        DetailCard(label: s.alsoReduced, value: s.alsoReducedValue)
+                        DetailCard(label: s.alsoReduced, value: s.alsoReducedValue, wraps: true)
                     }
 
                     tradeOffCard

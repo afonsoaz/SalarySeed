@@ -173,7 +173,8 @@ struct AnnualSettlementCard: View {
     private var b: SalaryBreakdown { store.breakdown }
 
     var body: some View {
-        // No real IRS due for the year (salary below the taxable threshold).
+        // No real IRS due for the year. Not always because of the salary: see
+        // `noIRSReason`.
         let noIRS = b.annualIRSSettled < 1
         // The branch is decided on the exact balance; the AMOUNTS printed are
         // `SettlementRows`, the same whole euros as the Year row above, which
@@ -204,7 +205,7 @@ struct AnnualSettlementCard: View {
                         .appFont(13, weight: .medium)
                         .foregroundStyle(Theme.accent)
                 }
-                Text(b.annualIRSWithheld >= 1 ? s.annualNoIRSRefund(eur(shown.withheld)) : s.annualNoIRSSub)
+                Text(noIRSReason(withheld: shown.withheld))
                     .appFont(11)
                     .foregroundStyle(Theme.textSecondary)
                     .lineSpacing(2)
@@ -231,6 +232,22 @@ struct AnnualSettlementCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    /// Why the year owes no IRS, which has to name the actual reason (rule 21).
+    /// IRS Jovem at 100%, or the credits for dependants, zero salaries far above
+    /// the threshold, and the card used to tell those readers their salary was
+    /// too low to be taxed.
+    private func noIRSReason(withheld: Double) -> String {
+        if b.annualIRSWithheld >= 1 { return s.annualNoIRSRefund(eur(withheld)) }
+        if b.jovemExemption > 0,
+           TaxEngine.annualSettled(grossMonthly: b.grossMonthly, months: b.months,
+                                   marital: store.maritalSituation, dependents: store.dependents,
+                                   jovemExemption: 0, region: store.taxRegion) >= 1 {
+            return s.annualNoIRSJovem
+        }
+        if (b.settlement?.dependentCreditApplied ?? 0) >= 1 { return s.annualNoIRSDependants }
+        return s.annualNoIRSSub
     }
 
     /// What the two numbers above take for granted, always spelled out.
@@ -292,9 +309,9 @@ struct AnnualSettlementCard: View {
 /// Which tables produced the figures on a screen, said under them.
 ///
 /// The tax engine hardcodes 2026, and naming the year and the region it
-/// computed with was the minimum bar for release, so every screen that shows a
-/// computed tax figure carries this line: Home under its figure, and Tax under
-/// the detail. One view, so the two cannot word it differently.
+/// computed with was the minimum bar for release, so Home and Tax both carry
+/// this line, at the foot of each. One view, so the two cannot word it
+/// differently. (The offer has its own disclaimer.)
 struct TaxDisclaimer: View {
     @EnvironmentObject private var store: SalaryStore
 

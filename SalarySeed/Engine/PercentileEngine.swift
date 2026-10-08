@@ -64,16 +64,6 @@ enum PercentileEngine {
         min(99, max(1, Int(p.rounded())))
     }
 
-    /// Inverse of `percentile`: the gross monthly salary at a given percentile
-    /// (0-100) of the national distribution. Uses the same two-piece log-normal,
-    /// so `percentile(salaryAtPercentile(p)) ≈ p`.
-    static func salaryAtPercentile(_ p: Double) -> Double {
-        let clamped = min(99.9, max(0.1, p))
-        let z = normInv(clamped / 100)
-        let sigma = z < 0 ? SalaryDataset.sigmaLow : SalaryDataset.sigmaHigh
-        return SalaryDataset.nationalMedian * exp(sigma * z)
-    }
-
     /// Unclamped share of employees earning at or below a gross monthly salary (0-1).
     static func cdf(grossMonthly g: Double) -> Double {
         guard g > 0 else { return 0 }

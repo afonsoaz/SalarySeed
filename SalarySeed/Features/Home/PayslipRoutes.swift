@@ -11,7 +11,7 @@ import SwiftUI
 
 extension SalaryStore {
     /// What the payslip checks know about the reader. Built in one place, so
-    /// "Check my payslip" and "Update my salary" can never check the same
+    /// "Check payslip" and "Update my salary" can never check the same
     /// payslip against two different households.
     var payslipContext: PayslipContext {
         PayslipContext(region: taxRegion,

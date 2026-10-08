@@ -19,9 +19,9 @@ import SwiftUI
 /// turning it into something a reader could picture, and a percentage is what
 /// that device was standing in for.
 ///
-/// Whole percent, where the rates in the detail trees below carry one decimal.
-/// A headline is a number you glance at; the decimal belongs where somebody is
-/// comparing two rows, not where they are reading one figure.
+/// Whole percent. The waterfall below carries the statutory rates (23,75%,
+/// 11%) and the IRS rate to one decimal; a headline is a number you glance at,
+/// and the decimals belong where somebody is comparing two rows.
 struct BreakdownBar: View {
     let breakdown: SalaryBreakdown
     @EnvironmentObject private var store: SalaryStore

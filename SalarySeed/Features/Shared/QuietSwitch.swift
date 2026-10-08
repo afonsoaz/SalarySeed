@@ -39,7 +39,7 @@ struct QuietSwitch<Option: Hashable>: View {
         .background(Capsule().fill(Color.white.opacity(0.05)))
         // Past an accessibility size the labels no longer fit hugging their
         // text, so the switch takes the full width and shares it, and each
-        // label may take a second line rather than be cut to "Mo ×…". Found by
+        // label may take more lines rather than be cut to "Mo ×…". Found by
         // looking at it at accessibility-extra-large. Reflow, do not shrink.
         .frame(maxWidth: typeSize.isAccessibilitySize ? .infinity : nil)
         .modifier(SwitchVoiceLabel(label: voiceLabel))
@@ -57,7 +57,10 @@ struct QuietSwitch<Option: Hashable>: View {
             Text(label(option))
                 .appFont(13, weight: isOn ? .semibold : .regular)
                 .foregroundStyle(isOn ? Theme.textPrimary : Theme.textSecondary)
-                .lineLimit(typeSize.isAccessibilitySize ? 2 : 1)
+                // No limit past an accessibility size: a label that needs a
+                // third line takes it. Two cut Grow's selected "10 years" to
+                // "10 / yea…" at the largest size.
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 1)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, typeSize.isAccessibilitySize ? 8 : 14)

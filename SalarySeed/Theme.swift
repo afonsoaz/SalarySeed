@@ -195,14 +195,52 @@ func points(_ fraction: Double, decimals: Int = 1) -> String {
     return String(text.dropLast())
 }
 
+/// The largest amount a typed field accepts, monthly or yearly. Far above any
+/// salary, and far below where `Int(_:)` traps: a 19-digit salary used to be
+/// saved, and then crashed the editor and "Try another salary" on every
+/// launch, because the stored number could no longer be turned back into text.
+let typedAmountLimit = 100_000_000.0
+
+/// A euro amount as a reader types it on a decimal pad, or nil.
+///
+/// The pad's separator follows the phone's REGION, not the app's language:
+/// "," on a Portuguese phone, "." on a British or American one. That one is the
+/// decimal point and the other is a thousands separator. Two sheets dropped "."
+/// whatever the region, so 1850.50 on a UK phone read as 185 050 €.
+func typedEuros(_ text: String, decimalSeparator: String = Locale.current.decimalSeparator ?? ",") -> Double? {
+    var cleaned = text
+        .replacingOccurrences(of: " ", with: "")
+        .replacingOccurrences(of: "\u{00A0}", with: "")
+        .replacingOccurrences(of: "€", with: "")
+    if decimalSeparator == "." {
+        cleaned = cleaned.replacingOccurrences(of: ",", with: "")
+    } else {
+        cleaned = cleaned
+            .replacingOccurrences(of: ".", with: "")
+            .replacingOccurrences(of: ",", with: ".")
+    }
+    guard let v = Double(cleaned), v.isFinite, v >= 0, v < typedAmountLimit else { return nil }
+    return v
+}
+
+/// A stored amount back into a number field, in whole euros, or empty when it
+/// is not a number a field can hold. `String(Int(x))` traps instead.
+func fieldDigits(_ value: Double) -> String {
+    guard value.isFinite, let n = Int(exactly: value.rounded()) else { return "" }
+    return String(n)
+}
+
 /// A difference in euros, always signed, so "ahead" and "behind" read off the
 /// figure itself.
 ///
 /// v1.5 moved this here. Grow and its levers sheet each carried a private copy,
 /// and the offer screen would have been the third: the shape rule 29 is about,
 /// where a fix made to one copy cannot reach the others.
+///
+/// The sign is the sign of the whole euro printed, not of the exact amount: a
+/// float a hair under zero printed "-0 €" in red beside "+0 €" in Grow's levers.
 func signedEur(_ value: Double) -> String {
-    (value >= 0 ? "+" : "-") + eur(abs(value))
+    (value.rounded(.toNearestOrEven) >= 0 ? "+" : "-") + eur(abs(value))
 }
 
 // MARK: Dynamic Type (v1.0.3)

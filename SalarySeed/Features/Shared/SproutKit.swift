@@ -4,7 +4,8 @@ import SwiftUI
 // One parametric sprout drawn in code (no assets), reused everywhere:
 // welcome screen, Home brand mark, compareSeed header, picker sheets, profileSeed hero.
 // Stage 0–5 = seed → small plant, driven by SalaryStore.sproutStage
-// (salary plants the seed, each profile signal grows one stage).
+// (the salary plants the seed, and the share of profile signals answered grows
+// it the rest of the way).
 
 // MARK: - SproutView
 
@@ -160,7 +161,11 @@ struct SeedDots: View {
                 }
             }
         }
-        .accessibilityLabel("Step \(current + 1) of \(count)")
+        // One element in the reader's language. A literal label here was
+        // always English, because the bundle has no strings table, and it
+        // was outside Localization.swift where dump_copy.py could see it.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accentObserver.s.onbStepVoice(current + 1, of: count))
     }
 }
 
@@ -207,17 +212,23 @@ struct UnfurlingLeaf: View {
     var size: CGFloat = 13
 
     @State private var open = false
+    /// With Reduce Motion on the leaf is simply there, open, and does not
+    /// replay. Since the hub Home is the screen the reader returns to after
+    /// everything, and every lens tap re-sprung it.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         LeafGlyph()
             .fill(Theme.accent)
             .frame(width: size, height: size * 16 / 13)
-            .scaleEffect(open ? 1 : 0.01, anchor: .bottomLeading)
-            .rotationEffect(.degrees(open ? 0 : -50), anchor: .bottomLeading)
+            .scaleEffect(open || reduceMotion ? 1 : 0.01, anchor: .bottomLeading)
+            .rotationEffect(.degrees(open || reduceMotion ? 0 : -50), anchor: .bottomLeading)
             .onAppear {
+                guard !reduceMotion else { open = true; return }
                 withAnimation(.spring(response: 0.7, dampingFraction: 0.55).delay(0.4)) { open = true }
             }
             .onChange(of: trigger) { _, _ in
+                guard !reduceMotion else { return }
                 open = false
                 withAnimation(.spring(response: 0.7, dampingFraction: 0.55).delay(0.25)) { open = true }
             }
@@ -233,6 +244,9 @@ struct RollingEuro: View {
     var fontSize: CGFloat = 30
 
     @State private var shown: Double = 0
+    /// With Reduce Motion on the figure is just the figure: no count-up and
+    /// no roll between values.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Text(eur(shown))
@@ -253,9 +267,11 @@ struct RollingEuro: View {
             // is now, which is the confirmation an update should get.
             .onAppear {
                 guard shown != value else { return }
+                if reduceMotion { shown = value; return }
                 withAnimation(.easeOut(duration: 0.8)) { shown = value }
             }
             .onChange(of: value) { _, newValue in
+                if reduceMotion { shown = newValue; return }
                 withAnimation(.easeOut(duration: 0.8)) { shown = newValue }
             }
     }

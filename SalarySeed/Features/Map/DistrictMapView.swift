@@ -92,7 +92,7 @@ struct DistrictMapView: View {
                 $0 == .national ? s.mapVsNational : s.mapVsHome
             }
         } else {
-            Text(s.mapBaselineLine(baselineName))
+            Text(s.mapBaselineLine(baselineName, allSectors: store.sector == nil))
                 .appFont(11.5)
                 .foregroundStyle(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -161,7 +161,7 @@ struct DistrictMapView: View {
                 // the map, where the switch would be; saying it twice would
                 // be an echo.
                 if home != nil {
-                    Text(s.mapBaselineLine(baselineName))
+                    Text(s.mapBaselineLine(baselineName, allSectors: store.sector == nil))
                         .appFont(11.5)
                         .foregroundStyle(Theme.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -211,7 +211,7 @@ struct DistrictMapView: View {
     private var baselineName: String {
         switch effectiveBaseline {
         case .national: return s.mapBaselineNationalName
-        case .home: return home?.label ?? s.mapBaselineNationalName
+        case .home: return home.map { s.pt ? $0.labelWithArticlePT : $0.label } ?? s.mapBaselineNationalName
         }
     }
 

@@ -17,6 +17,9 @@ import SwiftUI
 /// less than 1100 € gross". Let go and it comes back to you.
 struct NationalStanding: View {
     @EnvironmentObject private var store: SalaryStore
+    /// The marker and the handle spring back when let go, unless the reader
+    /// has asked for less motion; then they are simply back.
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Where the finger is along the chart, 0 to 1, or nil when resting on you.
     @State private var scrubFrac: Double?
@@ -124,7 +127,7 @@ struct NationalStanding: View {
             }
         }
         .frame(height: 82)
-        .animation(r.scrubbing ? nil : .spring(response: 0.4, dampingFraction: 0.8), value: r.frac)
+        .animation(r.scrubbing || reduceMotion ? nil : .spring(response: 0.4, dampingFraction: 0.8), value: r.frac)
         // The figure above says what the shape shows; the handle below is the
         // way to explore it without sight.
         .accessibilityHidden(true)
@@ -180,10 +183,12 @@ struct NationalStanding: View {
                 DragGesture(minimumDistance: 0)
                     .onChanged { v in scrubFrac = min(1, max(0, v.location.x / w)) }
                     .onEnded { _ in
-                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { scrubFrac = nil }
+                        if reduceMotion { scrubFrac = nil } else {
+                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { scrubFrac = nil }
+                        }
                     }
             )
-            .animation(r.scrubbing ? nil : .spring(response: 0.4, dampingFraction: 0.8), value: r.frac)
+            .animation(r.scrubbing || reduceMotion ? nil : .spring(response: 0.4, dampingFraction: 0.8), value: r.frac)
         }
         .frame(height: 28)
         // VoiceOver adjusts it a bar at a time and hears the headline it

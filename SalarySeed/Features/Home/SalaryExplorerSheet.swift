@@ -22,14 +22,7 @@ struct SalaryExplorerSheet: View {
 
     private var s: Strings { store.s }
 
-    private var typed: Double {
-        let cleaned = text
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: "€", with: "")
-            .replacingOccurrences(of: ".", with: "")
-            .replacingOccurrences(of: ",", with: ".")
-        return max(0, Double(cleaned) ?? 0)
-    }
+    private var typed: Double { typedEuros(text) ?? 0 }
 
     /// The typed amount resolved to a monthly gross, using the user's own tax setup.
     private var grossMonthly: Double {
@@ -101,7 +94,7 @@ struct SalaryExplorerSheet: View {
         .presentationDragIndicator(.hidden)
         .onAppear {
             kind = store.kind
-            text = String(Int(store.amount.rounded()))
+            text = fieldDigits(store.amount)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { focused = true }
         }
     }
@@ -240,11 +233,15 @@ struct SalaryExplorerSheet: View {
 
     private func cohortRow(name: String, cell: CohortCell) -> some View {
         let result = CohortEngine.result(grossMonthly: breakdown.grossMonthly, cell: cell)
-        return HStack(spacing: 10) {
+        // The name wraps rather than losing its end: the tenure band at the end
+        // of "Informática e serviços de informação · menos de 1 ano" is the
+        // part that says which group this is, and one line cut it off even at
+        // the default size.
+        return HStack(alignment: .firstTextBaseline, spacing: 10) {
             Text(name)
                 .appFont(13)
                 .foregroundStyle(Theme.textPrimary)
-                .lineLimit(1)
+                .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 6)
             Text(s.explorerPercentileShort(result.percentile))
                 .appFont(13, weight: .medium)

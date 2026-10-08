@@ -3,7 +3,7 @@
 # v1.0: the build phase that stops the app shipping without a privacy manifest,
 # or with one that has quietly started claiming to collect something.
 #
-# v1.4 added a fourth check, for the camera usage description, for the same
+# v1.4 added a check for the camera usage description, for the same
 # reason as the others: nothing else in the build would notice. A missing
 # NSCameraUsageDescription is loud in the end (iOS kills the app the instant the
 # scanner touches the capture session) but it is loud only to somebody who gets
@@ -11,7 +11,7 @@
 # at all. Rule 10 says to read a generated plist key back out of the BUILT
 # plist, and this is where that happens.
 #
-# Two of the three checks below exist because nothing else in the build would
+# Most of the checks below exist because nothing else in the build would
 # notice. The manifest reaches the bundle through the folder-synchronized group
 # rather than through an explicit membership, so no file in the project names it:
 # if it stopped arriving, every build would still succeed and Apple's rejection
@@ -55,7 +55,20 @@ if [ "${COLLECTED}" -ne 0 ]; then
     fail "PrivacyInfo.xcprivacy now declares collected data types, but this app has no way to collect anything. If that changed, update App Store Connect's App Privacy answers in the same submission and then relax this check deliberately."
 fi
 
-# 4. The camera prompt reached the BUILT plist. Rule 10.
+# 4. The UserDefaults reason is declared where Apple reads it.
+#
+# Each entry of NSPrivacyAccessedAPITypes has to be a dictionary. Until v1.6 the
+# keys sat loose in the array, which is valid XML and a valid plist, so nothing
+# complained, and it declared no reason at all: exactly the ITMS-91053 rejection
+# this file exists to prevent. So read the reason back by its path rather than
+# trusting that the words appear somewhere in the file.
+API=$(/usr/libexec/PlistBuddy -c "Print :NSPrivacyAccessedAPITypes:0:NSPrivacyAccessedAPIType" "${SOURCE_MANIFEST}" 2>/dev/null || true)
+REASON=$(/usr/libexec/PlistBuddy -c "Print :NSPrivacyAccessedAPITypes:0:NSPrivacyAccessedAPITypeReasons:0" "${SOURCE_MANIFEST}" 2>/dev/null || true)
+if [ "${API}" != "NSPrivacyAccessedAPICategoryUserDefaults" ] || [ "${REASON}" != "CA92.1" ]; then
+    fail "PrivacyInfo.xcprivacy does not declare UserDefaults with reason CA92.1 as a dictionary inside NSPrivacyAccessedAPITypes. The app reads and writes its own defaults, and Apple rejects a build without that declaration (ITMS-91053)."
+fi
+
+# 5. The camera prompt reached the BUILT plist. Rule 10.
 #
 # It is set through INFOPLIST_KEY_NSCameraUsageDescription, and Xcode maps only
 # the key names it knows: INFOPLIST_KEY_CFBundleLocalizations is dropped on the
@@ -72,5 +85,5 @@ if [ -z "${CAMERA}" ]; then
     fail "NSCameraUsageDescription is missing from the built Info.plist. The payslip scanner needs it, and without it iOS terminates the app the moment the camera is touched. Set INFOPLIST_KEY_NSCameraUsageDescription in both build configurations."
 fi
 
-echo "Privacy manifest checked: present in the bundle, declares no collection."
+echo "Privacy manifest checked: present in the bundle, declares no collection, declares UserDefaults (CA92.1)."
 echo "Camera prompt checked: present in the built Info.plist."

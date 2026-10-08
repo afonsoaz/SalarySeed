@@ -98,7 +98,8 @@ final class SalaryStore: ObservableObject {
     @Published var inputYearly: Bool { didSet { save() } }
 
     // v0.6: real tax inputs. Marital situation and dependants are asked in
-    // onboarding; the IRS Jovem exemption (1.0 = 100% ... 0 = off) lives in profileSeed.
+    // onboarding; the IRS Jovem exemption (1.0 = 100% ... 0 = off) is set on Tax
+    // (TaxAssumptions, through IRSJovemAssessorView), next to the figures it changes.
     @Published var maritalSituation: MaritalSituation { didSet { save() } }
     @Published var dependents: Int { didSet { save() } }
     @Published var irsJovemExemption: Double { didSet { save() } }
@@ -375,10 +376,10 @@ final class SalaryStore: ObservableObject {
             employerKind != nil,
             workSchedule != nil,
             // v0.9.3: any answer counts as answered, including "prefer not to
-            // say". `informative` still gates whether the value is usable as
-            // data, but a deliberate refusal is a completed question, and
-            // counting it otherwise made the finished state unreachable for
-            // anyone who chose it.
+            // say". A deliberate refusal is a completed question, and counting
+            // it otherwise made the finished state unreachable for anyone who
+            // chose it. Nothing compares on gender yet; whatever does first
+            // has to leave "prefer not to say" out of the data itself.
             gender != nil,
             variableAnnual != nil,
         ]
@@ -444,15 +445,6 @@ final class SalaryStore: ObservableObject {
             jovemExemption: irsJovemExemption,
             region: taxRegion
         )
-    }
-
-    /// National percentile for the current gross salary.
-    /// Ajudas de custo are deliberately NOT included: published distributions
-    /// are gross-salary based, and the UI says so wherever this number shows.
-    /// Neither is variable pay: GEP's ganho is a monthly figure that does not
-    /// carry annual bonuses, so folding them in would compare unlike with unlike.
-    var percentile: Double {
-        PercentileEngine.percentile(grossMonthly: breakdown.grossMonthly)
     }
 
     // MARK: Grow's inputs (v1.5: shared with the offer screen)

@@ -3,10 +3,9 @@ import SwiftUI
 /// Which sector a sector-wide screen is showing. Tapping it opens the same sheet
 /// compareSeed uses, so the screens can never disagree.
 ///
-/// It was MapView's own row while Portugal and Europe shared one screen. Those
-/// two halves are about to become two screens with the same row at the top of
-/// each, and a row that exists twice gets fixed in one of the copies (rule 33),
-/// so it is one component before it is two call sites.
+/// It was MapView's own row while Portugal and Europe shared one screen. Compare
+/// in Portugal and Compare in Europe each draw it now, from this one component,
+/// because a row that exists twice gets fixed in one of the copies (rule 33).
 struct SectorRow: View {
     // Read for the copy, and so the accent icon redraws when the colour changes.
     @EnvironmentObject private var store: SalaryStore

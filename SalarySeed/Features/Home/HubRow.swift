@@ -33,12 +33,20 @@ struct HubRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                GlyphTile(glyph: glyph)
-                Text(title)
-                    .appFont(17, weight: .medium)
-                    .foregroundStyle(Theme.textPrimary)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
+                // Past an accessibility size the tile goes above the name, so
+                // the name gets the row's whole width. Beside it, at the
+                // largest sizes the name broke mid-word ("Understan / d taxes",
+                // "crescimen / to"). The tile stays, because a row here is a
+                // glyph and a name; it just stops competing for the line.
+                if typeSize.isAccessibilitySize {
+                    VStack(alignment: .leading, spacing: 10) {
+                        GlyphTile(glyph: glyph)
+                        name
+                    }
+                } else {
+                    GlyphTile(glyph: glyph)
+                    name
+                }
                 Spacer(minLength: 8)
                 trailing
             }
@@ -50,6 +58,14 @@ struct HubRow: View {
         }
         .buttonStyle(RowPressStyle())
         .accessibilityHint(hint)
+    }
+
+    private var name: some View {
+        Text(title)
+            .appFont(17, weight: .medium)
+            .foregroundStyle(Theme.textPrimary)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
     }
 
     /// A lock on a row the support payment covers, which says something and is

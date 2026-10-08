@@ -11,8 +11,9 @@ import SwiftUI
 /// row per feature below, each opening its own screen on Home's one navigation
 /// stack. Profile is behind the person at the top right, and nowhere else.
 ///
-/// What Home showed below the fold, where the money goes, the two detail trees
-/// and the annual settlement, is the Tax screen now, drawn by the same views.
+/// What Home showed below the fold is the Tax screen now: the bar and the
+/// annual settlement moved there unchanged, and the two detail trees became its
+/// one waterfall (`MoneyWaterfall`).
 /// The "What if…" cards became rows: the job offer has its own, and trying
 /// another salary and the hidden cost of ajudas live in Other tools. What is
 /// left here is what somebody opening the app wants first: what they earn, and
@@ -21,7 +22,7 @@ struct HomeView: View {
     @EnvironmentObject private var store: SalaryStore
     /// Read for the row locks, which can only ever draw in a paid build.
     @EnvironmentObject private var supporter: SupporterStore
-    /// Read for `leafSize`, and for the rows' trailing glyph.
+    /// Read for `leafSize`.
     @Environment(\.dynamicTypeSize) private var typeSize
     @State private var period: ResultPeriod = .m14
     @State private var pickedInitial = false
@@ -77,6 +78,14 @@ struct HomeView: View {
                 guard !pickedInitial else { return }
                 period = store.schedule == .twelve ? .m12 : .m14
                 pickedInitial = true
+            }
+            // And follow it when the reader changes how they are paid, so
+            // saving "12 months" does not land them back on ×14. The first
+            // value is the `onAppear` above's job (rule 11). A year lens is
+            // left alone: it reads the same whatever the schedule.
+            .onChange(of: store.schedule) { _, schedule in
+                guard period != .year else { return }
+                period = schedule == .twelve ? .m12 : .m14
             }
         }
     }
@@ -219,7 +228,7 @@ struct HomeView: View {
     @ViewBuilder
     private var heroFootnotes: some View {
         // A short note on what the 12x / 14x monthly view means. Nil for annual.
-        if let cap = s.resultCaption(period.modeIndex) {
+        if let cap = s.resultCaption(period.modeIndex, paidFourteen: store.schedule == .fourteen) {
             Text(cap)
                 .appFont(12)
                 .foregroundStyle(Theme.textFaint)

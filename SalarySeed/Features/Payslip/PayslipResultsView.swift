@@ -156,11 +156,17 @@ struct PayslipResultsView: View {
                             .appFont(13)
                             .foregroundStyle(Theme.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
+                        // A 44 point target, not the height of the words: this
+                        // is the only way forward to a number from here.
                         Button(action: onTypeInstead) {
                             Text(s.onbTypeItMyself)
                                 .appFont(14, weight: .semibold)
                                 .foregroundStyle(Theme.accent)
+                                .multilineTextAlignment(.leading)
+                                .frame(minHeight: 44, alignment: .leading)
+                                .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
                     }
                     .padding(.top, 6)
                 }
@@ -198,18 +204,24 @@ struct PayslipResultsView: View {
     /// Side by side normally, stacked once the text is large enough that two
     /// columns of figures would each be a column of wrapped fragments. Reflow,
     /// not shrink: nobody asked for smaller text.
+    ///
+    /// "What you have now" is the GROSS the app works from, because the payslip
+    /// figure beside it is a gross: the stored amount is a net for a reader who
+    /// typed a net, and showed a 1 200 € net beside a 1 600 € gross as a raise.
+    /// With no profile (the onboarding cover) there is no salary yet, only the
+    /// store's default, so that column is left out.
     @ViewBuilder private func figures(_ proposal: PayslipSalary.GrossProposal) -> some View {
-        let mine = PayslipNumber.format(cents: Int((store.amount * 100).rounded()))
+        let mine = PayslipNumber.format(cents: Int(exactly: (store.breakdown.grossMonthly * 100).rounded()) ?? 0)
         let theirs = PayslipNumber.format(cents: proposal.monthlyGrossCents)
         if typeSize.isAccessibilitySize {
             VStack(alignment: .leading, spacing: 10) {
                 figure(s.payslipUseGrossLabel, theirs, tint: Theme.accent)
-                figure(s.payslipUseCurrentLabel, mine, tint: Theme.textSecondary)
+                if hasProfile { figure(s.payslipUseCurrentLabel, mine, tint: Theme.textSecondary) }
             }
         } else {
             HStack(alignment: .top, spacing: 16) {
                 figure(s.payslipUseGrossLabel, theirs, tint: Theme.accent)
-                figure(s.payslipUseCurrentLabel, mine, tint: Theme.textSecondary)
+                if hasProfile { figure(s.payslipUseCurrentLabel, mine, tint: Theme.textSecondary) }
             }
         }
     }
@@ -376,11 +388,16 @@ struct PayslipResultsView: View {
 
     private var footer: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(s.payslipAssumptions(store.taxRegion,
-                                      months: String(Int(store.schedule.months))))
-                .appFont(10)
-                .foregroundStyle(Theme.textFaint)
-                .fixedSize(horizontal: false, vertical: true)
+            // With no profile (the onboarding cover) no table check ran, and
+            // the region and months would be store defaults nobody gave, so
+            // the line saying what the check assumed would be untrue.
+            if hasProfile {
+                Text(s.payslipAssumptions(store.taxRegion,
+                                          months: String(Int(store.schedule.months))))
+                    .appFont(10)
+                    .foregroundStyle(Theme.textFaint)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             Text(s.payslipDisclaimer)
                 .appFont(10)
                 .foregroundStyle(Theme.textFaint)

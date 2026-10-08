@@ -8,8 +8,8 @@ import SwiftUI
 /// separate surveys of separate populations in separate years, so no figure
 /// from one is ever placed beside a figure from the other. What crosses is a
 /// ratio computed inside Eurostat and applied to the user's own salary. See
-/// EuroComparison. It is a view of its own now because it is about to be a
-/// screen of its own.
+/// EuroComparison. It is a view of its own because Compare in Europe
+/// (`EuropeView`) is a screen of its own.
 struct EuropeSection: View {
     @EnvironmentObject private var store: SalaryStore
     @EnvironmentObject private var supporter: SupporterStore

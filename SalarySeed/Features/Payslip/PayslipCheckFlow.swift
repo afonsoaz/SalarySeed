@@ -7,7 +7,7 @@ import SwiftUI
 /// came from a payslip" flag on the store would be the one-bit payslip history
 /// CLAUDE.md forbids, and it is exactly the shape this would take if it leaked.
 enum PayslipIntent: Hashable {
-    /// "Check my payslip". The verdict is the point; the offer to keep the
+    /// "Check payslip". The verdict is the point; the offer to keep the
     /// figure comes after it, and the reader stays on the verdict afterwards.
     case check
     /// "Update my salary". The reader came for the number. The verdict still
@@ -112,7 +112,7 @@ struct PayslipCheckFlow: View {
     }
 
     /// The checker carries the same accent eyebrow as every other place in the
-    /// app (`mapSeed`, `profileSeed`, `compareSeed`). The cover does not: that
+    /// app (`taxSeed`, `compareSeed`, `growSeed`). The cover does not: that
     /// is a detour off an onboarding step, not a place. Nor does "Update my
     /// salary", which is a way to change one number and looks exactly like the
     /// chooser it came from.
@@ -205,9 +205,17 @@ struct PayslipCheckFlow: View {
         case .review(let workings):
             PayslipReviewStep(model: model, workings: workings,
                               onConfirm: { model.confirmReview(context: context) })
-        case .results(let verdict, let workings):
+        case .results(_, let workings):
+            // Checked again against the answers as they are now, not as they
+            // were when the payslip was read. Home keeps the reading for the
+            // whole session and the tax answers are one screen away on Tax, so
+            // a household or município changed in between used to leave a
+            // verdict judged on the old one under a footer naming the new one.
+            // The facts already carry the review's corrections, and the check
+            // is pure, so with unchanged answers the verdict is identical.
             PayslipResultsView(
-                verdict: verdict, workings: workings,
+                verdict: PayslipReconciler.check(workings.facts, context: context),
+                workings: workings,
                 onAccept: onAccept, hasProfile: context != nil,
                 ask: model.salaryAsk,
                 onAnswerAsk: { adopted in

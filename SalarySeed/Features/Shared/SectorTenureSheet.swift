@@ -11,6 +11,7 @@ import SwiftUI
 struct SectorTenureSheet: View {
     @EnvironmentObject private var store: SalaryStore
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     @State private var sel: Sector?
     @State private var years: Int = 3
@@ -39,7 +40,13 @@ struct SectorTenureSheet: View {
                     .padding(.top, 2)
 
                 ScrollView {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 8)], spacing: 8) {
+                    // One column past an accessibility size, with the names
+                    // wrapping: two shrank "Informática e serviços de
+                    // informação" and still cut it off.
+                    LazyVGrid(columns: typeSize.isAccessibilitySize
+                                ? [GridItem(.flexible())]
+                                : [GridItem(.adaptive(minimum: 150), spacing: 8)],
+                              spacing: 8) {
                         ForEach(Sector.allCases) { sector in
                             chip(sector)
                         }
@@ -132,8 +139,10 @@ struct SectorTenureSheet: View {
                 .appFont(12.5, weight: isSelected ? .medium : .regular)
                 .foregroundStyle(isSelected ? Theme.ink : Theme.textPrimary)
                 .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.82)
+                .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
+                .minimumScaleFactor(typeSize.isAccessibilitySize ? 1 : 0.82)
+                .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
+                .padding(.vertical, typeSize.isAccessibilitySize ? 8 : 0)
                 .frame(maxWidth: .infinity, minHeight: Theme.chipHeight)
                 .padding(.horizontal, 8)
                 .background(

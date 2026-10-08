@@ -232,9 +232,9 @@ struct OfferFormView: View {
             schedule = terms.schedule
             inputPeriod = terms.inputYearly ? .yearly : .monthly
             let shown = terms.inputYearly ? terms.amount * terms.schedule.months : terms.amount
-            amountText = String(Int(shown.rounded()))
+            amountText = fieldDigits(shown)
             ajudasText = terms.ajudasMonthly > 0 ? Self.plain(terms.ajudasMonthly) : ""
-            bonusText = terms.bonusAnnual.map { String(Int($0.rounded())) } ?? ""
+            bonusText = terms.bonusAnnual.map { fieldDigits($0) } ?? ""
             sector = terms.sector
             concelhoID = terms.concelhoID
         } else {
@@ -267,8 +267,8 @@ struct OfferFormView: View {
         guard let v = amountValue else { return }
         let months = schedule.months
         switch period {
-        case .yearly: amountText = String(Int((v * months).rounded()))
-        case .monthly: amountText = String(Int((v / months).rounded()))
+        case .yearly: amountText = fieldDigits(v * months)
+        case .monthly: amountText = fieldDigits(v / months)
         }
     }
 
@@ -279,7 +279,7 @@ struct OfferFormView: View {
             .replacingOccurrences(of: " ", with: "")
             .replacingOccurrences(of: "€", with: "")
             .replacingOccurrences(of: ",", with: ".")
-        guard let v = Double(cleaned), v.isFinite else { return nil }
+        guard let v = Double(cleaned), v.isFinite, v < typedAmountLimit else { return nil }
         return v
     }
 

@@ -159,6 +159,7 @@ struct JobTitleSheet: View {
                     Text(family.label(pt: s.pt))
                         .appFont(14)
                         .foregroundStyle(Theme.textPrimary)
+                        .multilineTextAlignment(.leading)
                     Spacer()
                     Image(systemName: isOpen ? "chevron.up" : "chevron.down")
                         .appFont(11)
@@ -196,6 +197,7 @@ struct JobTitleSheet: View {
                             .foregroundStyle(isSelected ? Theme.ink.opacity(0.7) : Theme.textFaint)
                     }
                 }
+                .multilineTextAlignment(.leading)
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark")

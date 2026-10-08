@@ -18,14 +18,7 @@ struct VariablePaySheet: View {
 
     private var s: Strings { store.s }
 
-    private var parsed: Double {
-        let cleaned = text
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: "€", with: "")
-            .replacingOccurrences(of: ".", with: "")
-            .replacingOccurrences(of: ",", with: ".")
-        return max(0, Double(cleaned) ?? 0)
-    }
+    private var parsed: Double { typedEuros(text) ?? 0 }
 
     var body: some View {
         ZStack {
@@ -33,6 +26,12 @@ struct VariablePaySheet: View {
                 .contentShape(Rectangle())
                 .onTapGesture { dismissKeyboard() }
 
+            // Scrolls, and can be pulled up to full height: at an
+            // accessibility size the two paragraphs alone outgrow the medium
+            // detent, and with a fixed column the Ok and "I don't get any"
+            // buttons sat below the sheet where nobody could reach them. Two
+            // detents, because one would make the drag rubber-band (rule 26).
+            ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 Capsule()
                     .fill(Color.white.opacity(0.15))
@@ -85,16 +84,17 @@ struct VariablePaySheet: View {
                         .frame(maxWidth: .infinity)
                 }
                 .padding(.top, 12)
-
-                Spacer()
+                .padding(.bottom, 20)
             }
             .padding(.horizontal, 20)
+            }
+            .scrollDismissesKeyboard(.interactively)
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.hidden)
         .onAppear {
             if let existing = store.variableAnnual, existing > 0 {
-                text = String(Int(existing))
+                text = fieldDigits(existing.rounded(.down))
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { focused = true }
         }
