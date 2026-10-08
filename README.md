@@ -216,6 +216,15 @@ matches what Grow draws to the cent, and five years always crosses a tenure band
 anybody under twenty. It was checked the other way round too, against three deliberately
 broken copies of the engine, and caught all three.
 
+[`tools/waterfall_probe`](tools/waterfall_probe) does the same for the tax screen. Its rows
+are whole euros, and rounded one by one they failed to add up by a euro for about a quarter
+of salaries, so the probe sweeps 255,657 of them, salaries in cents included, for rows that
+add up, agree with Home and agree with the settlement card. It also checks the mínimo de
+existência against the worked examples in the article that defines it, and that every
+region's minimum wage settles to no IRS at all. Before that rule was in the engine, the app
+told somebody on the minimum wage that they owed about 37 € at settlement, in red. The
+probe fails that engine by 36,61 €, which is the point of writing it before trusting it.
+
 Two of those are about the words and the layout rather than the arithmetic.
 `dump_copy.py` regenerates every copy pair in both languages straight out of
 `Localization.swift` and reads the document back to compare, and it fails rather than
@@ -325,9 +334,9 @@ crowdsourced or recruiter figure is embedded anywhere.
 - **CAOP / DGT** for the district boundaries, credited in-app.
 - **Tax**: a real 2026 engine for all three fiscal regions, each with its own withholding
   tables and its own annual rates. Social Security 11% and 23.75%, the withholding tables
-  from Despacho 233-A/2026, the nine annual escalões, the specific deduction, dependant
-  credits, the €1,000 general-expense credit, and IRS Jovem in both the monthly
-  withholding and the annual settlement.
+  from Despacho 233-A/2026, the nine annual escalões, the specific deduction, the mínimo de
+  existência (art. 70.º of the IRS code), dependant credits, the €1,000 general-expense
+  credit, and IRS Jovem in both the monthly withholding and the annual settlement.
 
 The datasets keep their own licences wherever they go and are not covered by this
 repository's [LICENSE](LICENSE).
